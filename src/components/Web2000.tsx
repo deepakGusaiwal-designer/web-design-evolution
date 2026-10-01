@@ -48,26 +48,26 @@ export const Web2000: React.FC = () => {
   ];
 
   return (
-    <section className="relative min-h-screen w-full py-28 px-6 flex flex-col justify-center items-center">
-      {/* Header */}
-      <div className="max-w-4xl w-full mx-auto mb-10 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-500/30 bg-sky-950/40 font-mono text-[11px] text-sky-400 uppercase tracking-widest mb-3">
+    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center">
+      {/* Header with Generous Breathing Space */}
+      <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-sky-500/30 bg-sky-950/40 font-mono text-xs text-sky-400 uppercase tracking-widest mb-6">
           <Palette className="w-3.5 h-3.5 text-sky-400" />
           SECTION 02 // 1996 — 2005
         </div>
-        <h2 className="font-syne font-bold text-4xl sm:text-6xl text-white tracking-tight mb-3">
+        <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
           THE WEB BECOMES VISUAL
         </h2>
-        <p className="font-space text-lg text-slate-300 max-w-xl mx-auto mb-2">
+        <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
           “Design became a language.”
         </p>
-        <p className="font-mono text-xs text-slate-400">
+        <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
           Click the evolutionary stages below to watch the same raw document mutate through CSS history.
         </p>
       </div>
 
       {/* Stage Selector Tabs */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-8 max-w-4xl mx-auto">
+      <div className="flex flex-wrap items-center justify-center gap-3 mb-12 sm:mb-16 max-w-4xl mx-auto">
         {stages.map((stg) => {
           const Icon = stg.icon;
           const isActive = activeStage === stg.id;

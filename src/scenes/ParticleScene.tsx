@@ -12,7 +12,6 @@ interface ParticleSceneProps {
 
 export const ParticleScene: React.FC<ParticleSceneProps> = ({
   currentEraIndex,
-  scrollProgress,
   scrollVelocity = 0,
   attractMode = false,
 }) => {
@@ -20,6 +19,7 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
   const uniformsRef = useRef<{
     uTime: { value: number };
     uProgress: { value: number };
+    uColorVibrancy: { value: number };
     uMouse: { value: THREE.Vector3 };
     uMouseRadius: { value: number };
     uMouseForce: { value: number };
@@ -31,10 +31,7 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
     uDevicePixelRatio: { value: number };
   } | null>(null);
 
-  const prevEraRef = useRef<number>(currentEraIndex);
   const targetEraRef = useRef<number>(currentEraIndex);
-  const geometryRef = useRef<THREE.BufferGeometry | null>(null);
-  const shapesRef = useRef<Record<ShapeType, Float32Array> | null>(null);
 
   useEffect(() => {
     targetEraRef.current = currentEraIndex;
@@ -79,7 +76,6 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
 
     // 2. Build particle shapes & geometry
     const { shapes, colors, randomSpeeds, phases, sizes } = createParticleShapes(particleCount);
-    shapesRef.current = shapes;
 
     const shapeKeys: ShapeType[] = [
       'cloud',      // 0: Hero initial
@@ -103,12 +99,12 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
     geometry.setAttribute('randomSpeed', new THREE.BufferAttribute(randomSpeeds, 3));
     geometry.setAttribute('phase', new THREE.BufferAttribute(phases, 1));
     geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    geometryRef.current = geometry;
 
     // 3. Shaders & Material
     const uniforms = {
       uTime: { value: 0 },
       uProgress: { value: 0.0 },
+      uColorVibrancy: { value: 0.0 }, // Starts 0.0 (Black and White for early era!)
       uMouse: { value: new THREE.Vector3(999, 999, 0) },
       uMouseRadius: { value: 3.8 },
       uMouseForce: { value: 1.0 },
@@ -169,7 +165,6 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
         uniforms.uRippleTime.value = 0.0;
         uniforms.uRippleStrength.value = 1.6;
 
-        // Play subtle sound if available
         if (typeof (window as unknown as { playWebChime?: (f: number) => void }).playWebChime === 'function') {
           (window as unknown as { playWebChime: (f: number) => void }).playWebChime(520);
         }
@@ -179,7 +174,6 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('click', handleClick);
 
-    // 5. Resize handler
     const handleResize = () => {
       if (!renderer || !camera) return;
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -189,7 +183,7 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
     };
     window.addEventListener('resize', handleResize);
 
-    // 6. Animation loop
+    // 5. Animation loop with smooth bidirectional morphing and color bloom
     const clock = new THREE.Clock();
     let currentMorphProgress = 0.0;
     let currentShapeIndex = 0;
@@ -211,20 +205,24 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
         uniforms.uRippleStrength.value = Math.max(0, uniforms.uRippleStrength.value - delta * 0.9);
       }
 
-      // Camera gentle subtle parallax
+      // Camera parallax
       if (!prefersReducedMotion) {
         camera.position.x += (mouseNormalized.x * 0.8 - camera.position.x) * 0.03;
         camera.position.y += (mouseNormalized.y * 0.6 - camera.position.y) * 0.03;
       }
       camera.lookAt(0, 0, 0);
 
-      // Smooth Shape Morphing based on active section
+      // Color Vibrancy transition: Black & White in early era, then fills with color!
       const targetIdx = Math.min(Math.max(targetEraRef.current, 0), shapeKeys.length - 1);
+      // Hero (0) and Static Web (1) are black and white (0.0). CSS (2) blooms (0.75). Modern eras (3+) full color (1.0).
+      const targetVibrancy = targetIdx <= 1 ? 0.0 : targetIdx === 2 ? 0.75 : 1.0;
+      uniforms.uColorVibrancy.value = THREE.MathUtils.lerp(uniforms.uColorVibrancy.value, targetVibrancy, delta * 2.8);
+
+      // Smooth Shape Morphing based on active section (forward and backward)
       if (targetIdx !== currentShapeIndex) {
-        // Incrementally morph
-        currentMorphProgress += delta * 1.8;
+        currentMorphProgress += delta * 2.0;
+
         if (currentMorphProgress >= 1.0) {
-          // Transition complete: make current target the base
           currentMorphProgress = 0.0;
           currentShapeIndex = targetIdx;
           nextShapeIndex = Math.min(targetIdx + 1, shapeKeys.length - 1);
@@ -268,40 +266,6 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
     };
   }, []);
 
-  // Update target shape when currentEraIndex changes
-  useEffect(() => {
-    if (shapesRef.current && geometryRef.current) {
-      const shapeKeys: ShapeType[] = [
-        'cloud',
-        'web',
-        'grid',
-        'wave',
-        'spiral',
-        'torus',
-        'network',
-        'sphere',
-        'explosion',
-      ];
-      const fromKey = shapeKeys[Math.min(prevEraRef.current, shapeKeys.length - 1)];
-      const toKey = shapeKeys[Math.min(currentEraIndex, shapeKeys.length - 1)];
-
-      const fromData = shapesRef.current[fromKey];
-      const toData = shapesRef.current[toKey];
-
-      const posAttr = geometryRef.current.attributes.position as THREE.BufferAttribute;
-      const targetAttr = geometryRef.current.attributes.targetPos as THREE.BufferAttribute;
-
-      if (posAttr && targetAttr) {
-        posAttr.copyArray(fromData);
-        posAttr.needsUpdate = true;
-        targetAttr.copyArray(toData);
-        targetAttr.needsUpdate = true;
-      }
-
-      prevEraRef.current = currentEraIndex;
-    }
-  }, [currentEraIndex]);
-
   useEffect(() => {
     if (uniformsRef.current) {
       uniformsRef.current.uScrollVelocity.value = scrollVelocity;
@@ -312,7 +276,6 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
     <div
       ref={mountRef}
       className="fixed inset-0 pointer-events-auto z-0"
-      style={{ opacity: scrollProgress > 0.98 ? 0.4 : 1 }}
     />
   );
 };

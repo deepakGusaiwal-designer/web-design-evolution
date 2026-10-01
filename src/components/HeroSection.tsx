@@ -23,20 +23,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   }, []);
 
   return (
-    <section className="relative min-h-screen w-full flex flex-col justify-center items-center px-6 text-center select-none overflow-hidden">
+    <section className="relative min-h-screen w-full flex flex-col justify-center items-center py-36 sm:py-48 px-6 sm:px-12 text-center select-none overflow-hidden">
       {/* Background ambient radial glow */}
       <div className="absolute inset-0 bg-radial from-cyan-950/20 via-transparent to-transparent pointer-events-none" />
 
-      {/* Hero Typography */}
+      {/* Hero Typography with Generous Breathing Space */}
       <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center">
         {/* Subtle sub-header */}
         <div
-          className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 transition-all duration-1000 ${
+          className={`flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-12 sm:mb-16 transition-all duration-1000 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-          <span className="font-mono text-[11px] tracking-widest text-slate-300 uppercase">
+          <span className="font-mono text-xs tracking-widest text-slate-300 uppercase">
             An Interactive Spatial Chronicle
           </span>
         </div>
@@ -45,7 +45,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <h1
           onMouseEnter={() => onHoverTitle?.(true)}
           onMouseLeave={() => onHoverTitle?.(false)}
-          className={`font-syne font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-white mb-2 transition-all duration-1000 ${
+          className={`font-syne font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-white mb-4 transition-all duration-1000 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
           data-cursor-hover
@@ -56,7 +56,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         <h2
           onMouseEnter={() => onHoverTitle?.(true)}
           onMouseLeave={() => onHoverTitle?.(false)}
-          className={`font-syne font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-violet-500 mb-6 transition-all duration-1000 delay-300 ${
+          className={`font-syne font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-violet-500 mb-10 sm:mb-12 transition-all duration-1000 delay-300 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
           data-cursor-hover
@@ -64,9 +64,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           EVOLVED.
         </h2>
 
-        {/* Central Core Statement */}
+        {/* Central Core Statement in DM Sans */}
         <p
-          className={`font-space text-lg sm:text-2xl md:text-3xl text-slate-300 font-light max-w-2xl mx-auto mb-4 transition-all duration-1000 delay-500 ${
+          className={`font-dm text-2xl sm:text-3xl md:text-4xl text-slate-200 font-light max-w-3xl mx-auto mb-6 leading-relaxed transition-all duration-1000 delay-500 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -74,7 +74,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </p>
 
         <p
-          className={`font-mono text-xs sm:text-sm text-slate-400 max-w-lg mx-auto tracking-wide mb-12 transition-all duration-1000 delay-700 ${
+          className={`font-dm text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-light leading-relaxed mb-16 transition-all duration-1000 delay-700 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -85,13 +85,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* Formed Particle Structure Indicator */}
         <div
-          className={`transition-all duration-1000 delay-1000 mb-10 ${
+          className={`transition-all duration-1000 delay-1000 mb-16 ${
             wordWebRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           }`}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded border border-cyan-400/30 bg-cyan-950/30 text-cyan-300 font-mono text-[11px] tracking-widest">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-400/30 bg-cyan-950/30 text-cyan-300 font-mono text-xs tracking-widest">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-            PARTICLES CONVERGED INTO: &apos;WEB&apos;
+            MONOCHROME PARTICLES FORMING &apos;WEB&apos;
           </div>
         </div>
 
@@ -103,10 +103,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
           }`}
         >
-          <span className="font-mono text-[11px] tracking-[0.25em] uppercase">
+          <span className="font-mono text-xs tracking-[0.25em] uppercase">
             Commence The Journey
           </span>
-          <div className="w-9 h-9 rounded-full border border-white/20 group-hover:border-cyan-400/60 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(0,240,255,0.4)]">
+          <div className="w-11 h-11 rounded-full border border-white/20 group-hover:border-cyan-400/60 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_25px_rgba(0,240,255,0.4)]">
             <ArrowDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
           </div>
         </button>

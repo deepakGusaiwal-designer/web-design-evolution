@@ -122,7 +122,7 @@ export const ERAS: EraData[] = [
   },
   {
     id: "imagination",
-    year: "2026 — ∞",
+    year: "2026 — 2030",
     tag: "SECTION 07",
     title: "IMAGINATION BECOMES THE INTERFACE",
     subtitle: "The Spatial & Generative Horizon",
@@ -134,6 +134,21 @@ export const ERAS: EraData[] = [
       to: "Spatial Co-Creation",
     },
     accentColor: "#00f0ff",
+  },
+  {
+    id: "future",
+    year: "FUTURE — ∞",
+    tag: "SECTION 08",
+    title: "THE UNWRITTEN CANVAS",
+    subtitle: "Waiting To Be Imagined",
+    quote: "The next web hasn't been designed yet. What will you build?",
+    description: "All particles from three decades of computing converge at the singularity. The screen has dissolved into pure imagination.",
+    keyTechnologies: ["Quantum Web", "Bio-Digital Synthesis", "Ambient Void", "Zero-Chrome Reality"],
+    paradigmShift: {
+      from: "Predetermined Interfaces",
+      to: "Pure Human Imagination",
+    },
+    accentColor: "#38bdf8",
   }
 ];
 

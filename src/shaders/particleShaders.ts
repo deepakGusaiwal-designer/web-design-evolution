@@ -153,6 +153,8 @@ void main() {
 `;
 
 export const particleFragmentShader = `
+uniform float uColorVibrancy; // 0.0 = black & white, 1.0 = full color spectrum
+
 varying vec3 vColor;
 varying float vAlpha;
 varying float vDepth;
@@ -172,6 +174,13 @@ void main() {
 
   vec3 glowColor = mix(vColor, vec3(1.0, 1.0, 1.0), core * 0.7);
 
-  gl_FragColor = vec4(glowColor, intensity * vAlpha);
+  // High fidelity monochrome conversion for the early web era
+  float gray = dot(glowColor, vec3(0.299, 0.587, 0.114));
+  vec3 bwColor = vec3(gray * 1.25);
+
+  // Smooth blend between monochrome and full color spectrum
+  vec3 finalColor = mix(bwColor, glowColor, uColorVibrancy);
+
+  gl_FragColor = vec4(finalColor, intensity * vAlpha);
 }
 `;

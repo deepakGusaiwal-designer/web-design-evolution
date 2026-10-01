@@ -40,7 +40,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             {currentEra.tag}
           </span>
           <span className="w-1 h-1 rounded-full bg-white/30" />
-          <span className="font-space text-xs text-white font-medium">
+          <span className="font-dm text-xs text-white font-medium">
             {currentEra.title}
           </span>
           <span className="font-mono text-[10px] text-slate-400">

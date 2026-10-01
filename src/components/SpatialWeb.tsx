@@ -8,18 +8,18 @@ export const SpatialWeb: React.FC = () => {
   const selectedConceptData = FUTURE_CONCEPTS.find((c) => c.word === activeConcept) || FUTURE_CONCEPTS[0];
 
   return (
-    <section className="relative min-h-screen w-full py-28 px-6 flex flex-col justify-center items-center select-none overflow-hidden">
+    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center select-none overflow-hidden">
       {/* Background celestial glow */}
       <div className="absolute inset-0 bg-radial from-violet-950/20 via-transparent to-transparent pointer-events-none" />
 
-      {/* Primary Climax Statements */}
-      <div className="max-w-4xl w-full mx-auto text-center mb-12 relative z-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-400/30 bg-cyan-950/40 font-mono text-[11px] text-cyan-400 uppercase tracking-widest mb-6">
+      {/* Primary Climax Statements with Generous Breathing Space */}
+      <div className="max-w-4xl w-full mx-auto text-center mb-16 sm:mb-24 relative z-10">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-400/30 bg-cyan-950/40 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-8">
           <Compass className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '10s' }} />
-          SECTION 07 // 2026 — ∞
+          SECTION 07 // 2026 — 2030
         </div>
 
-        <h2 className="font-syne font-extrabold text-3xl sm:text-5xl md:text-7xl text-white tracking-tight leading-tight mb-6">
+        <h2 className="font-syne font-extrabold text-3xl sm:text-5xl md:text-7xl text-white tracking-tight leading-tight mb-8">
           WHAT IF THE INTERFACE
           <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-violet-400 glow-text-cyan">
@@ -27,11 +27,11 @@ export const SpatialWeb: React.FC = () => {
           </span>
         </h2>
 
-        <p className="font-syne font-medium text-xl sm:text-3xl text-slate-300 max-w-2xl mx-auto mb-4">
+        <p className="font-dm font-medium text-2xl sm:text-4xl text-slate-200 max-w-2xl mx-auto mb-6 leading-relaxed">
           “What if design could imagine with you?”
         </p>
 
-        <p className="font-mono text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
+        <p className="font-dm text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-light">
           Hover or tap the floating conceptual nodes below to explore speculative trajectories of the spatial, ambient, and generative web.
         </p>
       </div>

@@ -67,23 +67,23 @@ export const Web2010: React.FC = () => {
   }, []);
 
   return (
-    <section className="relative min-h-screen w-full py-28 px-6 flex flex-col justify-center items-center overflow-hidden">
-      {/* Header */}
-      <div className="max-w-4xl w-full mx-auto mb-10 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-950/40 font-mono text-[11px] text-violet-400 uppercase tracking-widest mb-3">
+    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center overflow-hidden">
+      {/* Header with Generous Breathing Space */}
+      <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-950/40 font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
           <Activity className="w-3.5 h-3.5 text-violet-400 animate-pulse" />
           SECTION 03 // 2006 — 2014
         </div>
-        <h2 className="font-syne font-bold text-4xl sm:text-6xl text-white tracking-tight mb-3">
+        <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
           THE WEB LEARNS TO MOVE
         </h2>
-        <p className="font-space text-lg text-slate-300 max-w-xl mx-auto">
+        <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto leading-relaxed">
           Transitions, physics engines, kinetic typography, and magnetic interactions gave life to cold pixels.
         </p>
       </div>
 
       {/* Kinetic Typography Statement: STATIC IS NOT ENOUGH */}
-      <div className="max-w-5xl w-full mx-auto my-8 text-center select-none">
+      <div className="max-w-5xl w-full mx-auto my-12 sm:my-16 text-center select-none">
         <div
           onClick={handleScatterLetters}
           data-cursor-hover
