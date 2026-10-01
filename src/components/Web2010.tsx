@@ -1,206 +1,169 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Magnet as MagnetIcon, Wind, RefreshCw } from 'lucide-react';
-import Magnet from './reactbits/Magnet';
+import { Sparkles, Volume2, FastForward, Activity } from 'lucide-react';
 import SpotlightCard from './reactbits/SpotlightCard';
+import TiltedCard from './reactbits/TiltedCard';
+import Magnet from './reactbits/Magnet';
+import ClickSpark from './reactbits/ClickSpark';
+import ShinyText from './reactbits/ShinyText';
 
 export const Web2010: React.FC = () => {
   const [scattered, setScattered] = useState(false);
+
   const headline = "STATIC IS NOT ENOUGH.";
 
-  const [nodes] = useState([
-    { id: 1, text: "EaseInOutCubic", desc: "Bezier Easing Curve", color: "from-violet-500 to-purple-600" },
-    { id: 2, text: "Spring(stiffness: 300)", desc: "Harmonic Damping", color: "from-cyan-400 to-blue-500" },
-    { id: 3, text: "InertiaVelocity", desc: "Momentum Tracking", color: "from-fuchsia-500 to-pink-500" },
-    { id: 4, text: "ParallaxDelta", desc: "Optical Depth Offset", color: "from-emerald-400 to-teal-600" },
-  ]);
-
-  const handleScatterLetters = () => {
-    setScattered(!scattered);
+  const playChime = (freq: number, type: OscillatorType = 'triangle') => {
     if (typeof (window as unknown as { playWebChime?: (f: number, t: OscillatorType) => void }).playWebChime === 'function') {
-      (window as unknown as { playWebChime: (f: number, t: OscillatorType) => void }).playWebChime(580, 'triangle');
+      (window as unknown as { playWebChime: (f: number, t: OscillatorType) => void }).playWebChime(freq, type);
     }
   };
 
-  const [mouseVelocity, setMouseVelocity] = useState(0);
-  useEffect(() => {
-    let lastX = 0;
-    let lastY = 0;
-    let lastTime = Date.now();
-
-    const onMove = (e: MouseEvent) => {
-      const now = Date.now();
-      const dt = Math.max(now - lastTime, 1);
-      const dist = Math.sqrt(Math.pow(e.clientX - lastX, 2) + Math.pow(e.clientY - lastY, 2));
-      const speed = dist / dt;
-      setMouseVelocity(Math.min(speed * 30, 20));
-      lastX = e.clientX;
-      lastY = e.clientY;
-      lastTime = now;
-    };
-
-    window.addEventListener('mousemove', onMove, { passive: true });
-    return () => window.removeEventListener('mousemove', onMove);
-  }, []);
+  const handleScatterLetters = () => {
+    setScattered(!scattered);
+    playChime(580, 'sine');
+  };
 
   return (
-    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center overflow-hidden font-dm">
-      {/* Chapter 03 Header with Strong Narrative Voice */}
-      <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-950/40 text-xs text-violet-400 uppercase tracking-widest mb-6 font-semibold">
-          <Activity className="w-3.5 h-3.5 text-violet-400 animate-pulse" />
-          CHAPTER 03 // 2006 — 2014
+    <section className="relative min-h-screen w-full py-32 sm:py-44 px-6 sm:px-12 flex flex-col justify-center items-center overflow-hidden font-dm">
+      {/* Chapter Header */}
+      <div className="max-w-4xl w-full mx-auto mb-14 text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-950/40 text-xs text-amber-400 uppercase tracking-widest mb-6 font-semibold">
+          <Activity className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+          <ShinyText text="CHAPTER 03 // 1999 — 2006" speed={4} shimmerColor="#fbbf24" />
         </div>
-        <h2 className="font-dm font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
-          THE KINETIC REVOLUTION
+
+        <h2 className="font-dm font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-5">
+          THE GOLDEN AGE OF FLASH
         </h2>
-        <p className="font-dm text-xl sm:text-3xl text-slate-100 font-light max-w-2xl mx-auto leading-relaxed mb-4">
-          “STATIC IS NOT ENOUGH.”
+
+        <p className="font-dm text-xl sm:text-2xl text-slate-100 font-light italic leading-relaxed mb-6">
+          “Before modern web standards, Adobe Flash allowed designers to bypass HTML entirely.”
         </p>
-        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed font-normal">
-          The web ceased being a series of abrupt cuts. Continuous physics, spring damping, kinetic typography, and magnetic fields brought organic life to the screen.
+
+        <p className="font-dm text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
+          Canva’s history documents how Macromedia & Adobe Flash broke the rigid barriers of the early web. Designers were no longer confined to boxes. Flash ushered in 24fps vector animations, splash intro movies, interactive soundboards, and liquid interfaces.
         </p>
       </div>
 
-      {/* Kinetic Typography Statement: STATIC IS NOT ENOUGH */}
-      <div className="max-w-5xl w-full mx-auto my-12 sm:my-16 text-center select-none">
-        <div
-          onClick={handleScatterLetters}
-          className="cursor-pointer inline-block group"
-          title="Click to scatter / reform kinetic typography"
-        >
-          <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1">
-            {headline.split(' ').map((word, wordIdx) => (
-              <span key={wordIdx} className="inline-flex">
-                {word.split('').map((char, charIdx) => {
-                  const randomAngle = ((charIdx * 17 + wordIdx * 31) % 60) - 30;
-                  const randomX = ((charIdx * 23 + wordIdx * 13) % 80) - 40;
-                  const randomY = ((charIdx * 29 + wordIdx * 19) % 80) - 40;
-
-                  return (
-                    <motion.span
-                      key={charIdx}
-                      animate={
-                        scattered
-                          ? {
-                              x: randomX * 2,
-                              y: randomY * 2,
-                              rotate: randomAngle * 3,
-                              scale: 0.85,
-                              opacity: 0.6,
-                            }
-                          : {
-                              x: 0,
-                              y: 0,
-                              rotate: mouseVelocity * ((charIdx % 2 === 0 ? 1 : -1) * 0.15),
-                              scale: 1,
-                              opacity: 1,
-                            }
-                      }
-                      transition={{
-                        type: "spring",
-                        stiffness: 220,
-                        damping: 14,
-                      }}
-                      className="font-dm font-black text-4xl sm:text-7xl md:text-8xl tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-violet-300 via-white to-purple-400 inline-block hover:scale-125 transition-transform"
-                    >
-                      {char}
-                    </motion.span>
-                  );
-                })}
-              </span>
-            ))}
+      {/* Interactive Macromedia Flash Player 2000 Simulation */}
+      <TiltedCard maxAngle={6} className="max-w-4xl w-full mx-auto mb-16">
+        <div className="rounded-2xl border border-amber-500/30 bg-[#0e0c18] p-6 sm:p-8 shadow-2xl">
+          {/* Flash Window Header */}
+          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6 font-mono text-xs text-amber-300">
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+              <span className="font-bold">Macromedia_Flash_Player_v6.0 — [movie_intro.swf]</span>
+            </div>
+            <div className="flex items-center gap-2 text-[11px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-200">
+              VECTOR 24 FPS
+            </div>
           </div>
 
-          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-violet-400 group-hover:text-cyan-300 transition-colors font-medium">
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>[CLICK HEADLINE TO {scattered ? 'REFORM' : 'SCATTER'} KINETIC LETTERS]</span>
+          {/* Flash Stage Viewport */}
+          <div className="relative rounded-xl border border-amber-500/20 bg-black/80 p-8 sm:p-12 text-center overflow-hidden">
+            {/* Ambient Flash Glow */}
+            <div className="absolute inset-0 bg-radial from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-mono mb-4">
+                <Sparkles className="w-3 h-3" />
+                <span>CANVA HISTORY: 24FPS KEYFRAME TIMELINE</span>
+              </div>
+
+              {/* Kinetic Typography Statement: STATIC IS NOT ENOUGH */}
+              <div
+                onClick={handleScatterLetters}
+                className="cursor-pointer inline-block group select-none my-6"
+                title="Click to trigger Flash keyframe scatter / reform"
+              >
+                <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1">
+                  {headline.split(' ').map((word, wordIdx) => (
+                    <span key={wordIdx} className="inline-flex">
+                      {word.split('').map((char, charIdx) => {
+                        const randomAngle = ((charIdx * 17 + wordIdx * 31) % 60) - 30;
+                        const randomX = ((charIdx * 23 + wordIdx * 13) % 80) - 40;
+                        const randomY = ((charIdx * 29 + wordIdx * 19) % 80) - 40;
+
+                        return (
+                          <motion.span
+                            key={charIdx}
+                            animate={
+                              scattered
+                                ? { x: randomX, y: randomY, rotate: randomAngle, opacity: 0.35, scale: 0.85 }
+                                : { x: 0, y: 0, rotate: 0, opacity: 1, scale: 1 }
+                            }
+                            transition={{ type: "spring", stiffness: 350, damping: 18 }}
+                            className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-200 to-amber-500 drop-shadow-[0_0_30px_rgba(245,158,11,0.4)]"
+                          >
+                            {char}
+                          </motion.span>
+                        );
+                      })}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-400 font-dm max-w-md mx-auto mb-6">
+                Click the typography above to scatter vector glyphs through ActionScript physics.
+              </p>
+
+              {/* Interactive Flash Controls: Skip Intro & Soundboard */}
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Magnet magnetStrength={2}>
+                  <ClickSpark sparkColor="#f59e0b">
+                    <button
+                      onClick={() => {
+                        setScattered(!scattered);
+                        playChime(640, 'triangle');
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl border border-amber-400/50 bg-amber-500/20 text-amber-200 text-xs font-bold font-dm hover:bg-amber-500/30 transition-all cursor-pointer shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                    >
+                      <FastForward className="w-3.5 h-3.5" />
+                      <span>SKIP INTRO (FLASH MEME)</span>
+                    </button>
+                  </ClickSpark>
+                </Magnet>
+
+                <button
+                  onClick={() => {
+                    playChime(440, 'sawtooth');
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 bg-white/5 text-slate-200 text-xs font-dm hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>PLAY VECTOR AUDIO CHIME</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </TiltedCard>
 
-      {/* Physics & Magnetic Interaction Sandbox */}
-      <div className="max-w-4xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mt-8">
-        {/* Interactive Gravitational Attraction Showcase */}
-        <SpotlightCard
-          spotlightColor="rgba(168, 85, 247, 0.25)"
-          className="p-8 rounded-2xl border border-white/10 flex flex-col justify-between items-center text-center bg-slate-900/40"
-        >
-          <div>
-            <div className="flex items-center justify-center gap-2 mb-2 text-xs text-violet-400 uppercase font-semibold">
-              <MagnetIcon className="w-4 h-4 text-violet-400" />
-              GRAVITATIONAL FIELD
-            </div>
-            <h3 className="font-dm font-bold text-xl text-white mb-2">
-              Proximity Vector Attraction
-            </h3>
-            <p className="font-dm text-xs text-slate-300 mb-8 max-w-sm leading-relaxed">
-              Hover near the button to experience how fluid physics broke the rigid grid, calculating proximity vectors to draw interactive elements smoothly toward your pointer.
-            </p>
-          </div>
-
-          <Magnet
-            padding={120}
-            magnetStrength={3.5}
-            activeTransition="transform 0.2s cubic-bezier(0.2, 0, 0, 1)"
-            inactiveTransition="transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)"
-          >
-            <button
-              onClick={() => {
-                if (typeof (window as unknown as { playWebChime?: (f: number) => void }).playWebChime === 'function') {
-                  (window as unknown as { playWebChime: (f: number) => void }).playWebChime(640);
-                }
-              }}
-              className="px-8 py-4 rounded-full font-dm font-bold text-sm tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_45px_rgba(168,85,247,0.7)] transition-shadow cursor-pointer block"
-            >
-              TEST VECTOR ATTRACTION
-            </button>
-          </Magnet>
-
-          <span className="text-[11px] text-slate-400 mt-6 font-dm">
-            Spring Damping Mechanics: Reach = 120px | Acceleration = 3.5x
-          </span>
+      {/* Historical Summary Cards */}
+      <div className="max-w-4xl w-full mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <SpotlightCard className="p-6 rounded-2xl border border-white/10 bg-slate-950/60">
+          <div className="text-xs uppercase font-bold text-amber-400 mb-2 font-mono">1999 // MACROMEDIA</div>
+          <div className="text-base font-bold text-white mb-2">The Vector Animation Era</div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Flash bypasses HTML restrictions, introducing smooth vector interpolation, interactive splash pages, and 24fps cartoons.
+          </p>
         </SpotlightCard>
 
-        {/* Floating Kinetic Physics Capsules */}
-        <SpotlightCard
-          spotlightColor="rgba(0, 240, 255, 0.25)"
-          className="p-8 rounded-2xl border border-white/10 flex flex-col justify-between bg-slate-900/40"
-        >
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-xs text-cyan-400 uppercase font-semibold">
-              <Wind className="w-4 h-4 text-cyan-400" />
-              VELOCITY & INERTIA
-            </div>
-            <h3 className="font-dm font-bold text-xl text-white mb-2">
-              Harmonic Motion Primitives
-            </h3>
-            <p className="font-dm text-xs text-slate-300 mb-6 leading-relaxed">
-              Drag, fling, or test inertia on these physics tokens. Notice how dynamic easing curves replaced abrupt binary states with natural organic momentum.
-            </p>
-          </div>
+        <SpotlightCard className="p-6 rounded-2xl border border-white/10 bg-slate-950/60">
+          <div className="text-xs uppercase font-bold text-orange-400 mb-2 font-mono">2003 // ACTIONSCRIPT</div>
+          <div className="text-base font-bold text-white mb-2">Rich Internet Applications</div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Websites became full software apps with games, interactive sound effects, and digital art experiences.
+          </p>
+        </SpotlightCard>
 
-          <div className="flex flex-col gap-3">
-            {nodes.map((node) => (
-              <motion.div
-                key={node.id}
-                drag
-                dragConstraints={{ left: -30, right: 30, top: -20, bottom: 20 }}
-                whileHover={{ scale: 1.03, x: 6 }}
-                whileTap={{ scale: 0.96 }}
-                className={`p-3 rounded-xl bg-gradient-to-r ${node.color} text-white font-dm text-xs font-semibold flex items-center justify-between shadow-lg cursor-grab active:cursor-grabbing`}
-              >
-                <span className="text-xs text-white font-semibold">
-                  {node.text}
-                </span>
-                <span className="text-[10px] opacity-80 uppercase tracking-widest font-bold">DRAG ME</span>
-              </motion.div>
-            ))}
-          </div>
-
-          <span className="text-[11px] text-slate-400 mt-6 text-center font-dm">
-            Physical Continuity: Continuous momentum replaces binary state jumps
-          </span>
+        <SpotlightCard className="p-6 rounded-2xl border border-white/10 bg-slate-950/60">
+          <div className="text-xs uppercase font-bold text-yellow-400 mb-2 font-mono">2010 // THE TURNING POINT</div>
+          <div className="text-base font-bold text-white mb-2">Steve Jobs' Thoughts on Flash</div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Apple excluded Flash from the iPhone, catalyzing the swift migration toward open HTML5, CSS3, and JavaScript standards.
+          </p>
         </SpotlightCard>
       </div>
     </section>

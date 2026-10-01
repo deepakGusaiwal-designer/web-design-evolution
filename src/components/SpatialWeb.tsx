@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { FUTURE_CONCEPTS } from '../data/evolution';
 import { Eye, Compass } from 'lucide-react';
+import TiltedCard from './reactbits/TiltedCard';
+import Magnet from './reactbits/Magnet';
+import ClickSpark from './reactbits/ClickSpark';
+import ShinyText from './reactbits/ShinyText';
 
 export const SpatialWeb: React.FC = () => {
   const [activeConcept, setActiveConcept] = useState<string | null>("SPACE");
@@ -16,7 +20,7 @@ export const SpatialWeb: React.FC = () => {
       <div className="max-w-4xl w-full mx-auto text-center mb-16 sm:mb-24 relative z-10">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-400/30 bg-cyan-950/40 text-xs text-cyan-400 uppercase tracking-widest mb-8 font-semibold">
           <Compass className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '10s' }} />
-          CHAPTER 07 // 2026 — 2030
+          <ShinyText text="CHAPTER 07 // 2026 — 2030" speed={4} shimmerColor="#00f0ff" />
         </div>
 
         <h2 className="font-dm font-black text-3xl sm:text-5xl md:text-7xl text-white tracking-tight leading-tight mb-8">
@@ -50,56 +54,61 @@ export const SpatialWeb: React.FC = () => {
             <div className="w-2.5 h-2.5 rounded-full bg-white absolute" />
           </div>
 
-          {/* Floating Constellation Words */}
+          {/* Floating Constellation Words with Magnet & ClickSpark */}
           <div className="relative w-full h-full flex flex-wrap items-center justify-center gap-4 sm:gap-6 p-4">
             {FUTURE_CONCEPTS.map((concept, index) => {
               const isActive = activeConcept === concept.word;
               return (
-                <button
-                  key={concept.word}
-                  onClick={() => {
-                    setActiveConcept(concept.word);
-                    if (typeof (window as unknown as { playWebChime?: (f: number) => void }).playWebChime === 'function') {
-                      (window as unknown as { playWebChime: (f: number) => void }).playWebChime(500 + index * 50);
-                    }
-                  }}
-                  onMouseEnter={() => setActiveConcept(concept.word)}
-                  className={`group relative px-5 py-2.5 rounded-full font-dm font-bold text-xs sm:text-sm tracking-widest uppercase transition-all duration-300 cursor-pointer ${
-                    isActive
-                      ? 'bg-white text-black scale-110 shadow-[0_0_30px_rgba(0,240,255,0.8)]'
-                      : 'glass-panel text-slate-200 hover:text-white hover:border-cyan-400/50 hover:scale-105'
-                  }`}
-                  style={{
-                    borderColor: isActive ? '#00f0ff' : 'rgba(255, 255, 255, 0.15)',
-                  }}
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: concept.color }}
-                    />
-                    {concept.word}
-                  </span>
-                </button>
+                <Magnet key={concept.word} magnetStrength={2}>
+                  <ClickSpark sparkColor={concept.color}>
+                    <button
+                      onClick={() => {
+                        setActiveConcept(concept.word);
+                        if (typeof (window as unknown as { playWebChime?: (f: number) => void }).playWebChime === 'function') {
+                          (window as unknown as { playWebChime: (f: number) => void }).playWebChime(500 + index * 50);
+                        }
+                      }}
+                      onMouseEnter={() => setActiveConcept(concept.word)}
+                      className={`group relative px-5 py-2.5 rounded-full font-dm font-bold text-xs sm:text-sm tracking-widest uppercase transition-all duration-300 cursor-pointer ${
+                        isActive
+                          ? 'bg-white text-black scale-110 shadow-[0_0_30px_rgba(0,240,255,0.8)]'
+                          : 'glass-panel text-slate-200 hover:text-white hover:border-cyan-400/50 hover:scale-105'
+                      }`}
+                      style={{
+                        borderColor: isActive ? '#00f0ff' : 'rgba(255, 255, 255, 0.15)',
+                      }}
+                    >
+                      <span className="relative z-10 flex items-center gap-2">
+                        <span
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: concept.color }}
+                        />
+                        {concept.word}
+                      </span>
+                    </button>
+                  </ClickSpark>
+                </Magnet>
               );
             })}
           </div>
         </div>
 
-        {/* Selected Speculative Node Insight Card */}
+        {/* Selected Speculative Node Insight Card with TiltedCard */}
         {selectedConceptData && (
-          <div className="mt-8 max-w-xl mx-auto glass-panel-glow rounded-2xl p-6 border border-cyan-400/30 text-center animate-fade-in font-dm">
-            <div className="flex items-center justify-center gap-2 mb-2 text-xs text-cyan-400 uppercase tracking-widest font-semibold">
-              <Eye className="w-3.5 h-3.5 text-cyan-400" />
-              Speculative Paradigm // {selectedConceptData.word}
+          <TiltedCard maxAngle={6} className="mt-8 max-w-xl mx-auto">
+            <div className="glass-panel-glow rounded-2xl p-6 border border-cyan-400/30 text-center animate-fade-in font-dm shadow-2xl">
+              <div className="flex items-center justify-center gap-2 mb-2 text-xs text-cyan-400 uppercase tracking-widest font-semibold">
+                <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                Speculative Paradigm // {selectedConceptData.word}
+              </div>
+              <h4 className="font-dm font-black text-2xl text-white mb-2">
+                {selectedConceptData.word}
+              </h4>
+              <p className="text-sm text-slate-200 leading-relaxed font-dm">
+                {selectedConceptData.description}
+              </p>
             </div>
-            <h4 className="font-dm font-black text-2xl text-white mb-2">
-              {selectedConceptData.word}
-            </h4>
-            <p className="text-sm text-slate-200 leading-relaxed font-dm">
-              {selectedConceptData.description}
-            </p>
-          </div>
+          </TiltedCard>
         )}
       </div>
     </section>

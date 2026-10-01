@@ -1,25 +1,20 @@
 import React, { useState } from 'react';
-import { Terminal, Zap, RefreshCw, BookOpen } from 'lucide-react';
+import { Terminal, Globe, Zap, CornerDownLeft, Sparkles } from 'lucide-react';
+import SpotlightCard from './reactbits/SpotlightCard';
+import TiltedCard from './reactbits/TiltedCard';
+import Magnet from './reactbits/Magnet';
+import ClickSpark from './reactbits/ClickSpark';
+import ShinyText from './reactbits/ShinyText';
 
 interface Web1990Props {
   onShatter?: () => void;
 }
 
 export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
-  const [constructionStep, setConstructionStep] = useState(7);
+  const [activeTab, setActiveTab] = useState<'terminal' | 'cern'>('terminal');
+  const [tabKeyCount, setTabKeyCount] = useState(2);
   const [isShattered, setIsShattered] = useState(false);
-  const [showRawTags, setShowRawTags] = useState(true);
-  const [highlightedTag, setHighlightedTag] = useState<string | null>(null);
-
-  const steps = [
-    { tag: '<html>', label: 'ROOT CONTAINER' },
-    { tag: '<head>', label: 'METADATA' },
-    { tag: '<body>', label: 'DOCUMENT BODY' },
-    { tag: '<h1>', label: 'HEADING 1' },
-    { tag: '<p>', label: 'PARAGRAPH' },
-    { tag: '<a>', label: 'HYPERLINK' },
-    { tag: '<img>', label: 'INLINE BITMAP' },
-  ];
+  const [terminalTheme, setTerminalTheme] = useState<'green' | 'amber'>('green');
 
   const handleShatter = () => {
     setIsShattered(true);
@@ -28,211 +23,262 @@ export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
       (window as unknown as { playWebChime: (f: number, t: OscillatorType) => void }).playWebChime(320, 'sawtooth');
     }
 
-    // Auto-restore document after 6 seconds
     setTimeout(() => {
       setIsShattered(false);
     }, 6000);
   };
 
-  const handleReset = () => {
-    setIsShattered(false);
-    setConstructionStep(0);
-    let current = 0;
-    const interval = setInterval(() => {
-      current++;
-      setConstructionStep(current);
-      if (current >= steps.length) clearInterval(interval);
-    }, 220);
+  const pressTabKey = () => {
+    setTabKeyCount((prev) => (prev >= 6 ? 1 : prev + 1));
+    if (typeof (window as unknown as { playWebChime?: (f: number, t: OscillatorType) => void }).playWebChime === 'function') {
+      (window as unknown as { playWebChime: (f: number, t: OscillatorType) => void }).playWebChime(420, 'sine');
+    }
   };
 
+  const tabSpacing = '    '.repeat(tabKeyCount);
+
   return (
-    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center font-dm">
-      {/* Chapter 01 Header with Strong Narrative Voice */}
-      <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
+    <section className="relative min-h-screen w-full py-32 sm:py-44 px-6 sm:px-12 flex flex-col justify-center items-center font-dm">
+      {/* Chapter Header */}
+      <div className="max-w-4xl w-full mx-auto mb-14 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-700 bg-slate-900/60 text-xs text-slate-300 uppercase tracking-widest mb-6">
-          <Terminal className="w-3.5 h-3.5 text-slate-400" />
-          CHAPTER 01 // 1991 — 1995
+          <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+          <ShinyText text="CHAPTER 01 // 1989 — 1993" speed={4} shimmerColor="#34d399" />
         </div>
 
-        <h2 className="font-dm font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
-          THE STERILE PARCHMENT
+        <h2 className="font-dm font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-5">
+          THE DARK AGES & THE FIRST HYPERTEXT
         </h2>
 
-        <p className="font-dm text-xl sm:text-3xl text-slate-100 font-light italic leading-relaxed mb-6">
-          “In the beginning, the web had no voice. It had only links.”
+        <p className="font-dm text-xl sm:text-2xl text-slate-100 font-light italic leading-relaxed mb-6">
+          “In the dark ages, designers worked with black screens, pixelated text, and the TAB key.”
         </p>
 
-        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-2xl mx-auto leading-relaxed font-normal">
-          When Tim Berners-Lee created the World Wide Web on a NeXT workstation at CERN, there was no graphic design. The web was conceived as a decentralized filing cabinet for physicists. Black Times Roman text on gray screens. The only interaction humanity had was clicking a blue underlined hyperlink.
+        <p className="font-dm text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
+          According to web history, before graphical browsers existed, the internet lived on black CRT terminals. Tim Berners-Lee invented the World Wide Web in March 1989 at CERN to link documents across computers. On August 6, 1991, the world’s first website went live.
         </p>
       </div>
 
-      {/* The 1991 NeXT / CERN Simulated Browser Window */}
-      <div className="relative max-w-3xl w-full mx-auto my-6">
-        <div
-          className={`relative rounded-xl shadow-2xl transition-all duration-700 overflow-hidden border border-slate-400/40 ${
-            isShattered
-              ? 'opacity-30 scale-95 blur-sm rotate-1 translate-y-6'
-              : 'opacity-100 scale-100'
+      {/* Epoch Mode Switcher */}
+      <div className="flex items-center justify-center gap-3 mb-10">
+        <button
+          onClick={() => setActiveTab('terminal')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-dm font-semibold transition-all cursor-pointer ${
+            activeTab === 'terminal'
+              ? 'border-emerald-500 bg-emerald-950/40 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.25)]'
+              : 'border-white/10 bg-black/40 text-slate-400 hover:text-white'
           }`}
-          style={{
-            backgroundColor: '#e6e6e6',
-            color: '#000000',
-            fontFamily: '"Times New Roman", Times, serif',
-          }}
         >
-          {/* Vintage Browser Window Titlebar */}
-          <div className="bg-[#c0c0c0] border-b-2 border-slate-400 px-4 py-2 flex items-center justify-between select-none">
-            <div className="flex items-center gap-2">
-              <div className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center text-[9px] font-bold">
-                ✕
-              </div>
-              <span className="text-xs font-bold text-black tracking-tight">
-                CERN_NeXTSTEP_Browser.app — file://info.cern.ch/hypertext/WWW/TheProject.html
-              </span>
-            </div>
-            <div className="flex gap-1">
-              <span className="w-3.5 h-3.5 border border-black bg-white inline-block" />
-              <span className="w-3.5 h-3.5 border border-black bg-[#808080] inline-block" />
-            </div>
-          </div>
+          <Terminal className="w-4 h-4 text-emerald-400" />
+          <span>1989: The Terminal Dark Ages</span>
+        </button>
 
-          {/* Vintage Toolbar with Interactive Tag Pills */}
-          <div className="bg-[#dcdcdc] border-b border-[#808080] px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-            <button
-              onClick={() => setShowRawTags(!showRawTags)}
-              className="px-2.5 py-1 border border-black bg-[#e0e0e0] active:bg-[#a0a0a0] text-xs font-medium cursor-pointer rounded-sm"
-            >
-              {showRawTags ? 'Hide Source Tags' : 'Inspect HTML Tags'}
-            </button>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {steps.map((st) => (
-                <span
-                  key={st.tag}
-                  onMouseEnter={() => setHighlightedTag(st.tag)}
-                  onMouseLeave={() => setHighlightedTag(null)}
-                  className={`px-1.5 py-0.5 border text-[11px] cursor-help transition-colors rounded ${
-                    highlightedTag === st.tag
-                      ? 'bg-blue-600 text-white border-blue-800'
-                      : 'border-slate-400 bg-white text-slate-700'
-                  }`}
+        <button
+          onClick={() => setActiveTab('cern')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-dm font-semibold transition-all cursor-pointer ${
+            activeTab === 'cern'
+              ? 'border-cyan-400 bg-cyan-950/40 text-cyan-200 shadow-[0_0_20px_rgba(0,240,255,0.25)]'
+              : 'border-white/10 bg-black/40 text-slate-400 hover:text-white'
+          }`}
+        >
+          <Globe className="w-4 h-4 text-cyan-400" />
+          <span>1991: The First Web Page (CERN)</span>
+        </button>
+      </div>
+
+      {/* INTERACTIVE EXPERIENCE 1: 1989 THE TERMINAL DARK AGES */}
+      {activeTab === 'terminal' && (
+        <TiltedCard maxAngle={8} className="max-w-3xl w-full mx-auto">
+          <div className={`relative rounded-2xl p-6 sm:p-8 border shadow-2xl transition-all duration-300 ${
+            terminalTheme === 'green'
+              ? 'bg-[#030d07] border-emerald-500/40 text-emerald-400 shadow-[0_0_50px_rgba(16,185,129,0.15)]'
+              : 'bg-[#0f0902] border-amber-500/40 text-amber-400 shadow-[0_0_50px_rgba(245,158,11,0.15)]'
+          }`}>
+            {/* Terminal Window Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6 font-mono text-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                <span className="ml-2 font-semibold">CERN_VM_CMS — VT100 Terminal (80x24 Columns)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setTerminalTheme('green')}
+                  className={`px-2 py-0.5 rounded text-[11px] cursor-pointer ${terminalTheme === 'green' ? 'bg-emerald-500/30 font-bold' : 'opacity-60'}`}
                 >
-                  {st.tag}
-                </span>
-              ))}
+                  P1-Green
+                </button>
+                <button
+                  onClick={() => setTerminalTheme('amber')}
+                  className={`px-2 py-0.5 rounded text-[11px] cursor-pointer ${terminalTheme === 'amber' ? 'bg-amber-500/30 font-bold' : 'opacity-60'}`}
+                >
+                  P3-Amber
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* Document Content Viewport */}
-          <div className="p-8 sm:p-14 min-h-[380px] bg-white text-black leading-relaxed">
-            {/* Step 0: HTML & HEAD */}
-            {constructionStep >= 0 && showRawTags && (
-              <div className="text-xs text-blue-800 font-mono mb-1">
-                &lt;html&gt;&lt;head&gt;
-              </div>
-            )}
-            {constructionStep >= 1 && (
-              <div className="text-xs text-slate-500 font-mono pl-4 mb-2">
-                &lt;title&gt;World Wide Web - Executive Summary&lt;/title&gt;
-              </div>
-            )}
-            {constructionStep >= 2 && showRawTags && (
-              <div className="text-xs text-blue-800 font-mono mb-4">
-                &lt;body&gt;
-              </div>
-            )}
-
-            {/* Step 3: H1 */}
-            {constructionStep >= 3 && (
-              <div className={`mb-5 p-2 rounded transition-colors ${highlightedTag === '<h1>' ? 'bg-blue-50' : ''}`}>
-                {showRawTags && <span className="font-mono text-xs text-red-700 block mb-1">&lt;h1&gt;</span>}
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-black border-b border-black pb-1 mb-2">
-                  The World Wide Web
-                </h1>
-                {showRawTags && <span className="font-mono text-xs text-red-700 block mt-1">&lt;/h1&gt;</span>}
-              </div>
-            )}
-
-            {/* Step 4: Paragraph */}
-            {constructionStep >= 4 && (
-              <div className={`mb-5 p-2 rounded transition-colors ${highlightedTag === '<p>' ? 'bg-blue-50' : ''}`}>
-                {showRawTags && <span className="font-mono text-xs text-emerald-800 block mb-1">&lt;p&gt;</span>}
-                <p className="text-sm sm:text-base text-black font-serif">
-                  The WorldWideWeb is a wide-area hypermedia information retrieval initiative aiming to give universal access to a large universe of documents. Everything there is online about W3 is linked directly or indirectly to this document.
-                </p>
-                {showRawTags && <span className="font-mono text-xs text-emerald-800 block mt-1">&lt;/p&gt;</span>}
-              </div>
-            )}
-
-            {/* Step 5: Hyperlink */}
-            {constructionStep >= 5 && (
-              <div className={`mb-5 p-2 rounded transition-colors ${highlightedTag === '<a>' ? 'bg-blue-50' : ''}`}>
-                {showRawTags && <span className="font-mono text-xs text-purple-700 block mb-1">&lt;a href=&quot;...&quot;&gt;</span>}
-                <p className="text-sm sm:text-base">
-                  See also:{' '}
-                  <span className="text-blue-700 underline cursor-pointer hover:text-blue-900 font-serif">
-                    What is Hypertext and how does it connect knowledge?
-                  </span>
-                </p>
-                {showRawTags && <span className="font-mono text-xs text-purple-700 block mt-1">&lt;/a&gt;</span>}
-              </div>
-            )}
-
-            {/* Step 6: Image */}
-            {constructionStep >= 6 && (
-              <div className={`mt-6 p-4 border border-dashed border-black/40 bg-slate-50 flex items-center gap-4 rounded ${highlightedTag === '<img>' ? 'bg-blue-50 border-blue-500' : ''}`}>
-                <div className="w-16 h-14 bg-black/10 border border-black flex items-center justify-center font-mono text-[9px] text-black text-center p-1">
-                  [1-BIT XBM BITMAP]
-                </div>
-                <div>
-                  <div className="font-mono text-xs font-bold">CERN_NextStation_1991.bmp</div>
-                  <div className="font-mono text-[10px] text-slate-600">Resolution: 320x240 | Color depth: 1-bit monochrome</div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Shatter Overlay Visualisation */}
-        {isShattered && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center p-6 animate-fade-in font-dm">
-            <div className="px-8 py-6 rounded-2xl glass-panel-glow border border-cyan-400/50 max-w-md shadow-[0_0_40px_rgba(0,240,255,0.2)]">
-              <span className="text-xs text-cyan-400 uppercase tracking-widest block mb-2 font-semibold">
-                HISTORICAL TRANSITION // 1996 CSS ARRIVAL
-              </span>
-              <h3 className="font-dm font-black text-2xl text-white mb-2">
-                STATIC → DYNAMIC
-              </h3>
-              <p className="font-dm text-xs text-slate-200 mb-5 leading-relaxed">
-                The sterile document shatters. Cascading stylesheets arrive to give the web color, rhythm, and graphic emotion.
+            {/* CRT Terminal Screen Content */}
+            <div className="font-mono text-xs sm:text-sm leading-relaxed space-y-4 select-text">
+              <p className="opacity-90">
+                &gt; VAX/VMS V5.3 -- SYSTEM RUNNING AT CERN (GENEVA)
+                <br />
+                &gt; MARCH 1989 -- "INFORMATION MANAGEMENT: A PROPOSAL"
+                <br />
+                &gt; AUTHOR: TIM BERNERS-LEE // REF: CERN-DD-89-001
               </p>
-              <button
-                onClick={handleReset}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 hover:border-cyan-400 text-xs font-dm text-slate-200 hover:text-white transition-colors cursor-pointer"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-                Reassemble Document
-              </button>
+
+              <div className="p-4 rounded-lg bg-black/60 border border-white/10 my-4">
+                <div className="text-white font-bold mb-2">
+                  [CANVA HISTORY LESSON: THE TAB KEY & SYMBOL ALIGNMENT]
+                </div>
+                <div className="opacity-80">
+                  +--------------------------------------------------------------+
+                  <br />
+                  | INDEX{tabSpacing}DOCUMENT ID{tabSpacing}PROTOCOL             |
+                  <br />
+                  +--------------------------------------------------------------+
+                  <br />
+                  | 0001 {tabSpacing}CERNDOC_HYPERTEXT{tabSpacing}NNTP/TCP       |
+                  <br />
+                  | 0002 {tabSpacing}MESH_PROPOSAL   {tabSpacing}ENQUIRE_V2      |
+                  <br />
+                  +--------------------------------------------------------------+
+                </div>
+              </div>
+
+              <p className="italic opacity-85">
+                "Vague but exciting... Imagine if all the information stored on computers everywhere were linked. You could just follow your finger along the lines."
+              </p>
+            </div>
+
+            {/* Interactive TAB key controller */}
+            <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-4">
+              <div className="text-xs font-mono text-slate-400">
+                Current TAB spacing column: <span className="text-white font-bold">{tabKeyCount * 4} spaces</span>
+              </div>
+
+              <Magnet magnetStrength={2}>
+                <ClickSpark sparkColor={terminalTheme === 'green' ? '#10b981' : '#f59e0b'}>
+                  <button
+                    onClick={pressTabKey}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-xs font-bold transition-all cursor-pointer"
+                  >
+                    <CornerDownLeft className="w-3.5 h-3.5" />
+                    <span>PRESS [TAB] KEY ({tabKeyCount}/6)</span>
+                  </button>
+                </ClickSpark>
+              </Magnet>
             </div>
           </div>
-        )}
+        </TiltedCard>
+      )}
 
-        {/* Shatter Action Trigger Bar */}
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 font-dm">
-          <div className="flex items-center gap-2 text-xs text-slate-300">
-            <BookOpen className="w-4 h-4 text-cyan-400" />
-            <span>Document Architecture: {constructionStep} of {steps.length} primitives assembled</span>
-          </div>
-
-          <button
-            onClick={handleShatter}
-            disabled={isShattered}
-            className="flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300 border border-cyan-400/60 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-500/20 hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] disabled:opacity-40 cursor-pointer"
+      {/* INTERACTIVE EXPERIENCE 2: 1991 THE FIRST WEB PAGE */}
+      {activeTab === 'cern' && (
+        <div className="relative max-w-3xl w-full mx-auto">
+          <div
+            className={`relative rounded-2xl shadow-2xl transition-all duration-700 overflow-hidden border border-slate-400/40 ${
+              isShattered
+                ? 'opacity-30 scale-95 blur-sm rotate-1 translate-y-6'
+                : 'opacity-100 scale-100'
+            }`}
+            style={{
+              backgroundColor: '#e6e6e6',
+              color: '#000000',
+              fontFamily: '"Times New Roman", Times, serif',
+            }}
           >
-            <Zap className="w-4 h-4 text-cyan-400" />
-            <span>Shatter Document &amp; Unlock Colors</span>
-          </button>
+            {/* Vintage NeXT Window Titlebar */}
+            <div className="bg-[#c0c0c0] border-b-2 border-slate-400 px-4 py-2.5 flex items-center justify-between select-none">
+              <div className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 border border-black bg-white flex items-center justify-center text-[9px] font-bold">
+                  ✕
+                </div>
+                <span className="text-xs font-bold text-black tracking-tight font-dm">
+                  WorldWideWeb.app (NeXTSTEP) — http://info.cern.ch/hypertext/WWW/TheProject.html
+                </span>
+              </div>
+              <span className="text-[11px] font-mono text-slate-600">August 6, 1991</span>
+            </div>
+
+            {/* Vintage HTML Render Body */}
+            <div className="p-8 sm:p-10 select-text leading-relaxed">
+              <h1 className="text-2xl sm:text-3xl font-bold text-black border-b border-black pb-2 mb-4 tracking-tight">
+                World Wide Web
+              </h1>
+
+              <p className="text-sm sm:text-base text-black mb-4">
+                The <strong>WorldWideWeb (W3)</strong> is a wide-area hypermedia information retrieval initiative aiming to give universal access to a large universe of documents.
+              </p>
+
+              <p className="text-sm sm:text-base text-black mb-4">
+                Everything there is online about W3 is linked directly or indirectly to this document, including an <a href="#summary" className="text-blue-700 underline font-bold hover:text-blue-900 cursor-pointer">Executive summary</a> of the project, <a href="#policy" className="text-blue-700 underline font-bold hover:text-blue-900 cursor-pointer">Mailing lists</a>, <a href="#policy" className="text-blue-700 underline font-bold hover:text-blue-900 cursor-pointer">Policy</a>, and <a href="#people" className="text-blue-700 underline font-bold hover:text-blue-900 cursor-pointer">People</a> involved.
+              </p>
+
+              <div className="p-4 bg-[#f0f0f0] border border-[#a0a0a0] rounded my-5 text-xs text-black font-mono">
+                &lt;html&gt;
+                <br />
+                &nbsp;&nbsp;&lt;body&gt;
+                <br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&lt;h1&gt;World Wide Web&lt;/h1&gt;
+                <br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;Zero CSS. Zero JavaScript. Zero Images.&lt;/p&gt;
+                <br />
+                &nbsp;&nbsp;&lt;/body&gt;
+                <br />
+                &lt;/html&gt;
+              </div>
+            </div>
+
+            {/* Action Bar */}
+            <div className="bg-[#dcdcdc] border-t border-slate-300 px-6 py-4 flex flex-wrap items-center justify-between gap-4 font-dm">
+              <div className="flex items-center gap-2 text-xs text-slate-700">
+                <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                <span>The Document Era: Raw text bound to hyperlinks</span>
+              </div>
+
+              <Magnet magnetStrength={3}>
+                <ClickSpark sparkColor="#00f0ff">
+                  <button
+                    onClick={handleShatter}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-cyan-300 hover:bg-black font-dm text-xs font-bold transition-all shadow-md cursor-pointer"
+                  >
+                    <Zap className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>SHATTER DOCUMENT → DISSOLVE TO PARTICLES</span>
+                  </button>
+                </ClickSpark>
+              </Magnet>
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* Historical Summary Cards using SpotlightCard */}
+      <div className="max-w-4xl w-full mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 mt-14">
+        <SpotlightCard className="p-6 rounded-2xl border border-white/10 bg-slate-950/60">
+          <div className="text-xs uppercase font-bold text-emerald-400 mb-2 font-mono">1989 // GENESIS</div>
+          <div className="text-base font-bold text-white mb-2">The Dark Ages</div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Black screens, pixelated text, and the TAB key. Layout was achieved through ASCII symbols and monospaced character counts.
+          </p>
+        </SpotlightCard>
+
+        <SpotlightCard className="p-6 rounded-2xl border border-white/10 bg-slate-950/60">
+          <div className="text-xs uppercase font-bold text-cyan-400 mb-2 font-mono">1991 // CERN NeXT</div>
+          <div className="text-base font-bold text-white mb-2">The First Webpage</div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Launched by Tim Berners-Lee on August 6, 1991. Pure hypertext text. Clicking a blue underlined link was the world’s sole web interaction.
+          </p>
+        </SpotlightCard>
+
+        <SpotlightCard className="p-6 rounded-2xl border border-white/10 bg-slate-950/60">
+          <div className="text-xs uppercase font-bold text-sky-400 mb-2 font-mono">1993 // MOSAIC</div>
+          <div className="text-base font-bold text-white mb-2">The Image Tag Arrives</div>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            NCSA Mosaic introduced the <code className="text-cyan-300 font-mono">&lt;img&gt;</code> tag. For the first time, graphics co-existed alongside text on the screen.
+          </p>
+        </SpotlightCard>
       </div>
     </section>
   );

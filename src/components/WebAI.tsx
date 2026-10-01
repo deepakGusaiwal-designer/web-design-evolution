@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Wand2 } from 'lucide-react';
 import SpotlightCard from './reactbits/SpotlightCard';
+import Magnet from './reactbits/Magnet';
+import ClickSpark from './reactbits/ClickSpark';
+import ShinyText from './reactbits/ShinyText';
 
 export const WebAI: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -143,7 +146,7 @@ export const WebAI: React.FC = () => {
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-950/40 text-xs text-violet-400 uppercase tracking-widest mb-6 font-semibold">
           <Brain className="w-3.5 h-3.5 text-violet-400" />
-          CHAPTER 06 // 2023 — 2025
+          <ShinyText text="CHAPTER 06 // 2024 — 2025" speed={4} shimmerColor="#a78bfa" />
         </div>
         <h2 className="font-dm font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
           THE COGNITIVE SYMBIOSIS
@@ -229,17 +232,20 @@ export const WebAI: React.FC = () => {
             { id: "neural-telemetry", label: "Intent: Real-time Neural Telemetry" },
             { id: "minimal-void", label: "Intent: Zero-Chrome Focused Canvas" },
           ].map((intent) => (
-            <button
-              key={intent.id}
-              onClick={() => handleSynthesizeIntent(intent.id)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-dm font-semibold transition-all duration-300 cursor-pointer ${
-                synthesizedMode === intent.id
-                  ? 'border border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,240,255,0.35)] scale-105'
-                  : 'border border-white/10 glass-panel text-slate-300 hover:text-white'
-              }`}
-            >
-              {intent.label}
-            </button>
+            <Magnet key={intent.id} magnetStrength={2}>
+              <ClickSpark sparkColor="#8b5cf6">
+                <button
+                  onClick={() => handleSynthesizeIntent(intent.id)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-dm font-semibold transition-all duration-300 cursor-pointer ${
+                    synthesizedMode === intent.id
+                      ? 'border border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,240,255,0.35)] scale-105'
+                      : 'border border-white/10 glass-panel text-slate-300 hover:text-white'
+                  }`}
+                >
+                  {intent.label}
+                </button>
+              </ClickSpark>
+            </Magnet>
           ))}
         </div>
 

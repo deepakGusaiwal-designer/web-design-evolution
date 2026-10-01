@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { ArrowDown, RotateCcw, Sparkles, Orbit, Compass, Activity, Zap } from 'lucide-react';
+import Magnet from './reactbits/Magnet';
+import ClickSpark from './reactbits/ClickSpark';
+import ShinyText from './reactbits/ShinyText';
 
 interface FutureWebProps {
   onRestart: () => void;
@@ -283,7 +286,7 @@ export const FutureWeb: React.FC<FutureWebProps> = ({
         {/* Section Pill */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 text-xs text-cyan-300 uppercase tracking-widest mb-8 font-semibold">
           <Orbit className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '14s' }} />
-          CHAPTER 08 // THE UNWRITTEN CANVAS
+          <ShinyText text="CHAPTER 08 // THE UNWRITTEN CANVAS" speed={4} shimmerColor="#38bdf8" />
         </div>
 
         {/* Big Cosmic Singularity Trigger */}
@@ -297,17 +300,21 @@ export const FutureWeb: React.FC<FutureWebProps> = ({
               Three decades of markup, styles, shaders, and neural weights converge into a single coordinate.
             </p>
 
-            <button
-              onClick={handleTriggerExplosion}
-              className="group relative flex items-center justify-center w-40 h-40 rounded-full glass-panel-glow border-2 border-cyan-400 text-white cursor-pointer transition-transform duration-500 hover:scale-110 active:scale-95 shadow-[0_0_60px_rgba(0,240,255,0.5)]"
-            >
-              <div className="absolute inset-0 rounded-full bg-radial from-cyan-400/40 via-violet-500/20 to-transparent animate-ping opacity-60" />
-              <div className="relative z-10 flex flex-col items-center gap-1.5 text-xs tracking-widest uppercase font-semibold">
-                <Sparkles className="w-6 h-6 text-cyan-300 group-hover:rotate-45 transition-transform" />
-                <span className="font-bold text-sm">TRIGGER</span>
-                <span className="text-[10px] text-cyan-300 font-bold">SUPERNOVA</span>
-              </div>
-            </button>
+            <Magnet magnetStrength={3}>
+              <ClickSpark sparkColor="#00f0ff" sparkCount={16}>
+                <button
+                  onClick={handleTriggerExplosion}
+                  className="group relative flex items-center justify-center w-40 h-40 rounded-full glass-panel-glow border-2 border-cyan-400 text-white cursor-pointer transition-transform duration-500 hover:scale-110 active:scale-95 shadow-[0_0_60px_rgba(0,240,255,0.5)]"
+                >
+                  <div className="absolute inset-0 rounded-full bg-radial from-cyan-400/40 via-violet-500/20 to-transparent animate-ping opacity-60" />
+                  <div className="relative z-10 flex flex-col items-center gap-1.5 text-xs tracking-widest uppercase font-semibold">
+                    <Sparkles className="w-6 h-6 text-cyan-300 group-hover:rotate-45 transition-transform" />
+                    <span className="font-bold text-sm">TRIGGER</span>
+                    <span className="text-[10px] text-cyan-300 font-bold">SUPERNOVA</span>
+                  </div>
+                </button>
+              </ClickSpark>
+            </Magnet>
           </div>
         ) : (
           /* Revealed Climactic Truth */
@@ -395,13 +402,17 @@ export const FutureWeb: React.FC<FutureWebProps> = ({
           </span>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={onRestart}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-400 to-violet-500 text-black shadow-[0_0_25px_rgba(0,240,255,0.4)] hover:shadow-[0_0_40px_rgba(0,240,255,0.7)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>RESTART JOURNEY</span>
-            </button>
+            <Magnet magnetStrength={2}>
+              <ClickSpark sparkColor="#00f0ff">
+                <button
+                  onClick={onRestart}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase bg-gradient-to-r from-cyan-400 to-violet-500 text-black shadow-[0_0_25px_rgba(0,240,255,0.4)] hover:shadow-[0_0_40px_rgba(0,240,255,0.7)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>RESTART JOURNEY</span>
+                </button>
+              </ClickSpark>
+            </Magnet>
           </div>
         </div>
       </div>
