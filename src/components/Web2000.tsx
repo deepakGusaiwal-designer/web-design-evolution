@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Palette, Columns, LayoutGrid, Smartphone, Sparkles, Check } from 'lucide-react';
+import SpotlightCard from './reactbits/SpotlightCard';
 
 export const Web2000: React.FC = () => {
   const [activeStage, setActiveStage] = useState<number>(4); // Default to full stage or let user explore
@@ -172,28 +173,38 @@ export const Web2000: React.FC = () => {
                 { title: 'Chromatic Balance', val: 'RGB: 0, 240, 255', tag: 'Aesthetics' },
                 { title: 'Harmonic Scale', val: 'Golden Ratio 1.618', tag: 'Rhythm' },
                 { title: 'Responsive Flow', val: 'Viewport Width (vw)', tag: 'Adaptation' },
-              ].map((card, i) => (
-                <div
-                  key={i}
-                  className={`transition-all duration-500 p-4 ${
-                    activeStage === 0
-                      ? 'border border-black bg-white text-black font-serif'
-                      : activeStage === 1
-                      ? 'rounded-lg bg-white border border-slate-200 text-slate-800 shadow-sm'
-                      : activeStage === 2
-                      ? 'rounded-xl bg-slate-800/90 border border-slate-700 text-white'
-                      : activeStage === 3
-                      ? 'rounded-xl bg-slate-900/80 border border-sky-800/40 text-sky-200'
-                      : 'rounded-xl glass-panel border border-cyan-400/20 text-white hover:border-cyan-400/60 hover:-translate-y-1 transition-transform'
-                  }`}
-                >
-                  <span className="text-[10px] font-mono text-cyan-400/80 block mb-1 uppercase">
-                    {card.tag}
-                  </span>
-                  <div className="font-semibold text-sm mb-1">{card.title}</div>
-                  <div className="text-xs opacity-75 font-mono">{card.val}</div>
-                </div>
-              ))}
+              ].map((card, i) =>
+                activeStage >= 3 ? (
+                  <SpotlightCard
+                    key={i}
+                    spotlightColor="rgba(0, 240, 255, 0.3)"
+                    className="p-4 rounded-xl border border-cyan-400/20 text-white bg-slate-900/60"
+                  >
+                    <span className="text-[10px] font-mono text-cyan-400/80 block mb-1 uppercase">
+                      {card.tag}
+                    </span>
+                    <div className="font-semibold text-sm mb-1">{card.title}</div>
+                    <div className="text-xs opacity-75 font-mono">{card.val}</div>
+                  </SpotlightCard>
+                ) : (
+                  <div
+                    key={i}
+                    className={`transition-all duration-500 p-4 ${
+                      activeStage === 0
+                        ? 'border border-black bg-white text-black font-serif'
+                        : activeStage === 1
+                        ? 'rounded-lg bg-white border border-slate-200 text-slate-800 shadow-sm'
+                        : 'rounded-xl bg-slate-800/90 border border-slate-700 text-white'
+                    }`}
+                  >
+                    <span className="text-[10px] font-mono text-cyan-400/80 block mb-1 uppercase">
+                      {card.tag}
+                    </span>
+                    <div className="font-semibold text-sm mb-1">{card.title}</div>
+                    <div className="text-xs opacity-75 font-mono">{card.val}</div>
+                  </div>
+                )
+              )}
             </div>
 
             {/* Interactive Call to Action */}

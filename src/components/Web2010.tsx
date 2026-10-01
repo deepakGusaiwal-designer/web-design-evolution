@@ -1,40 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, useSpring, useMotionValue } from 'framer-motion';
-import { Activity, Magnet, Wind, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Activity, Magnet as MagnetIcon, Wind, RefreshCw } from 'lucide-react';
+import ReactBitsMagnet from './reactbits/Magnet';
+import DecryptedText from './reactbits/DecryptedText';
+import SpotlightCard from './reactbits/SpotlightCard';
 
 export const Web2010: React.FC = () => {
   const [scattered, setScattered] = useState(false);
   const headline = "STATIC IS NOT ENOUGH.";
 
-  // Magnetic Button state and physics
-  const magneticRef = useRef<HTMLButtonElement>(null);
-  const magX = useMotionValue(0);
-  const magY = useMotionValue(0);
-  const springX = useSpring(magX, { stiffness: 250, damping: 15 });
-  const springY = useSpring(magY, { stiffness: 250, damping: 15 });
-
-  const handleMagneticMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!magneticRef.current) return;
-    const rect = magneticRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const distanceX = (e.clientX - centerX) * 0.45;
-    const distanceY = (e.clientY - centerY) * 0.45;
-    magX.set(distanceX);
-    magY.set(distanceY);
-  };
-
-  const handleMagneticLeave = () => {
-    magX.set(0);
-    magY.set(0);
-  };
-
   // Kinetic Floating Interactive Physics Nodes
   const [nodes] = useState([
-    { id: 1, text: "EaseInOutCubic", x: 0, y: 0, scale: 1, rot: 0, color: "from-violet-500 to-purple-600" },
-    { id: 2, text: "Spring(stiffness: 300)", x: 0, y: 0, scale: 1, rot: 0, color: "from-cyan-400 to-blue-500" },
-    { id: 3, text: "InertiaVelocity", x: 0, y: 0, scale: 1, rot: 0, color: "from-fuchsia-500 to-pink-500" },
-    { id: 4, text: "ParallaxDelta", x: 0, y: 0, scale: 1, rot: 0, color: "from-emerald-400 to-teal-600" },
+    { id: 1, text: "EaseInOutCubic", desc: "Bezier Easing Curve", color: "from-violet-500 to-purple-600" },
+    { id: 2, text: "Spring(stiffness: 300)", desc: "Harmonic Damping", color: "from-cyan-400 to-blue-500" },
+    { id: 3, text: "InertiaVelocity", desc: "Momentum Tracking", color: "from-fuchsia-500 to-pink-500" },
+    { id: 4, text: "ParallaxDelta", desc: "Optical Depth Offset", color: "from-emerald-400 to-teal-600" },
   ]);
 
   const handleScatterLetters = () => {
@@ -133,63 +113,72 @@ export const Web2010: React.FC = () => {
             ))}
           </div>
 
-          <div className="mt-3 flex items-center justify-center gap-2 font-mono text-xs text-violet-400 group-hover:text-cyan-300 transition-colors">
+          <div className="mt-4 flex items-center justify-center gap-2 font-mono text-xs text-violet-400 group-hover:text-cyan-300 transition-colors">
             <RefreshCw className="w-3.5 h-3.5" />
             <span>[CLICK HEADLINE TO {scattered ? 'REFORM' : 'SCATTER'} KINETIC LETTERS]</span>
           </div>
         </div>
       </div>
 
-      {/* Physics & Magnetic Interaction Sandbox */}
-      <div className="max-w-4xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch mt-8">
-        {/* Interactive Magnetic Button Showcase */}
-        <div className="glass-panel rounded-2xl p-8 border border-white/10 flex flex-col justify-between items-center text-center">
+      {/* Physics & Magnetic Interaction Sandbox with React Bits Spotlight & Magnet */}
+      <div className="max-w-4xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mt-8">
+        {/* Interactive React Bits Magnet Showcase */}
+        <SpotlightCard
+          spotlightColor="rgba(168, 85, 247, 0.25)"
+          className="p-8 rounded-2xl border border-white/10 flex flex-col justify-between items-center text-center bg-slate-900/40"
+        >
           <div>
             <div className="flex items-center justify-center gap-2 mb-2 font-mono text-xs text-violet-400 uppercase">
-              <Magnet className="w-4 h-4 text-violet-400" />
-              Magnetic Attraction Force
+              <MagnetIcon className="w-4 h-4 text-violet-400" />
+              React Bits Magnet
             </div>
             <h3 className="font-syne font-bold text-xl text-white mb-2">
-              Spring Damping & Proximity
+              Gravitational Spring Magnet
             </h3>
-            <p className="text-xs text-slate-400 mb-8 max-w-sm">
-              The cursor exerts a gravitational pull on UI elements. Move your mouse close to the button below.
+            <p className="font-dm text-xs text-slate-400 mb-8 max-w-sm leading-relaxed">
+              Hover near the button to watch React Bits Magnet calculate proximity vectors and draw the element smoothly toward your pointer.
             </p>
           </div>
 
-          <motion.button
-            ref={magneticRef}
-            style={{ x: springX, y: springY }}
-            onMouseMove={handleMagneticMove}
-            onMouseLeave={handleMagneticLeave}
-            onClick={() => {
-              if (typeof (window as unknown as { playWebChime?: (f: number) => void }).playWebChime === 'function') {
-                (window as unknown as { playWebChime: (f: number) => void }).playWebChime(640);
-              }
-            }}
-            data-cursor-hover
-            className="px-8 py-4 rounded-full font-syne font-bold text-sm tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_45px_rgba(168,85,247,0.7)] transition-shadow cursor-pointer"
+          <ReactBitsMagnet
+            padding={120}
+            magnetStrength={3.5}
+            activeTransition="transform 0.2s cubic-bezier(0.2, 0, 0, 1)"
+            inactiveTransition="transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)"
           >
-            Pull Toward Cursor
-          </motion.button>
+            <button
+              onClick={() => {
+                if (typeof (window as unknown as { playWebChime?: (f: number) => void }).playWebChime === 'function') {
+                  (window as unknown as { playWebChime: (f: number) => void }).playWebChime(640);
+                }
+              }}
+              data-cursor-hover
+              className="px-8 py-4 rounded-full font-syne font-bold text-sm tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_45px_rgba(168,85,247,0.7)] transition-shadow cursor-pointer block"
+            >
+              React Bits Magnet
+            </button>
+          </ReactBitsMagnet>
 
           <span className="font-mono text-[10px] text-slate-500 mt-6">
-            Physics: Damping = 15 | Stiffness = 250
+            React Bits Magnet: Padding = 120 | Strength = 3.5
           </span>
-        </div>
+        </SpotlightCard>
 
-        {/* Floating Kinetic Physics Capsules */}
-        <div className="glass-panel rounded-2xl p-8 border border-white/10 flex flex-col justify-between">
+        {/* Floating Kinetic Physics Capsules with DecryptedText */}
+        <SpotlightCard
+          spotlightColor="rgba(0, 240, 255, 0.25)"
+          className="p-8 rounded-2xl border border-white/10 flex flex-col justify-between bg-slate-900/40"
+        >
           <div>
             <div className="flex items-center gap-2 mb-2 font-mono text-xs text-cyan-400 uppercase">
               <Wind className="w-4 h-4 text-cyan-400" />
               Kinetic Tokens & Velocity
             </div>
             <h3 className="font-syne font-bold text-xl text-white mb-2">
-              Interactive Motion Tokens
+              Interactive Motion Primitives
             </h3>
-            <p className="text-xs text-slate-400 mb-6">
-              Drag, fling, or hover over these motion design primitives.
+            <p className="font-dm text-xs text-slate-400 mb-6 leading-relaxed">
+              Drag, fling, or hover over these tokens. Notice the decrypting telemetry on hover.
             </p>
           </div>
 
@@ -199,12 +188,19 @@ export const Web2010: React.FC = () => {
                 key={node.id}
                 drag
                 dragConstraints={{ left: -30, right: 30, top: -20, bottom: 20 }}
-                whileHover={{ scale: 1.04, x: 6 }}
+                whileHover={{ scale: 1.03, x: 6 }}
                 whileTap={{ scale: 0.96 }}
                 data-cursor-hover
                 className={`p-3 rounded-xl bg-gradient-to-r ${node.color} text-white font-mono text-xs font-semibold flex items-center justify-between shadow-lg cursor-grab active:cursor-grabbing`}
               >
-                <span>{node.text}</span>
+                <DecryptedText
+                  text={node.text}
+                  speed={35}
+                  maxIterations={10}
+                  animateOn="hover"
+                  className="font-mono text-xs text-white"
+                  encryptedClassName="text-white/60"
+                />
                 <span className="text-[10px] opacity-80 uppercase tracking-widest">DRAG ME</span>
               </motion.div>
             ))}
@@ -213,7 +209,7 @@ export const Web2010: React.FC = () => {
           <span className="font-mono text-[10px] text-slate-500 mt-6 text-center">
             Smooth interpolated inertia applied to touch & pointer
           </span>
-        </div>
+        </SpotlightCard>
       </div>
     </section>
   );

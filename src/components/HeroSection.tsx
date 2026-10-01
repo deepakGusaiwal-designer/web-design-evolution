@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowDown, Sparkles } from 'lucide-react';
+import { ArrowDown, Sparkles, MousePointer } from 'lucide-react';
+import TechText from './reactbits/TechText';
+import DecryptedText from './reactbits/DecryptedText';
 
 interface HeroSectionProps {
   onHoverTitle?: (hovering: boolean) => void;
@@ -14,8 +16,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const [wordWebRevealed, setWordWebRevealed] = useState(false);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => setMounted(true), 300);
-    const timer2 = setTimeout(() => setWordWebRevealed(true), 1800);
+    const timer1 = setTimeout(() => setMounted(true), 250);
+    const timer2 = setTimeout(() => setWordWebRevealed(true), 1600);
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
@@ -28,53 +30,74 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div className="absolute inset-0 bg-radial from-cyan-950/20 via-transparent to-transparent pointer-events-none" />
 
       {/* Hero Typography with Generous Breathing Space */}
-      <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center">
-        {/* Subtle sub-header */}
+      <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center w-full">
+        {/* React Bits Decrypted Pill Sub-header */}
         <div
-          className={`flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-12 sm:mb-16 transition-all duration-1000 ${
+          className={`flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-10 sm:mb-14 transition-all duration-1000 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-          <span className="font-mono text-xs tracking-widest text-slate-300 uppercase">
-            An Interactive Spatial Chronicle
-          </span>
+          <DecryptedText
+            text="AN INTERACTIVE SPATIAL CHRONICLE"
+            speed={40}
+            maxIterations={12}
+            animateOn="view"
+            className="font-mono text-xs tracking-widest text-slate-300 uppercase"
+            encryptedClassName="font-mono text-xs text-cyan-400 opacity-80"
+          />
         </div>
 
-        {/* Primary Staggered Titles */}
-        <h1
+        {/* PRIMARY HERO: REACT BITS TECH TEXT (Interactive Vector Dashed Text) */}
+        <div
           onMouseEnter={() => onHoverTitle?.(true)}
           onMouseLeave={() => onHoverTitle?.(false)}
-          className={`font-syne font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-white mb-4 transition-all duration-1000 ${
-            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          className={`w-full max-w-4xl h-[180px] sm:h-[240px] md:h-[280px] my-4 relative flex items-center justify-center transition-all duration-1000 ${
+            mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           }`}
-          data-cursor-hover
         >
-          THE WEB
-        </h1>
+          <TechText
+            text="THE WEB EVOLVED"
+            fontSize={120}
+            color="#ffffff"
+            accentColor="#00f0ff"
+            fontFamily="Syne, 'DM Sans', sans-serif"
+            fontWeight={800}
+            letterSpacing={-0.03}
+            selection={true}
+            labels={true}
+            draggable={true}
+            reach={220}
+            softness={0.7}
+            specks={20}
+            strokeWidth={1.8}
+            dashLength={4}
+            dashGap={2}
+            lineStyle="dashed"
+            className="w-full h-full cursor-grab active:cursor-grabbing"
+          />
+        </div>
 
-        <h2
-          onMouseEnter={() => onHoverTitle?.(true)}
-          onMouseLeave={() => onHoverTitle?.(false)}
-          className={`font-syne font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-violet-500 mb-10 sm:mb-12 transition-all duration-1000 delay-300 ${
-            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-          data-cursor-hover
-        >
-          EVOLVED.
-        </h2>
+        {/* Interactive Prompt for Tech Text */}
+        <div className="flex items-center gap-2 font-mono text-[11px] text-cyan-400/80 mb-10 tracking-widest uppercase">
+          <MousePointer className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
+          <span>[REACT BITS TECH TEXT // HOVER & DRAG LETTERS OFF BASELINE]</span>
+        </div>
 
-        {/* Central Core Statement in DM Sans */}
+        {/* Central Core Statement in DM Sans with DecryptedText on Hover */}
+        <div className="mb-6">
+          <DecryptedText
+            text="“From documents to experiences.”"
+            speed={30}
+            maxIterations={14}
+            animateOn="hover"
+            className="font-dm text-2xl sm:text-3xl md:text-4xl text-slate-200 font-light max-w-3xl mx-auto leading-relaxed cursor-pointer"
+            encryptedClassName="font-dm text-2xl sm:text-3xl text-cyan-400 font-light"
+          />
+        </div>
+
         <p
-          className={`font-dm text-2xl sm:text-3xl md:text-4xl text-slate-200 font-light max-w-3xl mx-auto mb-6 leading-relaxed transition-all duration-1000 delay-500 ${
-            mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-          }`}
-        >
-          “From documents to experiences.”
-        </p>
-
-        <p
-          className={`font-dm text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-light leading-relaxed mb-16 transition-all duration-1000 delay-700 ${
+          className={`font-dm text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-light leading-relaxed mb-16 transition-all duration-1000 delay-500 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
@@ -85,7 +108,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
         {/* Formed Particle Structure Indicator */}
         <div
-          className={`transition-all duration-1000 delay-1000 mb-16 ${
+          className={`transition-all duration-1000 delay-700 mb-16 ${
             wordWebRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           }`}
         >

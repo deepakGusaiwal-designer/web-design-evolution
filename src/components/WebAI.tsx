@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Wand2 } from 'lucide-react';
+import DecryptedText from './reactbits/DecryptedText';
+import SpotlightCard from './reactbits/SpotlightCard';
 
 export const WebAI: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -182,13 +184,20 @@ export const WebAI: React.FC = () => {
                   }
                 }}
                 data-cursor-hover
-                className={`px-3 py-1.5 rounded-lg font-mono text-xs tracking-wider transition-all duration-300 ${
+                className={`px-3.5 py-1.5 rounded-lg font-mono text-xs tracking-wider transition-all duration-300 ${
                   isActive
                     ? 'bg-violet-600/40 border border-cyan-400 text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] scale-105'
                     : 'bg-black/60 border border-white/10 text-slate-400 hover:text-white'
                 }`}
               >
-                {concept.title}
+                <DecryptedText
+                  text={concept.title}
+                  speed={25}
+                  maxIterations={8}
+                  animateOn="hover"
+                  className={isActive ? 'text-white' : 'text-slate-300'}
+                  encryptedClassName="text-cyan-400"
+                />
               </button>
             );
           })}
@@ -196,20 +205,23 @@ export const WebAI: React.FC = () => {
       </div>
 
       {/* Active Concept Explanation */}
-      <div className="max-w-2xl w-full mx-auto text-center mb-8 glass-panel p-4 rounded-xl border border-white/10">
-        <span className="text-[10px] font-mono text-violet-400 uppercase tracking-widest block mb-1">
+      <div className="max-w-2xl w-full mx-auto text-center mb-10 glass-panel p-6 rounded-2xl border border-white/10">
+        <span className="text-[10px] font-mono text-violet-400 uppercase tracking-widest block mb-2">
           Paradigm Step {activeConceptIndex + 1} of {concepts.length}
         </span>
-        <h4 className="font-syne font-bold text-lg text-white mb-1">
+        <h4 className="font-syne font-bold text-2xl text-white mb-2">
           {concepts[activeConceptIndex].title}
         </h4>
-        <p className="text-xs text-slate-300">
+        <p className="text-sm text-slate-300 font-dm leading-relaxed">
           {concepts[activeConceptIndex].desc}
         </p>
       </div>
 
       {/* Interactive Intent Synthesizer */}
-      <div className="max-w-4xl w-full mx-auto glass-panel rounded-2xl p-6 border border-white/10">
+      <SpotlightCard
+        spotlightColor="rgba(139, 92, 246, 0.25)"
+        className="max-w-4xl w-full mx-auto rounded-3xl p-8 border border-white/10 bg-slate-900/40"
+      >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-wider">
             <Wand2 className="w-4 h-4 text-cyan-400" />
@@ -309,7 +321,7 @@ export const WebAI: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </SpotlightCard>
     </section>
   );
 };
