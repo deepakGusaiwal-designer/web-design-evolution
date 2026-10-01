@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Lenis from 'lenis';
-import { ParticleScene } from './scenes/ParticleScene';
+import LiquidEther, { type LiquidColorScheme } from './components/reactbits/LiquidEther';
 import { Navigation } from './components/Navigation';
 import { SoundSystem } from './components/SoundSystem';
 import { HeroSection } from './components/HeroSection';
@@ -13,12 +13,11 @@ import { WebAI } from './components/WebAI';
 import { SpatialWeb } from './components/SpatialWeb';
 import { FutureWeb } from './components/FutureWeb';
 
-
 export const App: React.FC = () => {
   const [currentEraIndex, setCurrentEraIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [scrollVelocity, setScrollVelocity] = useState(0);
-  const [attractMode, setAttractMode] = useState(false);
+  const [heroPalette, setHeroPalette] = useState<LiquidColorScheme>('nebula');
+  const [etherViscosity, setEtherViscosity] = useState(0.85);
   const lenisRef = useRef<Lenis | null>(null);
 
   // Section element references for programmatic scrolling
@@ -30,12 +29,9 @@ export const App: React.FC = () => {
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      touchMultiplier: 2,
+      touchMultiplier: 1.8,
     });
     lenisRef.current = lenis;
-
-    let prevScroll = 0;
-    let prevTime = performance.now();
 
     const raf = (time: number) => {
       lenis.raf(time);
@@ -45,15 +41,8 @@ export const App: React.FC = () => {
       const progress = totalScrollable > 0 ? currentScroll / totalScrollable : 0;
       setScrollProgress(progress);
 
-      const dt = Math.max(time - prevTime, 1);
-      const velocity = Math.abs(currentScroll - prevScroll) / dt;
-      setScrollVelocity(velocity);
-
-      prevScroll = currentScroll;
-      prevTime = time;
-
       // Track active section based on scroll offset
-      const triggerOffset = window.scrollY + window.innerHeight * 0.45;
+      const triggerOffset = window.scrollY + window.innerHeight * 0.4;
       let activeIdx = 0;
 
       sectionRefs.current.forEach((el, index) => {
@@ -63,7 +52,6 @@ export const App: React.FC = () => {
       });
 
       setCurrentEraIndex(activeIdx);
-
       requestAnimationFrame(raf);
     };
 
@@ -89,59 +77,60 @@ export const App: React.FC = () => {
   };
 
   const handleExplode = () => {
-    // Switch to explosion shape in particle system
+    // Climax mode transition
     setCurrentEraIndex(8);
   };
 
   return (
-    <div className="relative min-h-screen bg-[#050508] text-[#f1f5f9] overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* 1. Three.js GPU Morphing Particle Canvas Field */}
-      <ParticleScene
+    <div className="relative min-h-screen bg-[#050508] text-[#f1f5f9] overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200 font-dm">
+      {/* 1. Ultra-Smooth Full-Screen Liquid Fluid Animation (Replaces heavy particles) */}
+      <LiquidEther
+        colorScheme={currentEraIndex === 0 ? heroPalette : undefined}
         currentEraIndex={currentEraIndex}
-        scrollProgress={scrollProgress}
-        scrollVelocity={scrollVelocity}
-        attractMode={attractMode}
+        viscosity={etherViscosity}
+        turbulence={1.0}
+        vorticity={1.2}
       />
 
-      {/* 3. Subtle Film Grain / Scanline Texture Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-30 scanlines opacity-40 mix-blend-overlay" />
-
-      {/* 4. Top Navigation & Editorial HUD */}
+      {/* 2. Top Navigation & Editorial HUD */}
       <Navigation
         currentEraIndex={currentEraIndex}
         onSelectEra={scrollToEra}
         scrollProgress={scrollProgress}
       />
 
-      {/* 5. Procedural Web Audio Sound Engine */}
+      {/* 3. Procedural Web Audio Sound Engine */}
       <SoundSystem />
 
-      {/* 6. Main Interactive Experience Sections */}
+      {/* 4. Main Interactive Experience Sections */}
       <main className="relative z-10 flex flex-col">
         {/* HERO: The Genesis */}
         <div ref={(el) => { sectionRefs.current[0] = el; }}>
           <HeroSection
-            onHoverTitle={(hovering) => setAttractMode(hovering)}
+            etherPalette={heroPalette}
+            onChangePalette={setHeroPalette}
+            viscosity={etherViscosity}
+            onChangeViscosity={setEtherViscosity}
             onExploreClick={() => scrollToEra(1)}
           />
         </div>
 
-        {/* SECTION 01: The Static Web (1991) */}
+        {/* SECTION 01: The Static Web (1989 - 1993) */}
         <div ref={(el) => { sectionRefs.current[1] = el; }}>
           <Web1990 onShatter={() => setCurrentEraIndex(3)} />
         </div>
 
-        {/* SECTION 02: The Web Becomes Visual (1996 - CSS) */}
+        {/* SECTION 02: The Web Becomes Visual (1996 - CSS & 1999 Flash) */}
         <div ref={(el) => { sectionRefs.current[2] = el; }}>
           <Web2000 />
         </div>
 
-        {/* SECTION 03: The Web Learns to Move (2006 - Motion) */}
+        {/* SECTION 03: The Web Learns to Move (2006 - Motion & Responsive) */}
         <div ref={(el) => { sectionRefs.current[3] = el; }}>
           <Web2010 />
         </div>
 
-        {/* SECTION 04: The Third Dimension (2015 - 3D Space) */}
+        {/* SECTION 04: The Third Dimension (2007 Skeuomorphism to 2013 Flat) */}
         <div ref={(el) => { sectionRefs.current[4] = el; }}>
           <Web2020 />
         </div>
@@ -161,7 +150,7 @@ export const App: React.FC = () => {
           <SpatialWeb />
         </div>
 
-        {/* CLIMAX: Singularity & Explosion & Interactive Future Canvas */}
+        {/* CLIMAX: Singularity & Climax Interactive Future Canvas */}
         <div ref={(el) => { sectionRefs.current[8] = el; }}>
           <FutureWeb
             onRestart={handleRestart}
@@ -174,12 +163,12 @@ export const App: React.FC = () => {
       <footer className="relative z-20 py-12 px-6 border-t border-white/5 text-center font-mono text-xs text-slate-500">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            <span>THE EVOLUTION OF THE WEB // 1990 — 2026 — ∞</span>
+            <span>THE EVOLUTION OF THE WEB // 1989 — 2026 — ∞</span>
           </div>
           <div className="flex items-center gap-4 text-[11px] text-slate-400">
-            <span>React + Three.js + GLSL + Web Audio</span>
+            <span>React + Liquid Ether GLSL + Web Audio</span>
             <span>•</span>
-            <span className="text-cyan-400">Experience Complete</span>
+            <span className="text-cyan-400">Experience Live</span>
           </div>
         </div>
       </footer>

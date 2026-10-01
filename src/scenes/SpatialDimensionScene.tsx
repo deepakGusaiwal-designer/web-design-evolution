@@ -20,9 +20,9 @@ export const SpatialDimensionScene: React.FC = () => {
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
     camera.position.set(0, 0, 14);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
     container.appendChild(renderer.domElement);
 
     // Dynamic Lights
@@ -132,41 +132,51 @@ export const SpatialDimensionScene: React.FC = () => {
     };
     window.addEventListener('resize', onResize);
 
+    // Only render when visible in viewport
+    let isVisible = true;
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+    }, { threshold: 0.05 });
+    observer.observe(container);
+
     const clock = new THREE.Clock();
     let rafId: number;
 
     const tick = () => {
-      const elapsed = clock.getElapsedTime();
+      if (isVisible) {
+        const elapsed = clock.getElapsedTime();
 
-      // Autonomous rotation
-      icosahedron.rotation.x = elapsed * 0.3 + rotX;
-      icosahedron.rotation.y = elapsed * 0.4 + rotY;
+        // Autonomous rotation
+        icosahedron.rotation.x = elapsed * 0.3 + rotX;
+        icosahedron.rotation.y = elapsed * 0.4 + rotY;
 
-      torusKnot.rotation.x = elapsed * 0.5;
-      torusKnot.rotation.y = elapsed * 0.6;
-      torusKnot.position.y = 2 + Math.sin(elapsed * 1.5) * 0.6;
+        torusKnot.rotation.x = elapsed * 0.5;
+        torusKnot.rotation.y = elapsed * 0.6;
+        torusKnot.position.y = 2 + Math.sin(elapsed * 1.5) * 0.6;
 
-      octahedron.rotation.x = elapsed * 0.4;
-      octahedron.rotation.z = elapsed * 0.3;
-      octahedron.position.y = -2 + Math.cos(elapsed * 1.8) * 0.5;
+        octahedron.rotation.x = elapsed * 0.4;
+        octahedron.rotation.z = elapsed * 0.3;
+        octahedron.position.y = -2 + Math.cos(elapsed * 1.8) * 0.5;
 
-      // Orbiting lights
-      cyanPoint.position.x = Math.sin(elapsed * 0.8) * 8;
-      cyanPoint.position.z = Math.cos(elapsed * 0.8) * 8;
+        // Orbiting lights
+        cyanPoint.position.x = Math.sin(elapsed * 0.8) * 8;
+        cyanPoint.position.z = Math.cos(elapsed * 0.8) * 8;
 
-      violetPoint.position.x = Math.cos(elapsed * 0.7) * 7;
-      violetPoint.position.y = Math.sin(elapsed * 0.7) * 5;
+        violetPoint.position.x = Math.cos(elapsed * 0.7) * 7;
+        violetPoint.position.y = Math.sin(elapsed * 0.7) * 5;
 
-      // Camera depth lerp
-      camera.position.z = THREE.MathUtils.lerp(camera.position.z, cameraDepth, 0.08);
+        // Camera depth lerp
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, cameraDepth, 0.08);
 
-      renderer.render(scene, camera);
+        renderer.render(scene, camera);
+      }
       rafId = requestAnimationFrame(tick);
     };
 
     rafId = requestAnimationFrame(tick);
 
     return () => {
+      observer.disconnect();
       container.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);

@@ -262,12 +262,26 @@ export const FutureWeb: React.FC<FutureWebProps> = ({
 
       setActiveParticleCount(particles.length);
 
-      rafId = requestAnimationFrame(render);
+      if (isVisible) {
+        rafId = requestAnimationFrame(render);
+      }
     };
+
+    // Only render when visible in viewport
+    let isVisible = true;
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      if (isVisible) {
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(render);
+      }
+    }, { threshold: 0.05 });
+    observer.observe(canvas);
 
     rafId = requestAnimationFrame(render);
 
     return () => {
+      observer.disconnect();
       window.removeEventListener('resize', onResize);
       canvas.removeEventListener('mousemove', onMouseMove);
       canvas.removeEventListener('mousedown', onMouseDown);

@@ -31,13 +31,13 @@ export const WebGLScene: React.FC = () => {
     camera.position.set(0, -3.2, 5.5);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: 'high-performance' });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
     container.appendChild(renderer.domElement);
 
-    // High resolution grid plane for fluid ripples
-    const segments = window.innerWidth < 768 ? 90 : 160;
+    // Optimized resolution grid plane for fluid ripples (smooth 60fps)
+    const segments = window.innerWidth < 768 ? 50 : 80;
     const geometry = new THREE.PlaneGeometry(8, 8, segments, segments);
 
     const uniforms = {
@@ -92,17 +92,27 @@ export const WebGLScene: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
 
+    // Only render when visible in viewport to prevent GPU contention
+    let isVisible = true;
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+    }, { threshold: 0.05 });
+    observer.observe(container);
+
     const clock = new THREE.Clock();
     let rafId: number;
     const tick = () => {
-      const delta = clock.getDelta();
-      uniforms.uTime.value += delta;
-      renderer.render(scene, camera);
+      if (isVisible) {
+        const delta = clock.getDelta();
+        uniforms.uTime.value += delta;
+        renderer.render(scene, camera);
+      }
       rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
 
     return () => {
+      observer.disconnect();
       container.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(rafId);
