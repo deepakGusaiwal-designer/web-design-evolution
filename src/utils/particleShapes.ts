@@ -7,6 +7,7 @@ export type ShapeType =
   | 'wave'
   | 'spiral'
   | 'torus'
+  | 'lattice'
   | 'network'
   | 'sphere'
   | 'explosion';
@@ -19,6 +20,7 @@ export function createParticleShapes(count: number) {
     wave: new Float32Array(count * 3),
     spiral: new Float32Array(count * 3),
     torus: new Float32Array(count * 3),
+    lattice: new Float32Array(count * 3),
     network: new Float32Array(count * 3),
     sphere: new Float32Array(count * 3),
     explosion: new Float32Array(count * 3),
@@ -227,6 +229,23 @@ export function createParticleShapes(count: number) {
     shapes.torus[i3] = r * Math.cos(p * t);
     shapes.torus[i3 + 1] = r * Math.sin(p * t);
     shapes.torus[i3 + 2] = -Math.sin(q * t) * 2.5 + (Math.random() - 0.5) * 0.6;
+  }
+
+  // 6.5 LATTICE (WebGL Silicon GPU Computing Matrix)
+  const latSide = Math.max(2, Math.floor(Math.cbrt(count)));
+  const latStep = 10.0 / latSide;
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    const ix = i % latSide;
+    const iy = Math.floor(i / latSide) % latSide;
+    const iz = Math.floor(i / (latSide * latSide)) % latSide;
+    const x = (ix - latSide / 2) * latStep;
+    const y = (iy - latSide / 2) * latStep;
+    const z = (iz - latSide / 2) * latStep * 0.8;
+    const ripple = Math.sin(Math.sqrt(x * x + y * y) * 1.2) * 0.6;
+    shapes.lattice[i3] = x;
+    shapes.lattice[i3 + 1] = y + ripple;
+    shapes.lattice[i3 + 2] = z;
   }
 
   // 7. NETWORK (Neural synapses)

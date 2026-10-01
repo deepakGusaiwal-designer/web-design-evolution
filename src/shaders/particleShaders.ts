@@ -10,6 +10,7 @@ uniform float uRippleTime;
 uniform float uRippleStrength;
 uniform float uScrollVelocity;
 uniform float uDevicePixelRatio;
+uniform float uHeroDarkness; // 0.0 = complete darkness, 1.0 = fully visible
 
 attribute vec3 targetPos;
 attribute vec3 randomSpeed;
@@ -91,18 +92,19 @@ void main() {
   vColor = customColor;
 
   // 1. Smooth interpolation between current and target shape
-  vec3 basePos = mix(position, targetPos, uProgress);
+  float easeProgress = smoothstep(0.0, 1.0, uProgress);
+  vec3 basePos = mix(position, targetPos, easeProgress);
 
   // 2. Organic breathing & noise displacement
-  float noiseTime = uTime * 0.4 + phase;
+  float noiseTime = uTime * 0.35 + phase;
   vec3 noiseOffset = vec3(
-    snoise(basePos * 0.15 + vec3(noiseTime, 0.0, 0.0)),
-    snoise(basePos * 0.15 + vec3(0.0, noiseTime, 0.0)),
-    snoise(basePos * 0.15 + vec3(0.0, 0.0, noiseTime))
-  ) * 0.45;
+    snoise(basePos * 0.12 + vec3(noiseTime, 0.0, 0.0)),
+    snoise(basePos * 0.12 + vec3(0.0, noiseTime, 0.0)),
+    snoise(basePos * 0.12 + vec3(0.0, 0.0, noiseTime))
+  ) * 0.35;
 
   // Drift based on randomSpeed
-  vec3 drift = randomSpeed * sin(uTime + phase) * 0.3;
+  vec3 drift = randomSpeed * sin(uTime * 0.8 + phase) * 0.25;
   vec3 finalPos = basePos + noiseOffset + drift;
 
   // 3. Mouse interaction (Repulsion or Attraction)
@@ -110,47 +112,51 @@ void main() {
   float distToMouse = length(dirToMouse);
   if (distToMouse < uMouseRadius && distToMouse > 0.001) {
     float influence = 1.0 - smoothstep(0.0, uMouseRadius, distToMouse);
+    influence = influence * influence;
     vec3 forceDir = normalize(dirToMouse);
     if (uAttractMode > 0.5) {
       // Pull toward cursor
-      finalPos -= forceDir * (influence * uMouseForce * 1.8);
+      finalPos -= forceDir * (influence * uMouseForce * 2.2);
     } else {
       // Push away from cursor
-      finalPos += forceDir * (influence * uMouseForce * 2.2);
+      finalPos += forceDir * (influence * uMouseForce * 2.8);
     }
   }
 
   // 4. Smooth, continuous ripple shockwave (zero glitches or discontinuous pops)
   if (uRippleStrength > 0.001 && uRippleTime >= 0.0) {
-    float waveSpeed = 16.0;
+    float waveSpeed = 18.0;
     float currentRadius = uRippleTime * waveSpeed;
     float distToRipple = distance(finalPos, uRippleCenter);
     float diff = distToRipple - currentRadius;
-    float waveWidth = 3.2;
+    float waveWidth = 3.6;
 
     // Smooth Gaussian envelope prevents abrupt boundary clipping
     float envelope = exp(-(diff * diff) / (waveWidth * waveWidth));
-    float distanceDecay = 1.0 / (1.0 + currentRadius * 0.15);
-    float displacement = sin(diff * 1.4) * envelope * uRippleStrength * distanceDecay * 0.85;
+    float distanceDecay = 1.0 / (1.0 + currentRadius * 0.12);
+    float displacement = sin(diff * 1.3) * envelope * uRippleStrength * distanceDecay * 1.0;
 
     vec3 rippleDir = normalize(finalPos - uRippleCenter + vec3(0.0001));
     finalPos += rippleDir * displacement;
   }
 
   // 5. Scroll Velocity stretch
-  finalPos.y += sin(uTime * 3.0 + finalPos.x) * (uScrollVelocity * 0.08);
+  finalPos.y += sin(uTime * 2.5 + finalPos.x * 0.5) * (uScrollVelocity * 0.06);
+  finalPos.z += (uScrollVelocity * 0.03) * (sin(finalPos.y + uTime) * 0.5);
 
   // Projection
   vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
   gl_Position = projectionMatrix * mvPosition;
 
-  // Depth attenuation for particle point size
+  // Depth attenuation for particle point size with clamping
   float depth = -mvPosition.z;
   vDepth = depth;
-  gl_PointSize = (size * 52.0 * uDevicePixelRatio) / max(depth, 1.0);
+  float rawSize = (size * 48.0 * uDevicePixelRatio) / max(depth, 1.0);
+  gl_PointSize = clamp(rawSize, 1.5, 60.0);
 
-  // Soft fade when too close to camera or far
-  vAlpha = smoothstep(0.5, 4.0, depth) * (1.0 - smoothstep(28.0, 48.0, depth));
+  // Soft fade when too close to camera or far, plus hero darkness fade
+  float depthAlpha = smoothstep(0.4, 3.5, depth) * (1.0 - smoothstep(30.0, 52.0, depth));
+  vAlpha = depthAlpha * uHeroDarkness;
 }
 `;
 
@@ -162,7 +168,6 @@ varying float vAlpha;
 varying float vDepth;
 
 void main() {
-  // Center coordinate -0.5 to 0.5
   vec2 coord = gl_PointCoord - vec2(0.5);
   float dist = length(coord);
 
@@ -170,15 +175,18 @@ void main() {
     discard;
   }
 
-  // Soft glowing exponential falloff
-  float intensity = exp(-dist * dist * 12.0);
+  // Soft starlight Gaussian core with smooth outer edge decay
+  float softEdge = smoothstep(0.5, 0.15, dist);
   float core = smoothstep(0.18, 0.0, dist);
+  float glow = exp(-dist * dist * 10.0);
+  float intensity = glow * softEdge;
 
-  vec3 glowColor = mix(vColor, vec3(1.0, 1.0, 1.0), core * 0.7);
+  // Bright starlight core with vibrant chromatic rim
+  vec3 glowColor = mix(vColor, vec3(1.0, 1.0, 1.0), core * 0.75);
 
-  // High fidelity monochrome conversion for the early web era
-  float gray = dot(glowColor, vec3(0.299, 0.587, 0.114));
-  vec3 bwColor = vec3(gray * 1.25);
+  // High-fidelity monochrome conversion for the early web era (Rec. 709 luminance)
+  float luma = dot(glowColor, vec3(0.2126, 0.7152, 0.0722));
+  vec3 bwColor = vec3(luma * 1.3);
 
   // Smooth blend between monochrome and full color spectrum
   vec3 finalColor = mix(bwColor, glowColor, uColorVibrancy);

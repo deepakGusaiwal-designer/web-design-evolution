@@ -174,7 +174,7 @@ export const App: React.FC = () => {
       <footer className="relative z-20 py-12 px-6 border-t border-white/5 text-center font-mono text-xs text-slate-500">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            <span>THE EVOLUTION OF THE WEB // 1990 — {new Date().getFullYear()} — ∞</span>
+            <span>THE EVOLUTION OF THE WEB // 1990 — 2026 — ∞</span>
           </div>
           <div className="flex items-center gap-4 text-[11px] text-slate-400">
             <span>React + Three.js + GLSL + Web Audio</span>
