@@ -8,11 +8,11 @@ export const WebAI: React.FC = () => {
   const [synthesizedMode, setSynthesizedMode] = useState<string>("default");
 
   const concepts = [
-    { title: "INPUT", desc: "Sensory telemetry, voice prompts, gaze tracking, ambient noise." },
+    { title: "INPUT", desc: "Sensory telemetry, voice prompts, gaze tracking, ambient context." },
     { title: "CONTEXT", desc: "Temporal state, user identity, physical space, environmental conditions." },
-    { title: "INTENT", desc: "Deciphering what the user wants to achieve rather than which button to tap." },
+    { title: "INTENT", desc: "Deciphering what the human wishes to achieve rather than which button to click." },
     { title: "GENERATE", desc: "Composing ephemeral UI primitives on the fly with zero static templates." },
-    { title: "ADAPT", desc: "Continuous evolutionary tuning to reduce cognitive friction." },
+    { title: "ADAPT", desc: "Continuous evolutionary tuning to reduce cognitive friction in real time." },
   ];
 
   // Neural Connection Canvas Animation
@@ -40,7 +40,6 @@ export const WebAI: React.FC = () => {
       vy: number;
       radius: number;
       pulse: number;
-      connections: number[];
     }[] = [];
 
     for (let i = 0; i < nodeCount; i++) {
@@ -51,7 +50,6 @@ export const WebAI: React.FC = () => {
         vy: (Math.random() - 0.5) * 0.8,
         radius: 1.5 + Math.random() * 2.5,
         pulse: Math.random() * Math.PI * 2,
-        connections: [],
       });
     }
 
@@ -65,10 +63,8 @@ export const WebAI: React.FC = () => {
     canvas.addEventListener('mousemove', onMouseMove);
 
     let rafId: number;
-    let time = 0;
 
     const render = () => {
-      time += 0.02;
       ctx.clearRect(0, 0, width, height);
 
       // Update positions
@@ -142,20 +138,20 @@ export const WebAI: React.FC = () => {
   };
 
   return (
-    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center">
+    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center font-dm">
       {/* Chapter 06 Header with Strong Narrative Voice */}
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-950/40 font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-950/40 text-xs text-violet-400 uppercase tracking-widest mb-6 font-semibold">
           <Brain className="w-3.5 h-3.5 text-violet-400" />
           CHAPTER 06 // 2023 — 2025
         </div>
-        <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
+        <h2 className="font-dm font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
           THE COGNITIVE SYMBIOSIS
         </h2>
-        <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
+        <p className="font-dm text-xl sm:text-3xl text-slate-100 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
           “THE INTERFACE STARTED RESPONDING TO US.”
         </p>
-        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed font-normal">
           For thirty years, humanity learned the rigid syntax of computers—menus, forms, and buttons. In 2023, the equation inverted: neural networks began understanding human intent, generating bespoke interfaces on the fly.
         </p>
       </div>
@@ -164,7 +160,7 @@ export const WebAI: React.FC = () => {
       <div className="max-w-5xl w-full mx-auto glass-panel rounded-2xl overflow-hidden border border-violet-500/30 relative mb-8">
         <canvas ref={canvasRef} className="w-full h-[360px] cursor-crosshair block" />
 
-        <div className="absolute top-4 left-4 flex items-center gap-2 font-mono text-[10px] text-cyan-400 uppercase tracking-widest pointer-events-none">
+        <div className="absolute top-4 left-4 flex items-center gap-2 text-xs text-cyan-400 uppercase tracking-widest pointer-events-none font-semibold">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
           Synaptic Node Network // Interactive Intent Field
         </div>
@@ -182,16 +178,13 @@ export const WebAI: React.FC = () => {
                     (window as unknown as { playWebChime: (f: number) => void }).playWebChime(480 + idx * 60);
                   }
                 }}
-                data-cursor-hover
-                className={`px-3.5 py-1.5 rounded-lg font-mono text-xs tracking-wider transition-all duration-300 ${
+                className={`px-4 py-2 rounded-xl text-xs font-dm font-bold tracking-wider transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? 'bg-violet-600/40 border border-cyan-400 text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] scale-105'
-                    : 'bg-black/60 border border-white/10 text-slate-400 hover:text-white'
+                    ? 'bg-violet-600/50 border border-cyan-400 text-white shadow-[0_0_15px_rgba(0,240,255,0.4)] scale-105'
+                    : 'bg-black/70 border border-white/10 text-slate-300 hover:text-white'
                 }`}
               >
-                <span className={isActive ? 'text-white font-bold' : 'text-slate-300 font-medium'}>
-                  {concept.title}
-                </span>
+                <span>{concept.title}</span>
               </button>
             );
           })}
@@ -199,14 +192,14 @@ export const WebAI: React.FC = () => {
       </div>
 
       {/* Active Concept Explanation */}
-      <div className="max-w-2xl w-full mx-auto text-center mb-10 glass-panel p-6 rounded-2xl border border-white/10">
-        <span className="text-[10px] font-mono text-violet-400 uppercase tracking-widest block mb-2">
+      <div className="max-w-2xl w-full mx-auto text-center mb-10 glass-panel p-6 rounded-2xl border border-white/10 font-dm">
+        <span className="text-xs font-semibold text-violet-400 uppercase tracking-widest block mb-2">
           Paradigm Step {activeConceptIndex + 1} of {concepts.length}
         </span>
-        <h4 className="font-syne font-bold text-2xl text-white mb-2">
+        <h4 className="font-dm font-bold text-2xl text-white mb-2">
           {concepts[activeConceptIndex].title}
         </h4>
-        <p className="text-sm text-slate-300 font-dm leading-relaxed">
+        <p className="text-sm text-slate-200 font-dm leading-relaxed">
           {concepts[activeConceptIndex].desc}
         </p>
       </div>
@@ -214,19 +207,19 @@ export const WebAI: React.FC = () => {
       {/* Interactive Intent Synthesizer */}
       <SpotlightCard
         spotlightColor="rgba(139, 92, 246, 0.25)"
-        className="max-w-4xl w-full mx-auto rounded-3xl p-8 border border-white/10 bg-slate-900/40"
+        className="max-w-4xl w-full mx-auto rounded-3xl p-8 border border-white/10 bg-slate-900/40 font-dm"
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 font-mono text-xs text-cyan-400 uppercase tracking-wider">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2 text-xs text-cyan-400 uppercase tracking-wider font-semibold">
             <Wand2 className="w-4 h-4 text-cyan-400" />
             Adaptive Interface Synthesis
           </div>
-          <span className="text-[11px] font-mono text-slate-400">
-            Current Schema: {synthesizedMode}
+          <span className="text-xs text-slate-300">
+            Current Schema: <strong className="text-cyan-300">{synthesizedMode}</strong>
           </span>
         </div>
 
-        <p className="text-xs text-slate-300 mb-4">
+        <p className="text-xs text-slate-200 mb-4">
           Select an intent below to watch how the interface dynamically adapts layout, color tokens, and widgets:
         </p>
 
@@ -239,11 +232,10 @@ export const WebAI: React.FC = () => {
             <button
               key={intent.id}
               onClick={() => handleSynthesizeIntent(intent.id)}
-              data-cursor-hover
-              className={`px-4 py-2 rounded-xl text-xs font-mono transition-all duration-300 ${
+              className={`px-4 py-2.5 rounded-xl text-xs font-dm font-semibold transition-all duration-300 cursor-pointer ${
                 synthesizedMode === intent.id
-                  ? 'border border-cyan-400 bg-cyan-500/20 text-cyan-300 shadow-[0_0_20px_rgba(0,240,255,0.3)]'
-                  : 'border border-white/10 glass-panel text-slate-400 hover:text-white'
+                  ? 'border border-cyan-400 bg-cyan-500/25 text-cyan-200 shadow-[0_0_20px_rgba(0,240,255,0.35)] scale-105'
+                  : 'border border-white/10 glass-panel text-slate-300 hover:text-white'
               }`}
             >
               {intent.label}
@@ -264,15 +256,15 @@ export const WebAI: React.FC = () => {
           }`}
         >
           {synthesizedMode === "spatial-audio" ? (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 font-dm">
               <div>
-                <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-1">
+                <div className="text-xs text-cyan-400 uppercase tracking-widest mb-1 font-semibold">
                   Synthesized Audio Matrix
                 </div>
-                <div className="font-syne font-bold text-lg text-white">
+                <div className="font-dm font-bold text-lg text-white">
                   Binaural 3D Soundstage Active
                 </div>
-                <div className="text-xs text-slate-400">
+                <div className="text-xs text-slate-300">
                   Adaptive frequencies responding to physical room resonance
                 </div>
               </div>
@@ -287,7 +279,7 @@ export const WebAI: React.FC = () => {
               </div>
             </div>
           ) : synthesizedMode === "neural-telemetry" ? (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 font-dm">
               {[
                 { k: "INTENT CONFIDENCE", v: "99.4%" },
                 { k: "COGNITIVE LOAD", v: "14.2 ms" },
@@ -295,23 +287,23 @@ export const WebAI: React.FC = () => {
                 { k: "LATENCY", v: "0.4 ms" },
               ].map((m, i) => (
                 <div key={i} className="p-3 rounded-lg bg-black/40 border border-violet-500/20">
-                  <div className="text-[10px] font-mono text-violet-400">{m.k}</div>
-                  <div className="text-base font-bold text-white font-mono">{m.v}</div>
+                  <div className="text-[10px] text-violet-400 font-semibold">{m.k}</div>
+                  <div className="text-base font-bold text-white font-dm">{m.v}</div>
                 </div>
               ))}
             </div>
           ) : synthesizedMode === "minimal-void" ? (
-            <div className="py-6 text-center">
-              <span className="font-mono text-xs tracking-widest text-slate-500 uppercase block mb-1">
+            <div className="py-6 text-center font-dm">
+              <span className="text-xs tracking-widest text-slate-400 uppercase block mb-1 font-semibold">
                 Zero Chrome Mode
               </span>
-              <div className="font-syne text-xl text-white font-light">
+              <div className="font-dm text-xl text-white font-light">
                 All superfluous layout discarded. Thought alone drives the viewport.
               </div>
             </div>
           ) : (
-            <div className="text-xs text-slate-400 text-center font-mono">
-              [Waiting for intent input... Choose an intent archetype above to trigger UI generation]
+            <div className="text-xs text-slate-300 text-center font-dm py-4">
+              [Waiting for intent input... Choose an intent archetype above to trigger live UI generation]
             </div>
           )}
         </div>

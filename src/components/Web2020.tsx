@@ -5,20 +5,20 @@ import SpotlightCard from './reactbits/SpotlightCard';
 
 export const Web2020: React.FC = () => {
   return (
-    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center">
+    <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center font-dm">
       {/* Chapter 04 Header with Generous Breathing Space */}
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-500/30 bg-pink-950/40 font-mono text-xs text-pink-400 uppercase tracking-widest mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-500/30 bg-pink-950/40 text-xs text-pink-400 uppercase tracking-widest mb-6 font-semibold">
           <Box className="w-3.5 h-3.5 text-pink-400" />
           CHAPTER 04 // 2015 — 2018
         </div>
-        <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
+        <h2 className="font-dm font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
           PIERCING THE THIRD DIMENSION
         </h2>
-        <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
+        <p className="font-dm text-xl sm:text-3xl text-slate-100 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
           “THE SCREEN BECAME A SPACE.”
         </p>
-        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed font-normal">
           For twenty-four years, human thought was flattened into 2D viewports. In 2015, the screen tore open: Three.js and WebGL unlocked infinite Z-axis coordinates, virtual optics, and real-time volumetric light.
         </p>
       </div>
@@ -33,12 +33,12 @@ export const Web2020: React.FC = () => {
             spotlightColor="rgba(0, 240, 255, 0.25)"
             className="p-6 rounded-2xl border border-white/10 bg-slate-900/40"
           >
-            <div className="flex items-center gap-2 text-cyan-400 text-xs font-mono uppercase mb-2">
+            <div className="flex items-center gap-2 text-cyan-400 text-xs uppercase mb-2 font-semibold">
               <Layers className="w-3.5 h-3.5" />
               Z-Axis Volumetrics
             </div>
-            <div className="text-base font-semibold text-white mb-1">Depth Buffer (Z-Buffer)</div>
-            <p className="text-xs text-slate-400 leading-relaxed font-dm">
+            <div className="text-base font-bold text-white mb-1 font-dm">Depth Buffer (Z-Buffer)</div>
+            <p className="text-xs text-slate-300 leading-relaxed font-dm">
               Every element gained distance from the observer. Fog and perspective attenuation simulate physical atmosphere.
             </p>
           </SpotlightCard>
@@ -47,12 +47,12 @@ export const Web2020: React.FC = () => {
             spotlightColor="rgba(168, 85, 247, 0.25)"
             className="p-6 rounded-2xl border border-white/10 bg-slate-900/40"
           >
-            <div className="flex items-center gap-2 text-violet-400 text-xs font-mono uppercase mb-2">
+            <div className="flex items-center gap-2 text-violet-400 text-xs uppercase mb-2 font-semibold">
               <Maximize className="w-3.5 h-3.5" />
               Virtual Optics
             </div>
-            <div className="text-base font-semibold text-white mb-1">Perspective Camera</div>
-            <p className="text-xs text-slate-400 leading-relaxed font-dm">
+            <div className="text-base font-bold text-white mb-1 font-dm">Perspective Camera</div>
+            <p className="text-xs text-slate-300 leading-relaxed font-dm">
               Focal lengths, field of view, and camera trajectories transformed passive scrolling into cinematic navigation.
             </p>
           </SpotlightCard>
@@ -61,12 +61,12 @@ export const Web2020: React.FC = () => {
             spotlightColor="rgba(236, 72, 153, 0.25)"
             className="p-6 rounded-2xl border border-white/10 bg-slate-900/40"
           >
-            <div className="flex items-center gap-2 text-pink-400 text-xs font-mono uppercase mb-2">
+            <div className="flex items-center gap-2 text-pink-400 text-xs uppercase mb-2 font-semibold">
               <Box className="w-3.5 h-3.5" />
               Physically Based Rendering
             </div>
-            <div className="text-base font-semibold text-white mb-1">Roughness & Metalness</div>
-            <p className="text-xs text-slate-400 leading-relaxed font-dm">
+            <div className="text-base font-bold text-white mb-1 font-dm">Roughness & Metalness</div>
+            <p className="text-xs text-slate-300 leading-relaxed font-dm">
               Light ceased to be painted drop shadows. Surfaces reflect point lights and compute ambient occlusion in real time.
             </p>
           </SpotlightCard>
