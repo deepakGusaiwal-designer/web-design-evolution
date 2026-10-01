@@ -120,19 +120,21 @@ void main() {
     }
   }
 
-  // 4. Click Shockwave / Ripple effect
-  if (uRippleStrength > 0.01 && uRippleTime >= 0.0) {
-    float waveSpeed = 14.0;
+  // 4. Smooth, continuous ripple shockwave (zero glitches or discontinuous pops)
+  if (uRippleStrength > 0.001 && uRippleTime >= 0.0) {
+    float waveSpeed = 16.0;
     float currentRadius = uRippleTime * waveSpeed;
     float distToRipple = distance(finalPos, uRippleCenter);
-    float ringThickness = 2.2;
-    float ringDist = abs(distToRipple - currentRadius);
+    float diff = distToRipple - currentRadius;
+    float waveWidth = 3.2;
 
-    if (ringDist < ringThickness) {
-      float wave = sin((ringDist / ringThickness) * 3.14159) * uRippleStrength;
-      vec3 rippleDir = normalize(finalPos - uRippleCenter + vec3(0.001));
-      finalPos += rippleDir * wave * 1.5;
-    }
+    // Smooth Gaussian envelope prevents abrupt boundary clipping
+    float envelope = exp(-(diff * diff) / (waveWidth * waveWidth));
+    float distanceDecay = 1.0 / (1.0 + currentRadius * 0.15);
+    float displacement = sin(diff * 1.4) * envelope * uRippleStrength * distanceDecay * 0.85;
+
+    vec3 rippleDir = normalize(finalPos - uRippleCenter + vec3(0.0001));
+    finalPos += rippleDir * displacement;
   }
 
   // 5. Scroll Velocity stretch

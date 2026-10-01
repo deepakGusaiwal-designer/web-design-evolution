@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Magnet as MagnetIcon, Wind, RefreshCw } from 'lucide-react';
 import Magnet from './reactbits/Magnet';
-import DecryptedText from './reactbits/DecryptedText';
 import SpotlightCard from './reactbits/SpotlightCard';
 
 export const Web2010: React.FC = () => {
@@ -60,7 +59,7 @@ export const Web2010: React.FC = () => {
         <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto leading-relaxed mb-4">
           “STATIC IS NOT ENOUGH.”
         </p>
-        <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed">
           The web ceased being a series of abrupt cuts. Continuous physics, spring damping, kinetic typography, and magnetic fields brought organic life to the screen.
         </p>
       </div>
@@ -167,7 +166,7 @@ export const Web2010: React.FC = () => {
           </span>
         </SpotlightCard>
 
-        {/* Floating Kinetic Physics Capsules with DecryptedText */}
+        {/* Floating Kinetic Physics Capsules */}
         <SpotlightCard
           spotlightColor="rgba(0, 240, 255, 0.25)"
           className="p-8 rounded-2xl border border-white/10 flex flex-col justify-between bg-slate-900/40"
@@ -196,14 +195,9 @@ export const Web2010: React.FC = () => {
                 data-cursor-hover
                 className={`p-3 rounded-xl bg-gradient-to-r ${node.color} text-white font-mono text-xs font-semibold flex items-center justify-between shadow-lg cursor-grab active:cursor-grabbing`}
               >
-                <DecryptedText
-                  text={node.text}
-                  speed={35}
-                  maxIterations={10}
-                  animateOn="hover"
-                  className="font-mono text-xs text-white"
-                  encryptedClassName="text-white/60"
-                />
+                <span className="font-mono text-xs text-white font-semibold">
+                  {node.text}
+                </span>
                 <span className="text-[10px] opacity-80 uppercase tracking-widest">DRAG ME</span>
               </motion.div>
             ))}

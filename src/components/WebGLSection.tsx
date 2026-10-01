@@ -18,7 +18,7 @@ export const WebGLSection: React.FC = () => {
         <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
           “THE BROWSER BECAME A GPU.”
         </p>
-        <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed">
           When every single pixel executes its own mathematical shader program in parallel, the interface ceases to be rendered markup. It becomes pure liquid light and raw mathematics.
         </p>
       </div>

@@ -62,7 +62,7 @@ export const Web2000: React.FC = () => {
         <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
           “With CSS, design stopped being a decorator. It became a language.”
         </p>
-        <p className="font-dm text-base text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-2xl mx-auto leading-relaxed font-light">
           When Cascading Style Sheets arrived, information broke free from table jail cells. Visual presentation was severed from data markup. Colors painted the void, typography found its rhythm, and responsive layouts allowed the web to adapt to any human screen.
         </p>
       </div>

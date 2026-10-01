@@ -154,6 +154,22 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
     };
 
     const handleClick = (e: MouseEvent) => {
+      // Ignore clicks on interactive UI controls, buttons, links, inputs, and canvases
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.closest('button') ||
+          target.closest('a') ||
+          target.closest('input') ||
+          target.closest('textarea') ||
+          target.closest('canvas') ||
+          target.closest('[role="button"]') ||
+          target.closest('.interactive') ||
+          target.closest('[data-cursor-hover]'))
+      ) {
+        return;
+      }
+
       const clickNorm = new THREE.Vector2(
         (e.clientX / window.innerWidth) * 2 - 1,
         -(e.clientY / window.innerHeight) * 2 + 1
@@ -163,7 +179,7 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
       if (raycaster.ray.intersectPlane(mousePlane, clickPoint)) {
         uniforms.uRippleCenter.value.copy(clickPoint);
         uniforms.uRippleTime.value = 0.0;
-        uniforms.uRippleStrength.value = 1.6;
+        uniforms.uRippleStrength.value = 0.95; // Gentle, organic impulse
 
         if (typeof (window as unknown as { playWebChime?: (f: number) => void }).playWebChime === 'function') {
           (window as unknown as { playWebChime: (f: number) => void }).playWebChime(520);
@@ -200,9 +216,9 @@ export const ParticleScene: React.FC<ParticleSceneProps> = ({
       uniforms.uMouse.value.lerp(targetMouseWorld, 0.12);
 
       // Ripple shockwave propagation
-      if (uniforms.uRippleStrength.value > 0.01) {
-        uniforms.uRippleTime.value += delta * 1.2;
-        uniforms.uRippleStrength.value = Math.max(0, uniforms.uRippleStrength.value - delta * 0.9);
+      if (uniforms.uRippleStrength.value > 0.001) {
+        uniforms.uRippleTime.value += delta * 1.5;
+        uniforms.uRippleStrength.value = Math.max(0, uniforms.uRippleStrength.value - delta * 0.7);
       }
 
       // Camera parallax

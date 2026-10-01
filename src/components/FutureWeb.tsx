@@ -293,13 +293,12 @@ export const FutureWeb: React.FC<FutureWebProps> = ({
               THE SINGULARITY OF THE WEB
             </h2>
 
-            <p className="font-dm text-lg sm:text-2xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed mb-12">
+            <p className="font-dm text-lg sm:text-2xl text-slate-200 max-w-2xl mx-auto font-light leading-relaxed mb-12">
               Three decades of markup, styles, shaders, and neural weights converge into a single coordinate.
             </p>
 
             <button
               onClick={handleTriggerExplosion}
-              data-cursor-hover
               className="group relative flex items-center justify-center w-40 h-40 rounded-full glass-panel-glow border-2 border-cyan-400 text-white cursor-pointer transition-transform duration-500 hover:scale-110 active:scale-95 shadow-[0_0_60px_rgba(0,240,255,0.5)]"
             >
               <div className="absolute inset-0 rounded-full bg-radial from-cyan-400/40 via-violet-500/20 to-transparent animate-ping opacity-60" />
@@ -321,7 +320,7 @@ export const FutureWeb: React.FC<FutureWebProps> = ({
               IT&apos;S WAITING TO BE IMAGINED.
             </p>
 
-            <p className="font-dm text-lg sm:text-xl text-slate-300 font-light max-w-xl mx-auto mb-8">
+            <p className="font-dm text-lg sm:text-xl text-slate-200 font-light max-w-xl mx-auto mb-8">
               What will you build?
             </p>
           </div>

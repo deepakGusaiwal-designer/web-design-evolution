@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Terminal, Zap, RefreshCw, BookOpen } from 'lucide-react';
-import DecryptedText from './reactbits/DecryptedText';
 
 interface Web1990Props {
   onShatter?: () => void;
 }
 
 export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
-  const [constructionStep, setConstructionStep] = useState(0);
+  // Start fully constructed so user can read immediately
+  const [constructionStep, setConstructionStep] = useState(7);
   const [isShattered, setIsShattered] = useState(false);
   const [showRawTags, setShowRawTags] = useState(true);
 
@@ -21,13 +21,6 @@ export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
     { tag: '<a href="http://info.cern.ch/hypertext/WWW/TheProject.html">Link: What is Hypertext?</a>', label: 'HYPERLINK' },
     { tag: '<img src="cern_logo.xbm" alt="CERN 1991" width="180" />', label: 'INLINE BITMAP' },
   ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setConstructionStep((prev) => (prev < steps.length ? prev + 1 : prev));
-    }, 800);
-    return () => clearInterval(interval);
-  }, [steps.length]);
 
   const handleShatter = () => {
     setIsShattered(true);
@@ -45,13 +38,20 @@ export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
   const handleReset = () => {
     setIsShattered(false);
     setConstructionStep(0);
+    // Swift 200ms step-through if user wants to see construction replay
+    let current = 0;
+    const interval = setInterval(() => {
+      current++;
+      setConstructionStep(current);
+      if (current >= steps.length) clearInterval(interval);
+    }, 220);
   };
 
   return (
     <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center">
       {/* Chapter 01 Header with Strong Narrative Voice */}
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-700 bg-slate-900/60 font-mono text-xs text-slate-400 uppercase tracking-widest mb-6">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-700 bg-slate-900/60 font-mono text-xs text-slate-300 uppercase tracking-widest mb-6">
           <Terminal className="w-3.5 h-3.5 text-slate-400" />
           CHAPTER 01 // 1991 — 1995
         </div>
@@ -60,16 +60,11 @@ export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
           THE STERILE PARCHMENT
         </h2>
 
-        <div className="mb-6">
-          <DecryptedText
-            text="“In the beginning, the web had no voice. It had only links.”"
-            speed={30}
-            animateOn="view"
-            className="font-dm text-xl sm:text-3xl text-slate-200 font-light italic leading-relaxed"
-          />
-        </div>
+        <p className="font-dm text-xl sm:text-3xl text-slate-100 font-light italic leading-relaxed mb-6">
+          “In the beginning, the web had no voice. It had only links.”
+        </p>
 
-        <p className="font-dm text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-2xl mx-auto leading-relaxed font-light">
           When Tim Berners-Lee created the World Wide Web on a NeXT workstation at CERN, there was no graphic design. The web was conceived as a decentralized filing cabinet for physicists. Black Times Roman text on gray screens. The only interaction humanity had was clicking a blue underlined hyperlink.
         </p>
       </div>

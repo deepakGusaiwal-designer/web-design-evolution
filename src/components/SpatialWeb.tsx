@@ -31,7 +31,7 @@ export const SpatialWeb: React.FC = () => {
           “What if design could imagine with you?”
         </p>
 
-        <p className="font-dm text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-light leading-relaxed">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto font-light leading-relaxed">
           When physical environments and digital perception merge, the concept of a flat website evaporates. Interface elements detach from screens, floating as contextual, gaze-responsive, and ambient realities.
         </p>
       </div>

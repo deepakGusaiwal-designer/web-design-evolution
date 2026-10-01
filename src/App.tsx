@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Lenis from 'lenis';
 import { ParticleScene } from './scenes/ParticleScene';
-import { Cursor } from './components/Cursor';
 import { Navigation } from './components/Navigation';
 import { SoundSystem } from './components/SoundSystem';
 import { HeroSection } from './components/HeroSection';
@@ -96,10 +95,7 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative min-h-screen bg-[#050508] text-[#f1f5f9] overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* 1. Custom Interactive Cursor */}
-      <Cursor />
-
-      {/* 2. Three.js GPU Morphing Particle Canvas Field */}
+      {/* 1. Three.js GPU Morphing Particle Canvas Field */}
       <ParticleScene
         currentEraIndex={currentEraIndex}
         scrollProgress={scrollProgress}

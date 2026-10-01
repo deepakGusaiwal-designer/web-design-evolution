@@ -18,7 +18,7 @@ export const Web2020: React.FC = () => {
         <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
           “THE SCREEN BECAME A SPACE.”
         </p>
-        <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed">
           For twenty-four years, human thought was flattened into 2D viewports. In 2015, the screen tore open: Three.js and WebGL unlocked infinite Z-axis coordinates, virtual optics, and real-time volumetric light.
         </p>
       </div>

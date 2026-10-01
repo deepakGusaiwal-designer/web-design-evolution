@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Wand2 } from 'lucide-react';
-import DecryptedText from './reactbits/DecryptedText';
 import SpotlightCard from './reactbits/SpotlightCard';
 
 export const WebAI: React.FC = () => {
@@ -156,7 +155,7 @@ export const WebAI: React.FC = () => {
         <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
           “THE INTERFACE STARTED RESPONDING TO US.”
         </p>
-        <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
+        <p className="font-dm text-base sm:text-lg text-slate-200 max-w-xl mx-auto leading-relaxed">
           For thirty years, humanity learned the rigid syntax of computers—menus, forms, and buttons. In 2023, the equation inverted: neural networks began understanding human intent, generating bespoke interfaces on the fly.
         </p>
       </div>
@@ -190,14 +189,9 @@ export const WebAI: React.FC = () => {
                     : 'bg-black/60 border border-white/10 text-slate-400 hover:text-white'
                 }`}
               >
-                <DecryptedText
-                  text={concept.title}
-                  speed={25}
-                  maxIterations={8}
-                  animateOn="hover"
-                  className={isActive ? 'text-white' : 'text-slate-300'}
-                  encryptedClassName="text-cyan-400"
-                />
+                <span className={isActive ? 'text-white font-bold' : 'text-slate-300 font-medium'}>
+                  {concept.title}
+                </span>
               </button>
             );
           })}
