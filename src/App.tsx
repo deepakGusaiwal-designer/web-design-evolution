@@ -112,6 +112,7 @@ export const App: React.FC = () => {
             viscosity={etherViscosity}
             onChangeViscosity={setEtherViscosity}
             onExploreClick={() => scrollToEra(1)}
+            onSelectEra={(idx) => scrollToEra(idx)}
           />
         </div>
 
