@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Magnet as MagnetIcon, Wind, RefreshCw } from 'lucide-react';
-import ReactBitsMagnet from './reactbits/Magnet';
+import Magnet from './reactbits/Magnet';
 import DecryptedText from './reactbits/DecryptedText';
 import SpotlightCard from './reactbits/SpotlightCard';
 
@@ -48,17 +48,20 @@ export const Web2010: React.FC = () => {
 
   return (
     <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center overflow-hidden">
-      {/* Header with Generous Breathing Space */}
+      {/* Chapter 03 Header with Strong Narrative Voice */}
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-950/40 font-mono text-xs text-violet-400 uppercase tracking-widest mb-6">
           <Activity className="w-3.5 h-3.5 text-violet-400 animate-pulse" />
-          SECTION 03 // 2006 — 2014
+          CHAPTER 03 // 2006 — 2014
         </div>
         <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
-          THE WEB LEARNS TO MOVE
+          THE KINETIC REVOLUTION
         </h2>
-        <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto leading-relaxed">
-          Transitions, physics engines, kinetic typography, and magnetic interactions gave life to cold pixels.
+        <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto leading-relaxed mb-4">
+          “STATIC IS NOT ENOUGH.”
+        </p>
+        <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
+          The web ceased being a series of abrupt cuts. Continuous physics, spring damping, kinetic typography, and magnetic fields brought organic life to the screen.
         </p>
       </div>
 
@@ -120,9 +123,9 @@ export const Web2010: React.FC = () => {
         </div>
       </div>
 
-      {/* Physics & Magnetic Interaction Sandbox with React Bits Spotlight & Magnet */}
+      {/* Physics & Magnetic Interaction Sandbox */}
       <div className="max-w-4xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mt-8">
-        {/* Interactive React Bits Magnet Showcase */}
+        {/* Interactive Gravitational Attraction Showcase */}
         <SpotlightCard
           spotlightColor="rgba(168, 85, 247, 0.25)"
           className="p-8 rounded-2xl border border-white/10 flex flex-col justify-between items-center text-center bg-slate-900/40"
@@ -130,17 +133,17 @@ export const Web2010: React.FC = () => {
           <div>
             <div className="flex items-center justify-center gap-2 mb-2 font-mono text-xs text-violet-400 uppercase">
               <MagnetIcon className="w-4 h-4 text-violet-400" />
-              React Bits Magnet
+              GRAVITATIONAL FIELD
             </div>
             <h3 className="font-syne font-bold text-xl text-white mb-2">
-              Gravitational Spring Magnet
+              Proximity Vector Attraction
             </h3>
             <p className="font-dm text-xs text-slate-400 mb-8 max-w-sm leading-relaxed">
-              Hover near the button to watch React Bits Magnet calculate proximity vectors and draw the element smoothly toward your pointer.
+              Hover near the button to experience how fluid physics broke the rigid grid, calculating proximity vectors to draw interactive elements smoothly toward your pointer.
             </p>
           </div>
 
-          <ReactBitsMagnet
+          <Magnet
             padding={120}
             magnetStrength={3.5}
             activeTransition="transform 0.2s cubic-bezier(0.2, 0, 0, 1)"
@@ -155,12 +158,12 @@ export const Web2010: React.FC = () => {
               data-cursor-hover
               className="px-8 py-4 rounded-full font-syne font-bold text-sm tracking-wider uppercase bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_45px_rgba(168,85,247,0.7)] transition-shadow cursor-pointer block"
             >
-              React Bits Magnet
+              TEST VECTOR ATTRACTION
             </button>
-          </ReactBitsMagnet>
+          </Magnet>
 
           <span className="font-mono text-[10px] text-slate-500 mt-6">
-            React Bits Magnet: Padding = 120 | Strength = 3.5
+            Spring Damping Mechanics: Reach = 120px | Acceleration = 3.5x
           </span>
         </SpotlightCard>
 
@@ -172,13 +175,13 @@ export const Web2010: React.FC = () => {
           <div>
             <div className="flex items-center gap-2 mb-2 font-mono text-xs text-cyan-400 uppercase">
               <Wind className="w-4 h-4 text-cyan-400" />
-              Kinetic Tokens & Velocity
+              VELOCITY & INERTIA
             </div>
             <h3 className="font-syne font-bold text-xl text-white mb-2">
-              Interactive Motion Primitives
+              Harmonic Motion Primitives
             </h3>
             <p className="font-dm text-xs text-slate-400 mb-6 leading-relaxed">
-              Drag, fling, or hover over these tokens. Notice the decrypting telemetry on hover.
+              Drag, fling, or test inertia on these physics tokens. Notice how dynamic easing curves replaced abrupt binary states with natural organic momentum.
             </p>
           </div>
 
@@ -207,7 +210,7 @@ export const Web2010: React.FC = () => {
           </div>
 
           <span className="font-mono text-[10px] text-slate-500 mt-6 text-center">
-            Smooth interpolated inertia applied to touch & pointer
+            Physical Continuity: Continuous momentum replaces binary state jumps
           </span>
         </SpotlightCard>
       </div>

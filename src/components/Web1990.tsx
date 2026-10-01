@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Terminal, Code, Zap, RefreshCw } from 'lucide-react';
+import { Terminal, Zap, RefreshCw, BookOpen } from 'lucide-react';
+import DecryptedText from './reactbits/DecryptedText';
 
 interface Web1990Props {
   onShatter?: () => void;
@@ -48,17 +49,28 @@ export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
 
   return (
     <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center">
-      {/* Section Header with Generous Breathing Space */}
+      {/* Chapter 01 Header with Strong Narrative Voice */}
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-700 bg-slate-900/60 font-mono text-xs text-slate-400 uppercase tracking-widest mb-6">
           <Terminal className="w-3.5 h-3.5 text-slate-400" />
-          SECTION 01 // 1991 — 1995
+          CHAPTER 01 // 1991 — 1995
         </div>
+
         <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
-          THE STATIC WEB
+          THE STERILE PARCHMENT
         </h2>
-        <p className="font-dm text-lg sm:text-2xl text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
-          Before animation, styling, or spatial depth, the internet was a silent library of linked text in black and white.
+
+        <div className="mb-6">
+          <DecryptedText
+            text="“In the beginning, the web had no voice. It had only links.”"
+            speed={30}
+            animateOn="view"
+            className="font-dm text-xl sm:text-3xl text-slate-200 font-light italic leading-relaxed"
+          />
+        </div>
+
+        <p className="font-dm text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
+          When Tim Berners-Lee created the World Wide Web on a NeXT workstation at CERN, there was no graphic design. The web was conceived as a decentralized filing cabinet for physicists. Black Times Roman text on gray screens. The only interaction humanity had was clicking a blue underlined hyperlink.
         </p>
       </div>
 
@@ -181,13 +193,13 @@ export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
           <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center p-6 animate-fade-in">
             <div className="px-8 py-6 rounded-2xl glass-panel-glow border border-cyan-400/50 max-w-md shadow-[0_0_40px_rgba(0,240,255,0.2)]">
               <span className="font-mono text-xs text-cyan-400 uppercase tracking-widest block mb-2">
-                PARADIGM SHIFT INITIATED
+                HISTORICAL TRANSITION // 1996 CSS ARRIVAL
               </span>
               <h3 className="font-syne font-bold text-2xl text-white mb-2">
                 STATIC → DYNAMIC
               </h3>
               <p className="font-dm text-xs text-slate-300 mb-5 leading-relaxed">
-                The static document has fragmented into thousands of kinetic coordinates. The web will never be frozen again.
+                The sterile document shatters. Cascading stylesheets arrive to give the web color, rhythm, and graphic emotion.
               </p>
               <button
                 onClick={handleReset}
@@ -195,7 +207,7 @@ export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/20 hover:border-cyan-400 text-xs font-mono text-slate-300 hover:text-white transition-colors"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
-                Reconstruct Document
+                Reassemble Document
               </button>
             </div>
           </div>
@@ -204,18 +216,18 @@ export const Web1990: React.FC<Web1990Props> = ({ onShatter }) => {
         {/* Shatter Action Trigger Bar */}
         <div className="mt-8 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 font-mono text-xs text-slate-400">
-            <Code className="w-4 h-4 text-cyan-400" />
-            <span>Step {Math.min(constructionStep, steps.length)} of {steps.length}: {steps[Math.min(constructionStep, steps.length - 1)]?.label}</span>
+            <BookOpen className="w-4 h-4 text-cyan-400" />
+            <span>Document Architecture: Step {Math.min(constructionStep, steps.length)} of {steps.length} ({steps[Math.min(constructionStep, steps.length - 1)]?.label})</span>
           </div>
 
           <button
             onClick={handleShatter}
             disabled={isShattered}
             data-cursor-hover
-            className="flex items-center gap-2 px-6 py-3 rounded-full font-mono text-xs font-semibold tracking-wider uppercase transition-all duration-300 border border-cyan-400/60 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-500/20 hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] disabled:opacity-40"
+            className="flex items-center gap-2 px-6 py-3 rounded-full font-mono text-xs font-semibold tracking-wider uppercase transition-all duration-300 border border-cyan-400/60 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-500/20 hover:shadow-[0_0_25px_rgba(0,240,255,0.4)] disabled:opacity-40 cursor-pointer"
           >
             <Zap className="w-4 h-4 text-cyan-400" />
-            <span>Shatter Document Into Particles</span>
+            <span>Shatter Document &amp; Unlock Colors</span>
           </button>
         </div>
       </div>

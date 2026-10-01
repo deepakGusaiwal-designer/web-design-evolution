@@ -6,20 +6,20 @@ import SpotlightCard from './reactbits/SpotlightCard';
 export const WebGLSection: React.FC = () => {
   return (
     <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center">
-      {/* Header with Generous Breathing Space */}
+      {/* Chapter 05 Header with Strong Narrative Voice */}
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-6">
           <Cpu className="w-3.5 h-3.5 text-cyan-400" />
-          SECTION 05 // 2019 — 2022
+          CHAPTER 05 // 2019 — 2022
         </div>
         <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
-          THE BROWSER BECAME A GPU
+          THE SILICON CANVAS
         </h2>
         <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
-          “When every pixel has its own computer program, the medium dissolves into light.”
+          “THE BROWSER BECAME A GPU.”
         </p>
         <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
-          Custom GLSL fragment and vertex shaders enabled millions of parallel mathematical operations per millisecond.
+          When every single pixel executes its own mathematical shader program in parallel, the interface ceases to be rendered markup. It becomes pure liquid light and raw mathematics.
         </p>
       </div>
 
@@ -27,7 +27,7 @@ export const WebGLSection: React.FC = () => {
       <div className="max-w-5xl w-full mx-auto">
         <WebGLScene />
 
-        {/* Shader Pipeline Explanations with React Bits SpotlightCard */}
+        {/* Shader Pipeline Explanations */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           <SpotlightCard
             spotlightColor="rgba(6, 182, 212, 0.3)"

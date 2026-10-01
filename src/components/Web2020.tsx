@@ -6,20 +6,20 @@ import SpotlightCard from './reactbits/SpotlightCard';
 export const Web2020: React.FC = () => {
   return (
     <section className="relative min-h-screen w-full py-36 sm:py-48 px-6 sm:px-12 flex flex-col justify-center items-center">
-      {/* Header with Generous Breathing Space */}
+      {/* Chapter 04 Header with Generous Breathing Space */}
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-pink-500/30 bg-pink-950/40 font-mono text-xs text-pink-400 uppercase tracking-widest mb-6">
           <Box className="w-3.5 h-3.5 text-pink-400" />
-          SECTION 04 // 2015 — 2018
+          CHAPTER 04 // 2015 — 2018
         </div>
         <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
-          THE THIRD DIMENSION
+          PIERCING THE THIRD DIMENSION
         </h2>
         <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
           “THE SCREEN BECAME A SPACE.”
         </p>
         <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
-          We spent twenty years flattening our thoughts into 2D rectangles. Then WebGL and Three.js opened up an infinite coordinate system behind the glass.
+          For twenty-four years, human thought was flattened into 2D viewports. In 2015, the screen tore open: Three.js and WebGL unlocked infinite Z-axis coordinates, virtual optics, and real-time volumetric light.
         </p>
       </div>
 
@@ -27,7 +27,7 @@ export const Web2020: React.FC = () => {
       <div className="max-w-5xl w-full mx-auto">
         <SpatialDimensionScene />
 
-        {/* Spatial Dimension Metrics & Principles with React Bits SpotlightCard */}
+        {/* Spatial Dimension Metrics & Principles */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
           <SpotlightCard
             spotlightColor="rgba(0, 240, 255, 0.25)"

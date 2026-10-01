@@ -54,16 +54,16 @@ export const Web2000: React.FC = () => {
       <div className="max-w-4xl w-full mx-auto mb-16 sm:mb-20 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-sky-500/30 bg-sky-950/40 font-mono text-xs text-sky-400 uppercase tracking-widest mb-6">
           <Palette className="w-3.5 h-3.5 text-sky-400" />
-          SECTION 02 // 1996 — 2005
+          CHAPTER 02 // 1996 — 2005
         </div>
         <h2 className="font-syne font-bold text-4xl sm:text-6xl md:text-7xl text-white tracking-tight mb-6">
-          THE WEB BECOMES VISUAL
+          THE AESTHETIC REVOLUTION
         </h2>
         <p className="font-dm text-xl sm:text-3xl text-slate-200 font-light max-w-2xl mx-auto mb-4 leading-relaxed">
-          “Design became a language.”
+          “With CSS, design stopped being a decorator. It became a language.”
         </p>
-        <p className="font-dm text-sm sm:text-base text-slate-400 max-w-xl mx-auto">
-          Click the evolutionary stages below to watch the same raw document mutate through CSS history.
+        <p className="font-dm text-base text-slate-400 max-w-2xl mx-auto leading-relaxed font-light">
+          When Cascading Style Sheets arrived, information broke free from table jail cells. Visual presentation was severed from data markup. Colors painted the void, typography found its rhythm, and responsive layouts allowed the web to adapt to any human screen.
         </p>
       </div>
 

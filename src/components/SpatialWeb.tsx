@@ -12,11 +12,11 @@ export const SpatialWeb: React.FC = () => {
       {/* Background celestial glow */}
       <div className="absolute inset-0 bg-radial from-violet-950/20 via-transparent to-transparent pointer-events-none" />
 
-      {/* Primary Climax Statements with Generous Breathing Space */}
+      {/* Chapter 07 Header with Generous Breathing Space */}
       <div className="max-w-4xl w-full mx-auto text-center mb-16 sm:mb-24 relative z-10">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-400/30 bg-cyan-950/40 font-mono text-xs text-cyan-400 uppercase tracking-widest mb-8">
           <Compass className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '10s' }} />
-          SECTION 07 // 2026 — 2030
+          CHAPTER 07 // 2026 — 2030
         </div>
 
         <h2 className="font-syne font-extrabold text-3xl sm:text-5xl md:text-7xl text-white tracking-tight leading-tight mb-8">
@@ -31,8 +31,8 @@ export const SpatialWeb: React.FC = () => {
           “What if design could imagine with you?”
         </p>
 
-        <p className="font-dm text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-light">
-          Hover or tap the floating conceptual nodes below to explore speculative trajectories of the spatial, ambient, and generative web.
+        <p className="font-dm text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-light leading-relaxed">
+          When physical environments and digital perception merge, the concept of a flat website evaporates. Interface elements detach from screens, floating as contextual, gaze-responsive, and ambient realities.
         </p>
       </div>
 
@@ -97,7 +97,7 @@ export const SpatialWeb: React.FC = () => {
             <h4 className="font-syne font-bold text-2xl text-white mb-2">
               {selectedConceptData.word}
             </h4>
-            <p className="text-sm text-slate-300 leading-relaxed font-space">
+            <p className="text-sm text-slate-300 leading-relaxed font-dm">
               {selectedConceptData.description}
             </p>
           </div>

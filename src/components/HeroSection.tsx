@@ -31,16 +31,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
       {/* Hero Typography with Generous Breathing Space */}
       <div className="relative z-10 max-w-5xl mx-auto flex flex-col items-center w-full">
-        {/* React Bits Decrypted Pill Sub-header */}
+        {/* Story Chapter Marker */}
         <div
-          className={`flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-10 sm:mb-14 transition-all duration-1000 ${
+          className={`flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md mb-8 sm:mb-12 transition-all duration-1000 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
           <DecryptedText
-            text="AN INTERACTIVE SPATIAL CHRONICLE"
-            speed={40}
+            text="PROLOGUE // THE THIRTY-YEAR SPATIAL CHRONICLE"
+            speed={35}
             maxIterations={12}
             animateOn="view"
             className="font-mono text-xs tracking-widest text-slate-300 uppercase"
@@ -48,7 +48,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           />
         </div>
 
-        {/* PRIMARY HERO: REACT BITS TECH TEXT (Interactive Vector Dashed Text) */}
+        {/* PRIMARY HERO: INTERACTIVE VECTOR TYPOGRAPHY (Tech Text) */}
         <div
           onMouseEnter={() => onHoverTitle?.(true)}
           onMouseLeave={() => onHoverTitle?.(false)}
@@ -78,32 +78,30 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           />
         </div>
 
-        {/* Interactive Prompt for Tech Text */}
+        {/* Interactive Story Guide */}
         <div className="flex items-center gap-2 font-mono text-[11px] text-cyan-400/80 mb-10 tracking-widest uppercase">
           <MousePointer className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
-          <span>[REACT BITS TECH TEXT // HOVER & DRAG LETTERS OFF BASELINE]</span>
+          <span>[VECTOR TELEMETRY ACTIVE // DRAG LETTERS TO DISRUPT THE BASELINE]</span>
         </div>
 
-        {/* Central Core Statement in DM Sans with DecryptedText on Hover */}
-        <div className="mb-6">
+        {/* Core Philosophical Statement with DecryptedText on Hover */}
+        <div className="mb-6 max-w-3xl mx-auto">
           <DecryptedText
-            text="“From documents to experiences.”"
-            speed={30}
-            maxIterations={14}
+            text="“The web stopped being a document. It became an experience.”"
+            speed={25}
+            maxIterations={12}
             animateOn="hover"
-            className="font-dm text-2xl sm:text-3xl md:text-4xl text-slate-200 font-light max-w-3xl mx-auto leading-relaxed cursor-pointer"
+            className="font-dm text-2xl sm:text-3xl md:text-4xl text-slate-100 font-light leading-relaxed cursor-pointer"
             encryptedClassName="font-dm text-2xl sm:text-3xl text-cyan-400 font-light"
           />
         </div>
 
         <p
-          className={`font-dm text-base sm:text-lg text-slate-400 max-w-xl mx-auto font-light leading-relaxed mb-16 transition-all duration-1000 delay-500 ${
+          className={`font-dm text-base sm:text-lg text-slate-400 max-w-2xl mx-auto font-light leading-relaxed mb-14 transition-all duration-1000 delay-500 ${
             mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          The web stopped being a document. It became an experience.
-          <br className="hidden sm:inline" />
-          What happens when imagination becomes the interface?
+          In 1991, humanity pinned the first piece of text to a digital screen. Over three decades, that sterile document learned how to breathe, move, expand into 3D space, compute on silicon GPUs, and synthesize reality.
         </p>
 
         {/* Formed Particle Structure Indicator */}
@@ -112,9 +110,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             wordWebRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           }`}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-400/30 bg-cyan-950/30 text-cyan-300 font-mono text-xs tracking-widest">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-            MONOCHROME PARTICLES FORMING &apos;WEB&apos;
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-black/60 text-slate-300 font-mono text-xs tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+            INITIALIZING 1991 MONOCHROME PARTICLES
           </div>
         </div>
 
@@ -127,7 +125,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           }`}
         >
           <span className="font-mono text-xs tracking-[0.25em] uppercase">
-            Commence The Journey
+            BEGIN THE ODYSSEY
           </span>
           <div className="w-11 h-11 rounded-full border border-white/20 group-hover:border-cyan-400/60 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_25px_rgba(0,240,255,0.4)]">
             <ArrowDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />

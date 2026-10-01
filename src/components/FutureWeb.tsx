@@ -283,7 +283,7 @@ export const FutureWeb: React.FC<FutureWebProps> = ({
         {/* Section Pill */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-950/40 font-mono text-xs text-cyan-300 uppercase tracking-widest mb-8">
           <Orbit className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '14s' }} />
-          SECTION 08 // THE UNWRITTEN CANVAS
+          CHAPTER 08 // THE UNWRITTEN CANVAS
         </div>
 
         {/* Big Cosmic Singularity Trigger */}
