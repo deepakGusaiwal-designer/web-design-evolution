@@ -23,84 +23,54 @@ const FRAGMENT_SHADER = `
   uniform vec2 uResolution;
   uniform float uScroll;
   uniform float uVelocity;
-  uniform float uEra;
-  // Up to 8 interactive water ripples: xy = position in aspect-corrected coords, z = birthTime, w = amplitude
-  uniform vec4 uRipples[8];
+  uniform vec2 uMouse;
+  uniform float uMouseSpeed;
+  // Up to 6 smooth click/wake ripples: xy = position, z = birthTime, w = amplitude
+  uniform vec4 uRipples[6];
 
-  // Hash & 2D Value Noise for organic liquid turbulence
-  float hash(vec2 p) {
-    p = fract(p * vec2(123.34, 456.21));
-    p += dot(p, p + 45.32);
-    return fract(p.x * p.y);
-  }
+  // Ultra-smooth C-infinity domain-warped liquid heightfield (zero grid noise or jagged artifacts)
+  float liquidField(vec2 p, float t) {
+    // Gentle horizontal current from timeline scroll
+    vec2 q = p * 1.55 + vec2(uScroll * 2.2 + t * 0.07, -t * 0.04);
 
-  float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(
-      mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), u.x),
-      mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x),
-      u.y
-    );
-  }
-
-  // Shimmering Voronoi / Wave Caustic network for submerged water depth
-  float causticPattern(vec2 uv, float t) {
-    vec2 p = mod(uv * 6.2831853, 6.2831853) - 250.0;
-    vec2 i = vec2(p);
-    float c = 1.0;
-    float inten = 0.005;
-
-    for (int n = 0; n < 4; n++) {
-      float fn = float(n);
-      float tRate = t * (1.0 - (3.2 / (fn + 1.0)));
-      i = p + vec2(
-        cos(tRate - i.x) + sin(tRate + i.y),
-        sin(tRate - i.y) + cos(tRate + i.x)
-      );
-      c += 1.0 / length(vec2(
-        p.x / (sin(i.x + tRate) / inten),
-        p.y / (cos(i.y + tRate) / inten)
-      ));
+    // 3-pass iterative smooth sinusoidal domain warp (creates silky liquid folds)
+    for (int i = 0; i < 3; i++) {
+      vec2 nextQ = q;
+      nextQ.x += 0.38 * sin(q.y * 1.45 + t * 0.42 + float(i) * 1.7);
+      nextQ.y += 0.38 * cos(q.x * 1.35 - t * 0.36 + float(i) * 2.1);
+      q = nextQ;
     }
-    c /= 4.0;
-    c = 1.17 - pow(c, 1.4);
-    return pow(abs(c), 7.5);
-  }
 
-  // Composite Water Heightfield (Gerstner swells + FBM + Interactive Mouse/Click Ripples)
-  float waterHeight(vec2 p, float t) {
-    // Horizontal current driven by timeline scroll
-    vec2 flow = vec2(uScroll * 4.5 + t * 0.14, t * 0.06);
-    vec2 q = p * 2.4 + flow;
+    // Broad, velvety harmonic water swells
+    float swell1 = sin(q.x * 1.25 + q.y * 0.85 + t * 0.45) * 0.5;
+    float swell2 = cos(q.x * 0.95 - q.y * 1.30 - t * 0.38) * 0.5;
+    float h = (swell1 + swell2) * 0.5;
 
-    // Layered directional ocean/liquid swells
-    float w1 = sin(q.x * 1.8 + q.y * 0.9 + t * 1.1) * 0.28;
-    float w2 = cos(q.x * 1.1 - q.y * 2.1 - t * 0.85) * 0.24;
-    float w3 = sin((q.x + q.y) * 3.1 + t * 1.65) * 0.12;
+    // Smooth interactive cursor depression / wake
+    float mouseDist = length(p - uMouse);
+    float mouseWake = exp(-mouseDist * mouseDist * 8.5) * (0.18 + uMouseSpeed * 0.35);
+    h += sin(mouseDist * 10.0 - t * 3.5) * mouseWake;
 
-    // Fine organic capillary ripples via rotated noise
-    float n1 = noise(q * 1.7 + vec2(t * 0.35, -t * 0.25)) * 0.22;
-    float n2 = noise(q * 3.8 - vec2(t * 0.5, t * 0.4)) * 0.10;
-
-    float h = w1 + w2 + w3 + n1 + n2;
-
-    // Add interactive concentric water ripples from mouse wakes & clicks
-    for (int i = 0; i < 8; i++) {
+    // Smooth wide-wavelength concentric click/move ripples
+    for (int i = 0; i < 6; i++) {
       vec4 rip = uRipples[i];
       float age = t - rip.z;
-      if (age > 0.0 && age < 4.5 && rip.w > 0.001) {
+      if (age > 0.0 && age < 5.0 && rip.w > 0.001) {
         float d = length(p - rip.xy);
-        float waveFront = d * 28.0 - age * 11.5;
-        float envelope = exp(-d * 4.2) * exp(-age * 1.15);
-        // Ring packet around expanding wavefront
-        float packet = smoothstep(-6.0, 0.0, waveFront) * smoothstep(6.0, 0.0, waveFront);
-        h += sin(waveFront) * envelope * packet * rip.w * 0.55;
+        float phase = d * 11.0 - age * 4.8;
+        float env = exp(-d * 2.6) * exp(-age * 0.85) * smoothstep(0.0, 0.25, age);
+        float packet = exp(-pow(d - age * 0.42, 2.0) * 7.0);
+        h += sin(phase) * env * packet * rip.w * 0.45;
       }
     }
 
     return h;
+  }
+
+  // Sub-pixel triangular dither to eliminate 8-bit banding in deep dark gradients
+  float dither(vec2 fragCoord) {
+    float n = fract(sin(dot(fragCoord, vec2(12.9898, 78.233))) * 43758.5453);
+    return (n - 0.5) / 255.0;
   }
 
   void main() {
@@ -110,63 +80,56 @@ const FRAGMENT_SHADER = `
 
     float t = uTime;
 
-    // Finite-difference surface normal from water heightfield
-    float eps = 0.0035;
-    float hC = waterHeight(p, t);
-    float hR = waterHeight(p + vec2(eps, 0.0), t);
-    float hU = waterHeight(p + vec2(0.0, eps), t);
+    // Wide, buttery-smooth gradient sampling for liquid surface normal
+    float eps = 0.015;
+    float hC = liquidField(p, t);
+    float hR = liquidField(p + vec2(eps, 0.0), t);
+    float hL = liquidField(p - vec2(eps, 0.0), t);
+    float hU = liquidField(p + vec2(0.0, eps), t);
+    float hD = liquidField(p - vec2(0.0, eps), t);
 
-    vec3 normal = normalize(vec3((hC - hR) * 14.0, (hC - hU) * 14.0, 1.0));
+    vec2 grad = vec2(hR - hL, hU - hD) / (2.0 * eps);
+    vec3 normal = normalize(vec3(-grad.x * 0.65, -grad.y * 0.65, 1.0));
 
-    // View & Light vectors for liquid specular + Fresnel reflection
-    vec3 viewDir = normalize(vec3(-p * 0.6, 1.2));
-    vec3 lightDir1 = normalize(vec3(-0.35 + sin(t * 0.2) * 0.15, 0.45, 0.85));
-    vec3 lightDir2 = normalize(vec3(0.45, -0.35, 0.75));
+    // Soft studio lighting for dark liquid obsidian / night water
+    vec3 viewDir = normalize(vec3(-p * 0.35, 1.0));
+    vec3 lightDir1 = normalize(vec3(-0.3, 0.45, 0.85));
+    vec3 lightDir2 = normalize(vec3(0.4, -0.35, 0.85));
 
     float diff1 = max(dot(normal, lightDir1), 0.0);
     float diff2 = max(dot(normal, lightDir2), 0.0);
 
-    vec3 halfVec1 = normalize(lightDir1 + viewDir);
-    vec3 halfVec2 = normalize(lightDir2 + viewDir);
-    float spec1 = pow(max(dot(normal, halfVec1), 0.0), 42.0);
-    float spec2 = pow(max(dot(normal, halfVec2), 0.0), 24.0);
+    // Broad, silky specular reflections (low exponent for smooth liquid roll-off)
+    vec3 half1 = normalize(lightDir1 + viewDir);
+    vec3 half2 = normalize(lightDir2 + viewDir);
+    float spec1 = pow(max(dot(normal, half1), 0.0), 18.0);
+    float spec2 = pow(max(dot(normal, half2), 0.0), 12.0);
 
-    // Schlick Fresnel for liquid sheen at grazing angles
-    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.5);
+    // Gentle Fresnel sheen
+    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
 
-    // Refracted underwater caustics (warped by the water surface normal)
-    vec2 refractedUv = p * 0.48 + normal.xy * 0.085 + vec2(uScroll * 0.45, 0.0);
-    float caustics1 = causticPattern(refractedUv, t * 0.42);
-    float caustics2 = causticPattern(refractedUv * 1.35 + vec2(0.37, -0.21), -t * 0.31);
-    float caustics = (caustics1 * 0.65 + caustics2 * 0.45);
+    // Deep Dark Monochrome Obsidian-Water Palette (#020203 -> #0b0c0f)
+    vec3 abyssBlack = vec3(0.010, 0.011, 0.013);
+    vec3 deepWater  = vec3(0.028, 0.030, 0.035);
+    vec3 darkCrest  = vec3(0.062, 0.066, 0.074);
 
-    // Monochrome Abyssal Water + Liquid Silver Palette (with subtle cool-slate depth)
-    vec3 deepAbyss = vec3(0.014, 0.016, 0.020);
-    vec3 midWater  = vec3(0.055, 0.062, 0.072);
-    vec3 crestTone = vec3(0.14, 0.155, 0.175);
+    float waveBlend = smoothstep(-0.75, 0.75, hC);
+    vec3 color = mix(abyssBlack, deepWater, waveBlend);
+    color = mix(color, darkCrest, pow(diff1, 2.0) * 0.5 + diff2 * 0.2);
 
-    // Base water body shaded by wave height and diffuse lighting
-    float heightFactor = smoothstep(-0.6, 0.6, hC);
-    vec3 color = mix(deepAbyss, midWater, heightFactor * 0.75 + diff1 * 0.35);
-    color = mix(color, crestTone, pow(diff1, 2.2) * 0.55 + diff2 * 0.2);
+    // Subtle silky silver-gray specular highlights on water swells & ripples
+    color += vec3(0.11, 0.115, 0.125) * spec1;
+    color += vec3(0.05, 0.055, 0.06) * spec2;
+    color += vec3(0.04, 0.042, 0.048) * fresnel;
 
-    // Add submerged caustic light veins
-    color += vec3(0.19, 0.21, 0.24) * caustics * (0.42 + 0.58 * diff1);
+    // Gentle radial vignette so edges & UI panels sit on pure deep black
+    float vignette = smoothstep(1.25, 0.20, length(p * vec2(0.75, 0.95)));
+    color *= (0.40 + 0.60 * vignette);
 
-    // Add liquid mercury / moonlight specular glints on wave crests & interactive ripples
-    color += vec3(0.75, 0.79, 0.84) * (spec1 * 0.48 + spec2 * 0.22);
-    color += vec3(0.28, 0.30, 0.34) * fresnel * 0.45;
+    // Add sub-bit dither for zero banding
+    color += dither(gl_FragCoord.xy);
 
-    // Horizontal velocity surge when scrolling rapidly
-    float surge = clamp(abs(uVelocity) * 0.03, 0.0, 0.25);
-    color += vec3(0.18, 0.20, 0.22) * caustics * surge;
-
-    // Subtle horizon depth gradient & soft vignette so foreground particles stay 100% crisp
-    float radialDist = length(p * vec2(0.72, 0.95));
-    float vignette = smoothstep(1.18, 0.18, radialDist);
-    color *= (0.45 + 0.55 * vignette);
-
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);
   }
 `;
 
@@ -195,7 +158,7 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
     if (!canvas) return;
 
     const gl =
-      canvas.getContext('webgl', { antialias: false, depth: false, stencil: false }) ||
+      canvas.getContext('webgl', { antialias: true, depth: false, stencil: false }) ||
       (canvas.getContext('experimental-webgl') as WebGLRenderingContext | null);
 
     if (!gl) return;
@@ -225,7 +188,6 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
 
     gl.useProgram(program);
 
-    // Fullscreen quad
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(
@@ -242,57 +204,61 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
     const uResLoc = gl.getUniformLocation(program, 'uResolution');
     const uScrollLoc = gl.getUniformLocation(program, 'uScroll');
     const uVelLoc = gl.getUniformLocation(program, 'uVelocity');
-    const uEraLoc = gl.getUniformLocation(program, 'uEra');
+    const uMouseLoc = gl.getUniformLocation(program, 'uMouse');
+    const uMouseSpeedLoc = gl.getUniformLocation(program, 'uMouseSpeed');
     const uRipplesLoc = gl.getUniformLocation(program, 'uRipples[0]');
 
-    // Ring buffer of 8 ripples: [x, y, birthTime, amplitude]
-    const ripples = new Float32Array(8 * 4);
+    const ripples = new Float32Array(6 * 4);
     let rippleWriteIdx = 0;
-    let startTime = performance.now();
+    const startTime = performance.now();
 
-    const addRipple = (clientX: number, clientY: number, amplitude: number) => {
+    // Smoothly interpolated time, scroll, and pointer state
+    let smoothScroll = stateRef.current.scrollProgress;
+    let smoothVel = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let smoothMouseX = 0;
+    let smoothMouseY = 0;
+    let smoothMouseSpeed = 0;
+
+    const toShaderCoords = (clientX: number, clientY: number) => {
       const w = window.innerWidth || 1;
       const h = window.innerHeight || 1;
       const aspect = w / h;
       const uvX = clientX / w;
       const uvY = 1.0 - clientY / h;
-      const px = (uvX - 0.5) * aspect;
-      const py = uvY - 0.5;
-      const nowSec = (performance.now() - startTime) * 0.001;
-
-      const base = rippleWriteIdx * 4;
-      ripples[base] = px;
-      ripples[base + 1] = py;
-      ripples[base + 2] = nowSec;
-      ripples[base + 3] = amplitude;
-      rippleWriteIdx = (rippleWriteIdx + 1) % 8;
+      return {
+        x: (uvX - 0.5) * aspect,
+        y: uvY - 0.5,
+      };
     };
 
-    // Seed an initial gentle center water ripple on load
-    addRipple(window.innerWidth * 0.5, window.innerHeight * 0.5, 0.85);
-
-    let lastMoveX = -999;
-    let lastMoveY = -999;
-    let lastMoveTime = 0;
+    const addRipple = (clientX: number, clientY: number, amplitude: number) => {
+      const pos = toShaderCoords(clientX, clientY);
+      const nowSec = (performance.now() - startTime) * 0.001;
+      const base = rippleWriteIdx * 4;
+      ripples[base] = pos.x;
+      ripples[base + 1] = pos.y;
+      ripples[base + 2] = nowSec;
+      ripples[base + 3] = amplitude;
+      rippleWriteIdx = (rippleWriteIdx + 1) % 6;
+    };
 
     const onPointerMove = (e: PointerEvent) => {
-      const now = performance.now();
-      const dx = e.clientX - lastMoveX;
-      const dy = e.clientY - lastMoveY;
-      if (now - lastMoveTime > 65 && dx * dx + dy * dy > 700) {
-        addRipple(e.clientX, e.clientY, 0.42);
-        lastMoveX = e.clientX;
-        lastMoveY = e.clientY;
-        lastMoveTime = now;
-      }
+      const pos = toShaderCoords(e.clientX, e.clientY);
+      const dx = pos.x - targetMouseX;
+      const dy = pos.y - targetMouseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      smoothMouseSpeed = Math.min(1.0, smoothMouseSpeed + dist * 2.5);
+      targetMouseX = pos.x;
+      targetMouseY = pos.y;
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      addRipple(e.clientX, e.clientY, 1.15);
+      addRipple(e.clientX, e.clientY, 0.9);
     };
 
     const updateSize = () => {
-      // Render water shader at 1.0x CSS pixels for ultra-smooth 60fps liquid look
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = Math.floor(window.innerWidth * dpr);
       canvas.height = Math.floor(window.innerHeight * dpr);
@@ -307,14 +273,21 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
     let rafId: number;
     const render = () => {
       const elapsed = (performance.now() - startTime) * 0.001;
-      const { scrollProgress: sProg, scrollVelocity: sVel, activeEraIndex: eraIdx } =
-        stateRef.current;
+      const { scrollProgress: sProg, scrollVelocity: sVel } = stateRef.current;
+
+      // Exponential smoothing on all uniforms so shader motion is 100% butter-smooth
+      smoothScroll += (sProg - smoothScroll) * 0.06;
+      smoothVel += (sVel - smoothVel) * 0.08;
+      smoothMouseX += (targetMouseX - smoothMouseX) * 0.07;
+      smoothMouseY += (targetMouseY - smoothMouseY) * 0.07;
+      smoothMouseSpeed *= 0.92;
 
       gl.uniform1f(uTimeLoc, elapsed);
       gl.uniform2f(uResLoc, canvas.width, canvas.height);
-      gl.uniform1f(uScrollLoc, sProg);
-      gl.uniform1f(uVelLoc, sVel);
-      gl.uniform1f(uEraLoc, eraIdx);
+      gl.uniform1f(uScrollLoc, smoothScroll);
+      gl.uniform1f(uVelLoc, smoothVel);
+      gl.uniform2f(uMouseLoc, smoothMouseX, smoothMouseY);
+      gl.uniform1f(uMouseSpeedLoc, smoothMouseSpeed);
       if (uRipplesLoc) {
         gl.uniform4fv(uRipplesLoc, ripples);
       }
