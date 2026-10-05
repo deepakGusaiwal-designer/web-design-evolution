@@ -1,6 +1,6 @@
 import React from 'react';
 import { ERAS } from '../data/eras';
-import { ArrowRight, ArrowLeft, Sparkles, Terminal, RotateCcw } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, Terminal, RotateCcw, Crosshair } from 'lucide-react';
 
 interface HorizontalStageProps {
   scrollProgress: number; // 0 to 1
@@ -9,6 +9,8 @@ interface HorizontalStageProps {
   onToggleAltMode: () => void;
   customWord: string;
   onChangeCustomWord: (val: string) => void;
+  selectedNodeIndex: number | null;
+  onSelectNode: (idx: number | null) => void;
   onSelectEra: (index: number) => void;
   pureParticleMode: boolean;
 }
@@ -22,10 +24,11 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
   onToggleAltMode,
   customWord,
   onChangeCustomWord,
+  selectedNodeIndex,
+  onSelectNode,
   onSelectEra,
   pureParticleMode,
 }) => {
-  // Translate across 9 full-viewport (100vw) horizontal stations
   const totalStations = ERAS.length;
   const translateXvw = -scrollProgress * (totalStations - 1) * 100;
 
@@ -45,30 +48,25 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
       >
         {ERAS.map((era, idx) => {
           const isActive = idx === activeEraIndex;
+          const activeNode =
+            isActive && selectedNodeIndex !== null
+              ? era.particleNodes[selectedNodeIndex]
+              : null;
 
           return (
             <section
               key={era.id}
-              className="relative w-screen h-full flex flex-col justify-end pb-16 sm:pb-20 px-4 sm:px-10 lg:px-16"
+              className="relative w-screen h-full flex flex-col justify-end pb-14 sm:pb-16 px-4 sm:px-8 lg:px-14"
             >
               {/* Subtle vertical station divider line on left edge */}
-              <div className="absolute left-0 top-14 bottom-14 w-px bg-white/[0.06]" />
+              <div className="absolute left-0 top-13 bottom-13 w-px bg-white/[0.06]" />
 
-              {/* Top-left Station Coordinate Watermark */}
-              <div className="absolute top-18 left-6 sm:left-16 hidden lg:flex items-center gap-3 font-mono text-[11px] tracking-[0.2em] text-neutral-500">
-                <span className="text-white font-semibold">STATION {era.chapter}</span>
-                <span>//</span>
-                <span>X-COORD: {(idx * 1920).toString().padStart(5, '0')}PX</span>
-                <span>//</span>
-                <span className="text-neutral-300">{era.year}</span>
-              </div>
-
-              {/* Bottom Architectural Information Deck (leaves upper 62% of screen open for the Particle Formation) */}
+              {/* Bottom Architectural Information Deck */}
               <div
-                className={`pointer-events-auto w-full max-w-7xl mx-auto mono-panel p-5 sm:p-6 lg:p-7 transition-all duration-500 relative ${
+                className={`pointer-events-auto w-full max-w-7xl mx-auto mono-panel p-4 sm:p-5 lg:p-6 transition-all duration-500 relative ${
                   isActive
-                    ? 'opacity-100 translate-y-0 border-white/25 shadow-[0_0_50px_rgba(0,0,0,0.9)]'
-                    : 'opacity-40 translate-y-2 border-white/10'
+                    ? 'opacity-100 translate-y-0 border-white/25 shadow-[0_0_50px_rgba(0,0,0,0.92)]'
+                    : 'opacity-35 translate-y-2 border-white/10'
                 }`}
               >
                 {/* Architectural Corner Crosshairs */}
@@ -77,36 +75,78 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                 <span className="absolute -bottom-1.5 -left-1.5 text-white/60 font-mono text-xs leading-none">+</span>
                 <span className="absolute -bottom-1.5 -right-1.5 text-white/60 font-mono text-xs leading-none">+</span>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                  {/* COLUMN 1 (4 Cols): Era Identity & Quote */}
-                  <div className="lg:col-span-4 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/10 pb-4 lg:pb-0 lg:pr-6">
+                {/* TOP STRIP OF DECK: 6 Interactive Particle Satellite Node Selector Pills */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-white/10">
+                  <div className="flex items-center gap-2 font-mono text-[10px] text-neutral-400 uppercase tracking-wider">
+                    <Crosshair className="w-3 h-3 text-white" />
+                    <span className="text-white font-bold">PARTICLE INFO NODES:</span>
+                    <span className="hidden sm:inline text-neutral-500">
+                      (CLICK NODE TO MORPH SKY PARTICLES & INSPECT)
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {era.particleNodes.map((node, nIdx) => {
+                      const isNodeSelected = isActive && selectedNodeIndex === nIdx;
+                      return (
+                        <button
+                          key={node.id}
+                          onClick={() => onSelectNode(isNodeSelected ? null : nIdx)}
+                          className={`px-2 py-1 font-mono text-[10px] uppercase tracking-wider border transition-all cursor-pointer ${
+                            isNodeSelected
+                              ? 'bg-white text-black border-white font-bold shadow-[0_0_15px_rgba(255,255,255,0.4)]'
+                              : 'bg-black/60 text-neutral-300 border-white/15 hover:border-white/50 hover:text-white'
+                          }`}
+                        >
+                          <span className="opacity-60 mr-1">{node.code}</span>
+                          <span>{node.title.split(' ')[0]}</span>
+                        </button>
+                      );
+                    })}
+                    {activeNode && (
+                      <button
+                        onClick={() => onSelectNode(null)}
+                        className="px-2 py-1 font-mono text-[10px] uppercase bg-white/15 text-white border border-white/30 hover:bg-white hover:text-black transition-colors cursor-pointer"
+                      >
+                        RESET WORD
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+                  {/* COLUMN 1 (4 Cols): Era Identity, Quote & Specs */}
+                  <div className="lg:col-span-4 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/10 pb-3 lg:pb-0 lg:pr-5">
                     <div>
-                      <div className="flex items-center gap-2.5 mb-2">
+                      <div className="flex items-center gap-2 mb-1.5">
                         <span className="px-2 py-0.5 bg-white text-black font-mono text-[10px] font-bold tracking-widest uppercase">
                           CH.{era.chapter}
                         </span>
                         <span className="font-mono text-xs text-neutral-400 tracking-wider font-semibold">
                           {era.year}
                         </span>
+                        <span className="ml-auto font-mono text-[10px] text-neutral-500">
+                          {era.telemetry.coreStack}
+                        </span>
                       </div>
 
-                      <h2 className="font-dm text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white uppercase leading-tight mb-2.5">
+                      <h2 className="font-dm text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-white uppercase leading-tight mb-2">
                         {era.title}
                       </h2>
 
-                      <p className="font-dm text-xs sm:text-sm text-neutral-300 italic leading-relaxed border-l-2 border-white/40 pl-3">
+                      <p className="font-dm text-xs text-neutral-300 italic leading-relaxed border-l-2 border-white/40 pl-3">
                         {era.quote}
                       </p>
                     </div>
 
                     {/* Archival Spec Pills */}
-                    <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/10">
+                    <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-white/10">
                       {era.specs.map((spec) => (
-                        <div key={spec.label} className="bg-white/[0.03] border border-white/10 px-2.5 py-1.5">
-                          <div className="font-mono text-[9px] text-neutral-500 uppercase tracking-wider">
+                        <div key={spec.label} className="bg-white/[0.03] border border-white/10 px-2 py-1">
+                          <div className="font-mono text-[8px] text-neutral-500 uppercase tracking-wider">
                             {spec.label}
                           </div>
-                          <div className="font-mono text-[11px] text-white font-semibold truncate mt-0.5">
+                          <div className="font-mono text-[10px] text-white font-semibold truncate mt-0.5">
                             {spec.value}
                           </div>
                         </div>
@@ -114,45 +154,68 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                     </div>
                   </div>
 
-                  {/* COLUMN 2 (4 Cols): Historical Narrative & Particle Experiment Trigger */}
-                  <div className="lg:col-span-4 flex flex-col justify-between h-full border-b lg:border-b-0 lg:border-r border-white/10 pb-4 lg:pb-0 lg:pr-6">
-                    <p className="font-dm text-xs sm:text-sm text-neutral-300 leading-relaxed mb-4">
-                      {era.summary}
-                    </p>
+                  {/* COLUMN 2 (4 Cols): Active Particle Node Dossier OR Historical Narrative */}
+                  <div className="lg:col-span-4 flex flex-col justify-between h-full border-b lg:border-b-0 lg:border-r border-white/10 pb-3 lg:pb-0 lg:pr-5">
+                    {activeNode ? (
+                      <div className="bg-white/[0.05] border border-white/30 p-3 mb-3">
+                        <div className="flex items-center justify-between font-mono text-[10px] text-neutral-400 mb-1">
+                          <span className="text-white font-bold">
+                            LOCKED SATELLITE // {activeNode.code} ({activeNode.year})
+                          </span>
+                          <span className="text-neutral-300">{activeNode.metric}</span>
+                        </div>
+                        <div className="font-dm text-sm font-black text-white uppercase mb-1">
+                          {activeNode.title}
+                        </div>
+                        <p className="font-dm text-xs text-neutral-200 leading-relaxed">
+                          {activeNode.detail}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="font-dm text-xs sm:text-[13px] text-neutral-300 leading-relaxed mb-3">
+                        {era.summary}
+                      </p>
+                    )}
 
                     {/* Special Live Particle Word Synthesizer on Final Chapter (08) */}
                     {idx === 8 ? (
-                      <div className="space-y-2.5 bg-white/[0.03] border border-white/15 p-3">
-                        <div className="flex items-center justify-between font-mono text-[10px] text-neutral-400 uppercase tracking-wider">
+                      <div className="space-y-2 bg-white/[0.03] border border-white/15 p-2.5">
+                        <div className="flex items-center justify-between font-mono text-[9px] text-neutral-400 uppercase tracking-wider">
                           <span className="flex items-center gap-1.5 text-white">
                             <Terminal className="w-3 h-3" />
                             LIVE PARTICLE WORD SYNTHESIZER
                           </span>
-                          <span>MAX 14 CHARS</span>
+                          <span>7,600 PARTICLES</span>
                         </div>
                         <div className="flex gap-2">
                           <input
                             type="text"
                             maxLength={14}
                             value={customWord}
-                            onChange={(e) => onChangeCustomWord(e.target.value)}
+                            onChange={(e) => {
+                              onSelectNode(null);
+                              onChangeCustomWord(e.target.value);
+                            }}
                             placeholder="TYPE ANY WORD..."
-                            className="w-full bg-black border border-white/30 px-3 py-1.5 font-mono text-xs text-white uppercase tracking-widest focus:outline-none focus:border-white"
+                            className="w-full bg-black border border-white/30 px-2.5 py-1 font-mono text-xs text-white uppercase tracking-widest focus:outline-none focus:border-white"
                           />
                           <button
                             onClick={onToggleAltMode}
-                            className="px-3 py-1.5 bg-white text-black font-mono text-[10px] font-bold uppercase tracking-wider hover:bg-neutral-200 transition-colors cursor-pointer shrink-0"
+                            className="px-3 py-1 bg-white text-black font-mono text-[10px] font-bold uppercase tracking-wider hover:bg-neutral-200 transition-colors cursor-pointer shrink-0"
                           >
                             {isAltMode ? 'CONVERGE' : 'EXPLODE'}
                           </button>
                         </div>
-                        <div className="flex flex-wrap gap-1.5 pt-1">
+                        <div className="flex flex-wrap gap-1">
                           {PRESET_WORDS.map((word) => (
                             <button
                               key={word}
-                              onClick={() => onChangeCustomWord(word)}
+                              onClick={() => {
+                                onSelectNode(null);
+                                onChangeCustomWord(word);
+                              }}
                               className={`px-2 py-0.5 font-mono text-[9px] uppercase border transition-colors cursor-pointer ${
-                                customWord.toUpperCase() === word
+                                customWord.toUpperCase() === word && selectedNodeIndex === null
                                   ? 'bg-white text-black border-white font-bold'
                                   : 'bg-black/60 text-neutral-400 border-white/15 hover:text-white hover:border-white/40'
                               }`}
@@ -164,10 +227,10 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                       </div>
                     ) : (
                       /* Interactive Particle Sculpture State Button */
-                      <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                      <div className="flex items-center gap-2 pt-1">
                         <button
                           onClick={onToggleAltMode}
-                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 font-mono text-xs font-bold uppercase tracking-wider border transition-all cursor-pointer ${
+                          className={`w-full flex items-center justify-center gap-2 px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${
                             isAltMode
                               ? 'bg-white text-black border-white shadow-[0_0_25px_rgba(255,255,255,0.35)]'
                               : 'bg-white/[0.06] text-white border-white/30 hover:bg-white hover:text-black'
@@ -182,23 +245,24 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
 
                   {/* COLUMN 3 (4 Cols): Chronological Era Milestones & Station Stepper */}
                   <div className="lg:col-span-4 flex flex-col justify-between h-full">
-                    <div className="space-y-2">
-                      <div className="font-mono text-[10px] text-neutral-500 uppercase tracking-widest mb-1">
-                        ARCHIVAL MILESTONES // {era.year}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between font-mono text-[9px] text-neutral-500 uppercase tracking-widest mb-1">
+                        <span>ARCHIVAL MILESTONES // {era.year}</span>
+                        <span>WEIGHT: {era.telemetry.pageWeight}</span>
                       </div>
                       {era.milestones.map((m) => (
                         <div
                           key={m.year + m.title}
-                          className="flex items-start gap-3 bg-white/[0.02] border border-white/[0.07] px-3 py-2 hover:border-white/25 transition-colors"
+                          className="flex items-start gap-2.5 bg-white/[0.02] border border-white/[0.07] px-2.5 py-1.5 hover:border-white/25 transition-colors"
                         >
-                          <span className="font-mono text-xs font-bold text-white bg-white/10 px-1.5 py-0.5 shrink-0">
+                          <span className="font-mono text-[10px] font-bold text-white bg-white/10 px-1.5 py-0.5 shrink-0">
                             {m.year}
                           </span>
                           <div className="min-w-0">
-                            <div className="font-dm text-xs font-bold text-white leading-snug">
+                            <div className="font-dm text-xs font-bold text-white leading-tight">
                               {m.title}
                             </div>
-                            <div className="font-dm text-[11px] text-neutral-400 leading-snug">
+                            <div className="font-dm text-[11px] text-neutral-400 leading-tight mt-0.5">
                               {m.desc}
                             </div>
                           </div>
@@ -207,24 +271,24 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                     </div>
 
                     {/* Quick Prev / Next Station Controls */}
-                    <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-white/10">
+                    <div className="flex items-center justify-between gap-2 mt-2.5 pt-2 border-t border-white/10">
                       <button
                         onClick={() => onSelectEra(Math.max(0, idx - 1))}
                         disabled={idx === 0}
-                        className="flex items-center gap-1.5 px-3 py-1 font-mono text-[10px] uppercase tracking-wider border border-white/15 text-neutral-300 hover:text-white hover:border-white/40 disabled:opacity-25 disabled:pointer-events-none cursor-pointer transition-colors"
+                        className="flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider border border-white/15 text-neutral-300 hover:text-white hover:border-white/40 disabled:opacity-25 disabled:pointer-events-none cursor-pointer transition-colors"
                       >
                         <ArrowLeft className="w-3 h-3" />
                         <span>PREV ERA</span>
                       </button>
 
-                      <span className="font-mono text-[10px] text-neutral-500">
-                        SCROLL OR DRAG HORIZONTALLY
+                      <span className="font-mono text-[9px] text-neutral-500 uppercase">
+                        7,600 PARTICLES ACTIVE
                       </span>
 
                       {idx < totalStations - 1 ? (
                         <button
                           onClick={() => onSelectEra(idx + 1)}
-                          className="flex items-center gap-1.5 px-3 py-1 font-mono text-[10px] uppercase tracking-wider bg-white text-black font-bold hover:bg-neutral-200 cursor-pointer transition-colors"
+                          className="flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider bg-white text-black font-bold hover:bg-neutral-200 cursor-pointer transition-colors"
                         >
                           <span>NEXT ERA</span>
                           <ArrowRight className="w-3 h-3" />
@@ -232,7 +296,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                       ) : (
                         <button
                           onClick={() => onSelectEra(0)}
-                          className="flex items-center gap-1.5 px-3 py-1 font-mono text-[10px] uppercase tracking-wider bg-white text-black font-bold hover:bg-neutral-200 cursor-pointer transition-colors"
+                          className="flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider bg-white text-black font-bold hover:bg-neutral-200 cursor-pointer transition-colors"
                         >
                           <RotateCcw className="w-3 h-3" />
                           <span>RESTART 1989</span>

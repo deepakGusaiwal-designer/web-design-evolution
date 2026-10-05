@@ -10,11 +10,11 @@ export const App: React.FC = () => {
   const [scrollVelocity, setScrollVelocity] = useState(0);
   const [activeEraIndex, setActiveEraIndex] = useState(0);
   const [altModes, setAltModes] = useState<Record<number, boolean>>({});
+  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null);
   const [customWord, setCustomWord] = useState('IMAGINE');
   const [pureParticleMode, setPureParticleMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
 
-  // Smooth horizontal scroll physics refs
   const targetProgressRef = useRef(0);
   const currentProgressRef = useRef(0);
   const prevEraRef = useRef(0);
@@ -27,12 +27,21 @@ export const App: React.FC = () => {
   const selectEra = useCallback((index: number) => {
     const clamped = Math.max(0, Math.min(ERAS.length - 1, index));
     targetProgressRef.current = clamped / (ERAS.length - 1);
+    setSelectedNodeIndex(null);
     if (soundEnabledRef.current) {
       playArchitecturalPulse(180 + clamped * 45, 0.16);
     }
   }, []);
 
+  const handleSelectNode = useCallback((idx: number | null) => {
+    setSelectedNodeIndex(idx);
+    if (soundEnabledRef.current) {
+      playArchitecturalPulse(idx !== null ? 460 + idx * 35 : 260, 0.14);
+    }
+  }, []);
+
   const toggleAltMode = useCallback(() => {
+    setSelectedNodeIndex(null);
     setAltModes((prev) => {
       const nextVal = !prev[activeEraIndex];
       if (soundEnabledRef.current) {
@@ -43,16 +52,13 @@ export const App: React.FC = () => {
   }, [activeEraIndex]);
 
   useEffect(() => {
-    // 1. Wheel listener (maps both vertical wheel and horizontal trackpad to horizontal X progress)
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      // Normalized sensitivity across 9 chapters
       const step = delta * 0.00022;
       targetProgressRef.current = Math.max(0, Math.min(1, targetProgressRef.current + step));
     };
 
-    // 2. Keyboard navigation (Left/Right arrows)
     const onKeyDown = (e: KeyboardEvent) => {
       const activeTag = document.activeElement?.tagName;
       if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
@@ -68,7 +74,6 @@ export const App: React.FC = () => {
       }
     };
 
-    // 3. Touch & Mouse Drag horizontal panning
     let isDragging = false;
     let startX = 0;
     let startProgress = 0;
@@ -106,14 +111,12 @@ export const App: React.FC = () => {
     window.addEventListener('pointermove', onPointerMove, { passive: true });
     window.addEventListener('pointerup', onPointerUp, { passive: true });
 
-    // 4. Smooth 60fps horizontal interpolation loop
     let rafId: number;
     const tick = () => {
       const target = targetProgressRef.current;
       const current = currentProgressRef.current;
       const diff = target - current;
 
-      // Smooth damping
       const next = Math.abs(diff) < 0.00005 ? target : current + diff * 0.085;
       const velocity = (next - current) * 1000;
 
@@ -125,6 +128,7 @@ export const App: React.FC = () => {
       if (eraIdx !== prevEraRef.current) {
         prevEraRef.current = eraIdx;
         setActiveEraIndex(eraIdx);
+        setSelectedNodeIndex(null);
         if (soundEnabledRef.current) {
           playArchitecturalPulse(200 + eraIdx * 40, 0.14);
         }
@@ -149,13 +153,15 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative w-screen h-screen bg-[#050505] text-white overflow-hidden select-none font-dm">
-      {/* 1. Monochrome 3D Particle Engine (Forms Era Words, Sculptures & Callouts) */}
+      {/* 1. Monochrome 3D Particle Engine (Forms Words, Glyphs, Sculptures, Satellites & Histogram) */}
       <ParticleEngine
         activeEraIndex={activeEraIndex}
         scrollProgress={scrollProgress}
         scrollVelocity={scrollVelocity}
         isAltMode={currentAltMode}
         customWord={customWord}
+        selectedNodeIndex={selectedNodeIndex}
+        onSelectNode={handleSelectNode}
         onCanvasClick={() => {
           if (soundEnabled) playArchitecturalPulse(310, 0.12);
         }}
@@ -184,6 +190,8 @@ export const App: React.FC = () => {
         onToggleAltMode={toggleAltMode}
         customWord={customWord}
         onChangeCustomWord={setCustomWord}
+        selectedNodeIndex={selectedNodeIndex}
+        onSelectNode={handleSelectNode}
         onSelectEra={selectEra}
         pureParticleMode={pureParticleMode}
       />
