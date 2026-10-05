@@ -29,129 +29,129 @@ interface EraParticlePalette {
  * Preserves high-contrast white/silver readability while weaving in subtle era-specific accent particles.
  */
 const ERA_PARTICLE_PALETTES: readonly EraParticlePalette[] = [
-  // Era 00: Prologue (1989 — ∞) — Pure White + Ice Cyan & Celestial Silver
+  // Era 00: Prologue (1989 — ∞) — Sculpture Accent: Ice Cyan & Celestial Silver
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)', // 0: Crisp White Core
-      'rgba(228, 240, 250, 0.94)', // 1: Cool Silver-White Story
-      'rgba(125, 211, 252, 0.95)', // 2: Primary Minimal Accent (Ice Cyan)
-      'rgba(196, 181, 253, 0.88)', // 3: Secondary Minimal Accent (Celestial Violet)
-      'rgba(155, 175, 195, 0.78)', // 4: Mid Sculpture Slate
-      'rgba(95, 115, 135, 0.34)',  // 5: Deep Ambient Dust
+      'rgba(255, 255, 255, 0.98)', // 0: Pure White (Headline & Bright Sculpture)
+      'rgba(224, 224, 224, 0.92)', // 1: Monochrome Silver-White (Story Lines 1 & 2)
+      'rgba(125, 211, 252, 0.94)', // 2: Sculpture Minimal Accent A (Ice Cyan)
+      'rgba(196, 181, 253, 0.86)', // 3: Sculpture Minimal Accent B (Celestial Violet)
+      'rgba(165, 165, 165, 0.84)', // 4: Monochrome Architectural Gray (Kicker & Mid Sculpture)
+      'rgba(95, 110, 125, 0.34)',  // 5: Deep Sculpture & Ambient Dust
     ],
-    filament: 'rgba(125, 211, 252, 0.16)',
+    filament: 'rgba(125, 211, 252, 0.15)',
     accentHex: '#7dd3fc',
     accentRgb: '125, 211, 252',
   },
-  // Era 01: The Dark Ages (1989 — 1994) — Pure White + CRT Phosphor Emerald
+  // Era 01: The Dark Ages (1989 — 1994) — Sculpture Accent: CRT Phosphor Emerald
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)',
-      'rgba(220, 245, 232, 0.94)',
-      'rgba(52, 211, 153, 0.95)',  // CRT Phosphor Emerald
-      'rgba(110, 231, 183, 0.88)', // Terminal Mint
-      'rgba(130, 185, 160, 0.78)',
-      'rgba(70, 120, 95, 0.34)',
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(224, 224, 224, 0.92)',
+      'rgba(52, 211, 153, 0.94)',  // CRT Phosphor Emerald
+      'rgba(110, 231, 183, 0.86)', // Terminal Mint
+      'rgba(165, 165, 165, 0.84)',
+      'rgba(70, 115, 95, 0.34)',
     ],
-    filament: 'rgba(52, 211, 153, 0.16)',
+    filament: 'rgba(52, 211, 153, 0.15)',
     accentHex: '#34d399',
     accentRgb: '52, 211, 153',
   },
-  // Era 02: Tables & GeoCities (1995 — 1999) — Pure White + Web-Safe Amber & Hyperlink Blue
+  // Era 02: Tables & GeoCities (1995 — 1999) — Sculpture Accent: Web-Safe Amber & Hyperlink Blue
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)',
-      'rgba(245, 238, 225, 0.94)',
-      'rgba(251, 191, 36, 0.95)',  // Web-Safe Gold Amber
-      'rgba(96, 165, 250, 0.90)',  // Classic Hyperlink Cobalt
-      'rgba(185, 170, 145, 0.78)',
-      'rgba(115, 105, 90, 0.34)',
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(224, 224, 224, 0.92)',
+      'rgba(251, 191, 36, 0.94)',  // Web-Safe Gold Amber
+      'rgba(96, 165, 250, 0.88)',  // Classic Hyperlink Cobalt
+      'rgba(165, 165, 165, 0.84)',
+      'rgba(110, 100, 85, 0.34)',
     ],
-    filament: 'rgba(251, 191, 36, 0.16)',
+    filament: 'rgba(251, 191, 36, 0.15)',
     accentHex: '#fbbf24',
     accentRgb: '251, 191, 36',
   },
-  // Era 03: CSS Zen & Flash Era (2000 — 2006) — Pure White + Flash Coral & Aqua Chrome
+  // Era 03: CSS Zen & Flash Era (2000 — 2006) — Sculpture Accent: Flash Coral & Aqua Chrome
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)',
-      'rgba(245, 232, 238, 0.94)',
-      'rgba(251, 113, 133, 0.95)', // Flash MX Crimson Rose
-      'rgba(56, 189, 248, 0.90)',  // Web 2.0 Aqua Chrome
-      'rgba(190, 155, 168, 0.78)',
-      'rgba(115, 90, 105, 0.34)',
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(224, 224, 224, 0.92)',
+      'rgba(251, 113, 133, 0.94)', // Flash MX Crimson Rose
+      'rgba(56, 189, 248, 0.88)',  // Web 2.0 Aqua Chrome
+      'rgba(165, 165, 165, 0.84)',
+      'rgba(110, 90, 100, 0.34)',
     ],
-    filament: 'rgba(251, 113, 133, 0.16)',
+    filament: 'rgba(251, 113, 133, 0.15)',
     accentHex: '#fb7185',
     accentRgb: '251, 113, 133',
   },
-  // Era 04: Mobile & Responsive (2007 — 2011) — Pure White + Capacitive Sky & Grid Violet
+  // Era 04: Mobile & Responsive (2007 — 2011) — Sculpture Accent: Capacitive Sky & Grid Violet
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)',
-      'rgba(228, 238, 252, 0.94)',
-      'rgba(56, 189, 248, 0.95)',  // Capacitive Sky Blue
-      'rgba(167, 139, 250, 0.88)', // 960 Grid Lavender
-      'rgba(150, 175, 205, 0.78)',
-      'rgba(85, 105, 135, 0.34)',
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(224, 224, 224, 0.92)',
+      'rgba(56, 189, 248, 0.94)',  // Capacitive Sky Blue
+      'rgba(167, 139, 250, 0.86)', // 960 Grid Lavender
+      'rgba(165, 165, 165, 0.84)',
+      'rgba(85, 105, 130, 0.34)',
     ],
-    filament: 'rgba(56, 189, 248, 0.16)',
+    filament: 'rgba(56, 189, 248, 0.15)',
     accentHex: '#38bdf8',
     accentRgb: '56, 189, 248',
   },
-  // Era 05: Flat & Design Systems (2012 — 2015) — Pure White + Swiss Coral & Bauhaus Teal
+  // Era 05: Flat & Design Systems (2012 — 2015) — Sculpture Accent: Swiss Coral & Bauhaus Teal
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)',
-      'rgba(242, 238, 238, 0.94)',
-      'rgba(248, 113, 113, 0.95)', // Swiss Vermilion Red
-      'rgba(45, 212, 191, 0.88)',  // Bauhaus Token Teal
-      'rgba(185, 165, 165, 0.78)',
-      'rgba(110, 95, 95, 0.34)',
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(224, 224, 224, 0.92)',
+      'rgba(248, 113, 113, 0.94)', // Swiss Vermilion Red
+      'rgba(45, 212, 191, 0.86)',  // Bauhaus Token Teal
+      'rgba(165, 165, 165, 0.84)',
+      'rgba(105, 95, 95, 0.34)',
     ],
-    filament: 'rgba(45, 212, 191, 0.16)',
+    filament: 'rgba(45, 212, 191, 0.15)',
     accentHex: '#2dd4bf',
     accentRgb: '45, 212, 191',
   },
-  // Era 06: WebGL & Scrollytelling (2016 — 2022) — Pure White + GLSL Violet & Shader Cyan
+  // Era 06: WebGL & Scrollytelling (2016 — 2022) — Sculpture Accent: GLSL Violet & Shader Cyan
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)',
-      'rgba(238, 230, 252, 0.94)',
-      'rgba(192, 132, 252, 0.95)', // GLSL Normal-Map Violet
-      'rgba(34, 211, 238, 0.90)',  // Fragment Shader Cyan
-      'rgba(170, 150, 205, 0.78)',
-      'rgba(100, 85, 130, 0.34)',
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(224, 224, 224, 0.92)',
+      'rgba(192, 132, 252, 0.94)', // GLSL Normal-Map Violet
+      'rgba(34, 211, 238, 0.88)',  // Fragment Shader Cyan
+      'rgba(165, 165, 165, 0.84)',
+      'rgba(100, 85, 125, 0.34)',
     ],
-    filament: 'rgba(192, 132, 252, 0.17)',
+    filament: 'rgba(192, 132, 252, 0.16)',
     accentHex: '#c084fc',
     accentRgb: '192, 132, 252',
   },
-  // Era 07: AI-Native & Generative UI (2023 — 2025) — Pure White + Synaptic Gold & Neural Indigo
+  // Era 07: AI-Native & Generative UI (2023 — 2025) — Sculpture Accent: Synaptic Gold & Neural Indigo
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)',
-      'rgba(245, 238, 230, 0.94)',
-      'rgba(251, 191, 36, 0.95)',  // Synaptic Attention Gold
-      'rgba(129, 140, 248, 0.90)', // Latent Space Indigo
-      'rgba(185, 175, 160, 0.78)',
-      'rgba(110, 100, 95, 0.34)',
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(224, 224, 224, 0.92)',
+      'rgba(251, 191, 36, 0.94)',  // Synaptic Attention Gold
+      'rgba(129, 140, 248, 0.88)', // Latent Space Indigo
+      'rgba(165, 165, 165, 0.84)',
+      'rgba(105, 98, 92, 0.34)',
     ],
-    filament: 'rgba(251, 191, 36, 0.16)',
+    filament: 'rgba(251, 191, 36, 0.15)',
     accentHex: '#fbbf24',
     accentRgb: '251, 191, 36',
   },
-  // Era 08: The Spatial Horizon (2026+) — Pure White + Biophotonic Rose & Holographic Mint
+  // Era 08: The Spatial Horizon (2026+) — Sculpture Accent: Biophotonic Rose & Holographic Mint
   {
     buckets: [
-      'rgba(255, 255, 255, 0.99)',
-      'rgba(245, 232, 242, 0.94)',
-      'rgba(244, 114, 182, 0.95)', // Biophotonic Rose-Quartz
-      'rgba(94, 234, 212, 0.90)',  // Holographic Spatial Mint
-      'rgba(185, 160, 180, 0.78)',
-      'rgba(110, 90, 110, 0.34)',
+      'rgba(255, 255, 255, 0.98)',
+      'rgba(224, 224, 224, 0.92)',
+      'rgba(244, 114, 182, 0.94)', // Biophotonic Rose-Quartz
+      'rgba(94, 234, 212, 0.88)',  // Holographic Spatial Mint
+      'rgba(165, 165, 165, 0.84)',
+      'rgba(105, 90, 105, 0.34)',
     ],
-    filament: 'rgba(244, 114, 182, 0.17)',
+    filament: 'rgba(244, 114, 182, 0.16)',
     accentHex: '#f472b6',
     accentRgb: '244, 114, 182',
   },
@@ -189,22 +189,22 @@ function sampleMultiLineParticleStory(
 
   // Tier 2 (Encoded in Red channel): Chapter Kicker Line
   ctx.fillStyle = '#ff0000';
-  ctx.font = '800 24px "DM Sans", sans-serif';
+  ctx.font = '800 21px "DM Sans", sans-serif';
   ctx.fillText(story.kicker.toUpperCase(), w / 2, 46);
 
   // Tier 0 (Encoded in Green channel): Monumental Story Headline
   ctx.fillStyle = '#00ff00';
   const headText = story.word.toUpperCase();
   const headLen = headText.length;
-  const headSize = headLen > 13 ? 76 : headLen > 10 ? 86 : 96;
+  const headSize = headLen > 13 ? 72 : headLen > 10 ? 82 : 90;
   ctx.font = `900 ${headSize}px "DM Sans", sans-serif`;
-  ctx.fillText(headText, w / 2, 145);
+  ctx.fillText(headText, w / 2, 144);
 
   // Tier 1 (Encoded in Blue channel): Two-Line Narrative Story in Particles
   ctx.fillStyle = '#0000ff';
-  ctx.font = '800 34px "DM Sans", sans-serif';
-  ctx.fillText(story.line1.toUpperCase(), w / 2, 266);
-  ctx.fillText(story.line2.toUpperCase(), w / 2, 326);
+  ctx.font = '700 30px "DM Sans", sans-serif';
+  ctx.fillText(story.line1.toUpperCase(), w / 2, 264);
+  ctx.fillText(story.line2.toUpperCase(), w / 2, 320);
 
   const imgData = ctx.getImageData(0, 0, w, h).data;
   const validPixels: { x: number; y: number; tier: number }[] = [];
@@ -813,10 +813,10 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       targets.set(textTargets, 0);
       targets.set(sculptTargets, TEXT_PARTICLES * 3);
 
-      // Assign crisp dot sizes per story tier (Headline = 2.05px, Story = 1.8px, Kicker = 1.65px)
+      // Assign smaller, finer dot sizes per story tier (Headline = 1.55px, Story = 1.22px, Kicker = 1.12px)
       for (let i = 0; i < TEXT_PARTICLES; i++) {
         const tier = tiers[i];
-        sizes[i] = tier === 0 ? 2.05 : tier === 1 ? 1.8 : 1.65;
+        sizes[i] = tier === 0 ? 1.55 : tier === 1 ? 1.22 : 1.12;
       }
 
       const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
@@ -867,7 +867,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
 
         if (i < TEXT_PARTICLES) {
           shades[i] = 1.0;
-          sizes[i] = 1.9;
+          sizes[i] = 1.3;
         } else if (i < streamStart) {
           shades[i] = 0.55 + Math.random() * 0.45;
           sizes[i] = 1.45 + Math.random() * 0.75;
@@ -1126,30 +1126,32 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           screenY[i] = sy;
 
           const baseSize = i < TEXT_PARTICLES ? sizes[i] : sizes[i] * perspective * 0.92;
-          drawSizes[i] = baseSize * (1 + hoverBoost * 0.55);
+          drawSizes[i] = baseSize * (1 + hoverBoost * 0.45);
 
           const vShift = activeStory.sculptVariant;
-          if (hoverBoost > 0.2) {
-            bucketIndices[i] = i % 2 === 0 ? 2 : 3;
-          } else if (i < TEXT_PARTICLES) {
-            const tier = textTiers[i]; // 0 = Headline, 1 = Story Lines, 2 = Kicker
-            if (tier === 0) {
-              bucketIndices[i] = (i + vShift) % 6 === 0 ? 2 : 0;
-            } else if (tier === 1) {
-              bucketIndices[i] = (i + vShift) % 6 === 0 ? 3 : 1;
+          if (i < TEXT_PARTICLES) {
+            // Text & Story Particles remain strictly monochrome (0 = White Headline, 1 = Silver Story, 4 = Gray Kicker)
+            if (hoverBoost > 0.25) {
+              bucketIndices[i] = 0;
             } else {
-              bucketIndices[i] = i % 3 === 0 ? 3 : 2;
+              const tier = textTiers[i];
+              bucketIndices[i] = tier === 0 ? 0 : tier === 1 ? 1 : 4;
             }
           } else {
-            const lum = shades[i] * perspective;
-            if (lum > 0.8) {
-              bucketIndices[i] = (i + vShift) % 3 === 0 ? 2 : 0;
-            } else if (lum > 0.58) {
-              bucketIndices[i] = (i + vShift) % 3 === 0 ? 3 : 1;
-            } else if (lum > 0.35) {
-              bucketIndices[i] = 4;
+            // 3D Sculpture & Ambient Particles receive minimal Era-specific accent colors (buckets 2 & 3)
+            if (hoverBoost > 0.2) {
+              bucketIndices[i] = i % 2 === 0 ? 2 : 3;
             } else {
-              bucketIndices[i] = 5;
+              const lum = shades[i] * perspective;
+              if (lum > 0.8) {
+                bucketIndices[i] = (i + vShift) % 3 === 0 ? 2 : 0;
+              } else if (lum > 0.58) {
+                bucketIndices[i] = (i + vShift) % 3 === 0 ? 3 : 1;
+              } else if (lum > 0.35) {
+                bucketIndices[i] = 4;
+              } else {
+                bucketIndices[i] = 5;
+              }
             }
           }
         }
@@ -1160,7 +1162,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         for (let b = 0; b < 6; b++) {
           ctx.fillStyle = palette.buckets[b];
           ctx.beginPath();
-          const startIdx = b >= 4 ? TEXT_PARTICLES : 0;
+          const startIdx = b === 2 || b === 3 || b === 5 ? TEXT_PARTICLES : 0;
           for (let i = startIdx; i < TOTAL_PARTICLES; i++) {
             if (bucketIndices[i] === b) {
               const sz = drawSizes[i];
