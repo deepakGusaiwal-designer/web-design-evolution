@@ -12,7 +12,7 @@ export const App: React.FC = () => {
   const [activeEraIndex, setActiveEraIndex] = useState(0);
   const [activePhaseIndex, setActivePhaseIndex] = useState(0);
   const [overrideWord, setOverrideWord] = useState<string | null>(null);
-  const [customWord, setCustomWord] = useState('IMAGINE');
+  const [customWord, setCustomWord] = useState('');
   const [pureParticleMode, setPureParticleMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
 
@@ -69,6 +69,7 @@ export const App: React.FC = () => {
       prevPhaseRef.current = phaseIdx;
       setActivePhaseIndex(phaseIdx);
       setOverrideWord(null);
+      setCustomWord('');
 
       // Compute exact sub-phase progress along the station window
       const totalIntervals = ERAS.length - 1;

@@ -97,22 +97,50 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               </h2>
 
               {/* Active Particle Phase Glass Sub-Block */}
-              <div
-                ref={phaseBoxRef}
-                className="glass-subcard rounded-lg p-2.5 flex flex-col gap-1"
-              >
-                <div className="flex items-center justify-between font-mono text-[9px] text-neutral-300 uppercase tracking-widest">
-                  <span>{overrideWord ? 'ACTIVE STORY NODE' : activePhase.tag}</span>
-                  <span className="text-white font-bold">
-                    [{overrideWord || activePhase.word}]
-                  </span>
-                </div>
-                <div className="font-dm text-xs text-white font-medium leading-snug">
-                  {overrideWord
-                    ? `7,200 story particles narrating "${overrideWord}"`
-                    : `${activePhase.line1} — ${activePhase.line2}`}
-                </div>
-              </div>
+              {(() => {
+                const matchedSpec = overrideWord
+                  ? era.specs.find((s) => s.particleWord === overrideWord)
+                  : undefined;
+                const matchedMilestone = overrideWord
+                  ? era.milestones.find((m) => m.particleWord === overrideWord)
+                  : undefined;
+                const trimmedCustom =
+                  activeEraIndex === 8 ? customWord.trim().toUpperCase() : '';
+
+                const kickerText = matchedSpec
+                  ? matchedSpec.story.kicker
+                  : matchedMilestone
+                    ? matchedMilestone.story.kicker
+                    : trimmedCustom
+                      ? 'CHAPTER 08 · LIVE PARTICLE SYNTHESIZER'
+                      : activePhase.tag;
+
+                const wordText =
+                  overrideWord || (trimmedCustom ? trimmedCustom : activePhase.word);
+
+                const narrativeText = matchedSpec
+                  ? `${matchedSpec.story.line1} — ${matchedSpec.story.line2}`
+                  : matchedMilestone
+                    ? `${matchedMilestone.story.line1} — ${matchedMilestone.story.line2}`
+                    : trimmedCustom
+                      ? `CUSTOM INTENT "${trimmedCustom}" SCULPTED LIVE IN 7,200 MONOCHROME PARTICLES`
+                      : `${activePhase.line1} — ${activePhase.line2}`;
+
+                return (
+                  <div
+                    ref={phaseBoxRef}
+                    className="glass-subcard rounded-lg p-2.5 flex flex-col gap-1"
+                  >
+                    <div className="flex items-center justify-between font-mono text-[9px] text-neutral-300 uppercase tracking-widest">
+                      <span>{kickerText}</span>
+                      <span className="text-white font-bold">[{wordText}]</span>
+                    </div>
+                    <div className="font-dm text-xs text-white font-medium leading-snug">
+                      {narrativeText}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Era Quote */}
               <p className="font-dm text-xs text-neutral-200 italic leading-relaxed border-l-2 border-white/50 pl-3">
@@ -227,7 +255,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
           </div>
 
           {/* BOTTOM-CENTER LOCKED GLASSMORPHIC CONTROL BAR */}
-          <div className="pointer-events-auto w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-3 py-2 glass-pill rounded-full">
+          <div className="pointer-events-auto w-full max-w-2xl mx-auto flex items-center justify-between gap-2 px-3 py-2 glass-pill rounded-full">
             {/* Prev Era Button */}
             <button
               onClick={() => onSelectEra(Math.max(0, activeEraIndex - 1))}
@@ -238,51 +266,52 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
 
-            {/* Center: 3 Sequential Particle Phases OR Live Word Input on Final Era */}
-            {activeEraIndex === 8 ? (
-              <div className="flex items-center gap-2 flex-1 justify-center px-2">
-                <Sparkles className="w-3.5 h-3.5 text-white shrink-0 hidden sm:inline" />
-                <span className="font-mono text-[10px] text-neutral-200 uppercase hidden sm:inline">
-                  SYNTHESIZE WORD:
-                </span>
-                <input
-                  type="text"
-                  maxLength={12}
-                  value={customWord}
-                  onChange={(e) => {
-                    onSelectOverrideWord(null);
-                    onChangeCustomWord(e.target.value);
-                  }}
-                  placeholder="TYPE WORD..."
-                  className="w-36 sm:w-44 bg-white/[0.07] border border-white/30 rounded-full px-3 py-1 font-mono text-xs text-white text-center uppercase tracking-widest focus:outline-none focus:border-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
-                />
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
-                {era.phases.map((phase, pIdx) => {
-                  const isPhaseActive =
-                    activePhaseIndex === pIdx && overrideWord === null;
-                  const phaseLetter = pIdx === 0 ? 'A' : pIdx === 1 ? 'B' : 'C';
-                  return (
-                    <button
-                      key={phase.tag}
-                      onClick={() => {
-                        onSelectOverrideWord(null);
-                        onSelectPhase(activeEraIndex, pIdx);
-                      }}
-                      className={`px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
-                        isPhaseActive
-                          ? 'bg-white/25 text-white border border-white/55 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_2px_10px_rgba(0,0,0,0.4)]'
-                          : 'text-neutral-300 border border-transparent hover:text-white hover:bg-white/10 hover:border-white/20'
-                      }`}
-                    >
-                      <span className="opacity-65 mr-1">{phaseLetter}.</span>
-                      {phase.word}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+            {/* Center: 3 Sequential Particle Phases + Optional Live Word Input on Final Era */}
+            <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
+              {era.phases.map((phase, pIdx) => {
+                const isCustomActive =
+                  activeEraIndex === 8 && customWord.trim().length > 0;
+                const isPhaseActive =
+                  activePhaseIndex === pIdx &&
+                  overrideWord === null &&
+                  !isCustomActive;
+                const phaseLetter = pIdx === 0 ? 'A' : pIdx === 1 ? 'B' : 'C';
+                return (
+                  <button
+                    key={phase.tag}
+                    onClick={() => {
+                      onSelectOverrideWord(null);
+                      onSelectPhase(activeEraIndex, pIdx);
+                    }}
+                    className={`px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
+                      isPhaseActive
+                        ? 'bg-white/25 text-white border border-white/55 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_2px_10px_rgba(0,0,0,0.4)]'
+                        : 'text-neutral-300 border border-transparent hover:text-white hover:bg-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <span className="opacity-65 mr-1">{phaseLetter}.</span>
+                    {phase.word}
+                  </button>
+                );
+              })}
+
+              {activeEraIndex === 8 && (
+                <div className="flex items-center gap-1.5 pl-1.5 border-l border-white/20 shrink-0">
+                  <Sparkles className="w-3 h-3 text-white shrink-0 hidden sm:inline" />
+                  <input
+                    type="text"
+                    maxLength={12}
+                    value={customWord}
+                    onChange={(e) => {
+                      onSelectOverrideWord(null);
+                      onChangeCustomWord(e.target.value);
+                    }}
+                    placeholder="TYPE WORD..."
+                    className="w-28 sm:w-32 bg-white/[0.08] border border-white/30 rounded-full px-2.5 py-1 font-mono text-[10px] text-white text-center uppercase tracking-widest placeholder:text-neutral-400 focus:outline-none focus:border-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Next / Restart Era Button */}
             {activeEraIndex < totalStations - 1 ? (

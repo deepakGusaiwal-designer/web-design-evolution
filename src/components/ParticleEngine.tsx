@@ -121,6 +121,8 @@ function generateSculptureCoordinates(
   count: number
 ): Float32Array {
   const coords = new Float32Array(count * 3);
+  const baseMode = variant % 3; // 0 = Phase A / Spec 1 / Milestone 1, 1 = B / 2 / 2, 2 = C / 3 / 3
+  const tierMode = Math.floor(variant / 3); // 0 = Phase, 1 = Spec Override, 2 = Milestone Override
 
   for (let i = 0; i < count; i++) {
     const t = i / count;
@@ -130,105 +132,211 @@ function generateSculptureCoordinates(
 
     switch (shape) {
       case 'sphere': {
-        if (i < count * 0.72) {
-          const sub = Math.floor(count * 0.72);
-          const phi = Math.acos(1 - (2 * (i % sub)) / sub);
-          const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-          const r = variant === 0 ? 0.21 : variant === 1 ? 0.24 + (i % 3) * 0.02 : 0.19;
-          x = r * Math.sin(phi) * Math.cos(theta);
-          y = r * Math.sin(phi) * Math.sin(theta);
-          z = r * Math.cos(phi);
+        if (baseMode === 0) {
+          // Variant 0: Fibonacci Geodesic Globe + Equatorial Data Ring
+          if (i < count * 0.72) {
+            const sub = Math.floor(count * 0.72);
+            const phi = Math.acos(1 - (2 * (i % sub)) / sub);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            const r = 0.21;
+            x = r * Math.sin(phi) * Math.cos(theta);
+            y = r * Math.sin(phi) * Math.sin(theta);
+            z = r * Math.cos(phi);
+          } else {
+            const angle = t * Math.PI * 24;
+            x = Math.cos(angle) * 0.33;
+            y = Math.sin(angle) * 0.06;
+            z = Math.sin(angle) * 0.33;
+          }
+        } else if (baseMode === 1) {
+          // Variant 1: Intertwined Double-Helix Hypertext Torus
+          const strand = i % 2 === 0 ? 1 : -1;
+          const angle = t * Math.PI * 8;
+          const majorR = 0.24;
+          const minorR = 0.075;
+          x = (majorR + minorR * Math.cos(angle * 3) * strand) * Math.cos(angle);
+          y = minorR * Math.sin(angle * 3) * strand * 1.4;
+          z = (majorR + minorR * Math.cos(angle * 3) * strand) * Math.sin(angle);
         } else {
-          const angle = t * Math.PI * 24;
-          const ringR = variant === 1 ? 0.36 : 0.32;
-          const tilt = variant === 2 ? 0.45 : 0.2;
-          x = Math.cos(angle) * ringR;
-          y = Math.sin(angle) * ringR * tilt;
-          z = Math.sin(angle) * ringR;
+          // Variant 2: 3 Orthogonal Gyroscopic Archive Rings + Dense Core
+          const ring = i % 4;
+          const angle = t * Math.PI * 16;
+          if (ring === 0) {
+            const phi = Math.acos(1 - 2 * t);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            x = 0.12 * Math.sin(phi) * Math.cos(theta);
+            y = 0.12 * Math.sin(phi) * Math.sin(theta);
+            z = 0.12 * Math.cos(phi);
+          } else if (ring === 1) {
+            x = Math.cos(angle) * 0.29;
+            y = Math.sin(angle) * 0.29 * 0.25;
+            z = Math.sin(angle) * 0.29;
+          } else if (ring === 2) {
+            x = Math.cos(angle) * 0.26 * 0.25;
+            y = Math.sin(angle) * 0.26;
+            z = Math.cos(angle) * 0.26;
+          } else {
+            x = Math.cos(angle) * 0.32;
+            y = Math.sin(angle) * 0.18;
+            z = -Math.cos(angle) * 0.22;
+          }
         }
         break;
       }
 
       case 'terminal': {
-        if (i < count * 0.25) {
-          const edge = i % 4;
-          const p = ((i * 13) % 100) / 100;
-          const w = 0.31;
-          const h = 0.18;
-          if (edge === 0) { x = -w + p * w * 2; y = -h; }
-          else if (edge === 1) { x = -w + p * w * 2; y = h; }
-          else if (edge === 2) { x = -w; y = -h + p * h * 2; }
-          else { x = w; y = -h + p * h * 2; }
-          z = -0.02;
+        if (baseMode === 0) {
+          // Variant 0: NeXTcube Workstation Bezel + 80x24 Monospace Rows
+          if (i < count * 0.25) {
+            const edge = i % 4;
+            const p = ((i * 13) % 100) / 100;
+            const w = 0.31;
+            const h = 0.18;
+            if (edge === 0) { x = -w + p * w * 2; y = -h; }
+            else if (edge === 1) { x = -w + p * w * 2; y = h; }
+            else if (edge === 2) { x = -w; y = -h + p * h * 2; }
+            else { x = w; y = -h + p * h * 2; }
+            z = -0.02;
+          } else {
+            const row = i % 10;
+            const col = Math.floor(i / 10) % 34;
+            x = -0.26 + (col / 34) * 0.52;
+            y = -0.14 + (row / 10) * 0.28;
+            z = 0;
+          }
+        } else if (baseMode === 1) {
+          // Variant 1: 3D Cathode-Ray Tube (CRT) Electron Funnel Cone
+          const depth = (i % 25) / 24; // 0 (front glass) to 1 (electron gun neck)
+          const radius = 0.05 + (1 - depth) * 0.23;
+          const angle = t * Math.PI * 40;
+          x = Math.sign(Math.cos(angle)) * Math.pow(Math.abs(Math.cos(angle)), 0.55) * radius * 1.25;
+          y = Math.sign(Math.sin(angle)) * Math.pow(Math.abs(Math.sin(angle)), 0.55) * radius * 0.85;
+          z = 0.16 - depth * 0.34;
         } else {
-          const row = i % 10;
-          const col = Math.floor(i / 10) % 34;
-          const tabShift = variant === 1 ? ((row % 3) + 1) * 0.04 : 0;
-          x = -0.26 + (col / 34) * 0.52 + tabShift;
-          y = -0.14 + (row / 10) * 0.28;
-          z = variant === 2 ? Math.sin(row * 0.6) * 0.05 : 0;
+          // Variant 2: 4 Linked Hypertext Server Terminals in 3D Space
+          const node = i % 4;
+          const centers = [
+            [-0.20, -0.09, 0.06],
+            [0.20, -0.09, -0.06],
+            [-0.18, 0.10, -0.06],
+            [0.18, 0.10, 0.06],
+          ];
+          const [cx, cy, cz] = centers[node];
+          const localP = ((i * 19) % 100) / 100;
+          const edge = Math.floor(i / 4) % 4;
+          const w = 0.095;
+          const h = 0.062;
+          if (edge === 0) { x = cx - w + localP * w * 2; y = cy - h; }
+          else if (edge === 1) { x = cx - w + localP * w * 2; y = cy + h; }
+          else if (edge === 2) { x = cx - w; y = cy - h + localP * h * 2; }
+          else { x = cx + w; y = cy - h + localP * h * 2; }
+          z = cz;
         }
         break;
       }
 
       case 'table': {
-        const cellIndex = i % 5;
-        const p = ((i * 29) % 200) / 200;
-        const edge = i % 4;
-        const cells = [
-          { cx: 0.0, cy: -0.14, cw: 0.28, ch: 0.038, cz: 0 },
-          { cx: -0.19, cy: 0.01, cw: 0.08, ch: 0.09, cz: 0.03 },
-          { cx: 0.01, cy: 0.01, cw: 0.10, ch: 0.09, cz: -0.02 },
-          { cx: 0.20, cy: 0.01, cw: 0.07, ch: 0.09, cz: 0.04 },
-          { cx: 0.0, cy: 0.15, cw: 0.28, ch: 0.03, cz: -0.02 },
-        ];
-        const c = cells[cellIndex];
-        const explode = variant === 1 ? 1.18 : variant === 2 ? 1.28 : 1.0;
-        const zBoost = variant > 0 ? (cellIndex - 2) * 0.08 * variant : c.cz;
-
-        if (edge === 0) { x = c.cx * explode - c.cw + p * c.cw * 2; y = c.cy * explode - c.ch; }
-        else if (edge === 1) { x = c.cx * explode - c.cw + p * c.cw * 2; y = c.cy * explode + c.ch; }
-        else if (edge === 2) { x = c.cx * explode - c.cw; y = c.cy * explode - c.ch + p * c.ch * 2; }
-        else { x = c.cx * explode + c.cw; y = c.cy * explode - c.ch + p * c.ch * 2; }
-        z = zBoost;
+        if (baseMode === 0) {
+          // Variant 0: Classic 5-Cell <TABLE> Holy Grail Grid
+          const cellIndex = i % 5;
+          const p = ((i * 29) % 200) / 200;
+          const edge = i % 4;
+          const cells = [
+            { cx: 0.0, cy: -0.14, cw: 0.28, ch: 0.038, cz: 0 },
+            { cx: -0.19, cy: 0.01, cw: 0.08, ch: 0.09, cz: 0.02 },
+            { cx: 0.01, cy: 0.01, cw: 0.10, ch: 0.09, cz: -0.02 },
+            { cx: 0.20, cy: 0.01, cw: 0.07, ch: 0.09, cz: 0.02 },
+            { cx: 0.0, cy: 0.15, cw: 0.28, ch: 0.03, cz: 0 },
+          ];
+          const c = cells[cellIndex];
+          if (edge === 0) { x = c.cx - c.cw + p * c.cw * 2; y = c.cy - c.ch; }
+          else if (edge === 1) { x = c.cx - c.cw + p * c.cw * 2; y = c.cy + c.ch; }
+          else if (edge === 2) { x = c.cx - c.cw; y = c.cy - c.ch + p * c.ch * 2; }
+          else { x = c.cx + c.cw; y = c.cy - c.ch + p * c.ch * 2; }
+          z = c.cz;
+        } else if (baseMode === 1) {
+          // Variant 1: Exploded 3x3 Isometric Sliced Image Matrix
+          const tileIdx = i % 9;
+          const col = (tileIdx % 3) - 1;
+          const row = Math.floor(tileIdx / 3) - 1;
+          const p = ((i * 31) % 100) / 100;
+          const edge = Math.floor(i / 9) % 4;
+          const cw = 0.078;
+          const ch = 0.052;
+          const cx = col * 0.19;
+          const cy = row * 0.13;
+          const cz = ((tileIdx % 3) - 1) * 0.09;
+          if (edge === 0) { x = cx - cw + p * cw * 2; y = cy - ch; }
+          else if (edge === 1) { x = cx - cw + p * cw * 2; y = cy + ch; }
+          else if (edge === 2) { x = cx - cw; y = cy - ch + p * ch * 2; }
+          else { x = cx + cw; y = cy - ch + p * ch * 2; }
+          z = cz;
+        } else {
+          // Variant 2: GeoCities Starfield Ring + Angled Triptych Frameset
+          if (i < count * 0.65) {
+            const pane = i % 3;
+            const cx = (pane - 1) * 0.21;
+            const lx = (((i * 17) % 100) / 100 - 0.5) * 0.16;
+            const ly = ((Math.floor(i / 12) % 16) / 16 - 0.5) * 0.24;
+            x = cx + lx;
+            y = ly;
+            z = Math.abs(pane - 1) * 0.08 - 0.04;
+          } else {
+            const angle = t * Math.PI * 28;
+            x = Math.cos(angle) * 0.35;
+            y = Math.sin(angle * 2) * 0.12;
+            z = Math.sin(angle) * 0.25;
+          }
+        }
         break;
       }
 
       case 'cascade': {
-        const layer = i % 3;
-        const spread = variant === 0 ? 0.09 : variant === 1 ? 0.16 : 0.21;
-        const lx = (layer - 1) * spread;
-        const lz = (layer - 1) * (variant === 2 ? 0.15 : 0.08);
-
-        if (layer < 2 && variant !== 1) {
+        if (baseMode === 0) {
+          // Variant 0: 3 Parallel Floating Z-Index Style Planes
+          const layer = i % 3;
+          const lx = (layer - 1) * 0.12;
+          const lz = (layer - 1) * 0.11;
           const gx = ((i * 17) % 24) / 24 - 0.5;
           const gy = (Math.floor(i / 24) % 18) / 18 - 0.5;
-          x = lx + gx * 0.32;
+          x = lx + gx * 0.34;
           y = gy * 0.22;
-          z = lz + gx * 0.12;
-        } else {
-          const waveX = (t - 0.5) * 0.66;
-          const freq = variant === 1 ? 16.0 : 10.0;
+          z = lz + gx * 0.1;
+        } else if (baseMode === 1) {
+          // Variant 1: Flash MX 3D Vector Waveform & Audio Equalizer Tunnel
+          const ribbon = i % 5;
+          const waveX = (t - 0.5) * 0.68;
+          const phaseShift = ribbon * 0.9;
           x = waveX;
-          y = Math.sin(waveX * freq + (i % 5)) * 0.11;
-          z = lz + Math.cos(waveX * 7.0) * 0.07;
+          y = Math.sin(waveX * 15.0 + phaseShift) * 0.14;
+          z = (ribbon - 2) * 0.065 + Math.cos(waveX * 10.0 + phaseShift) * 0.06;
+        } else {
+          // Variant 2: Web 2.0 Asynchronous Dual-Vortex AJAX Data Stream
+          const loop = i % 2 === 0 ? 1 : -1;
+          const angle = t * Math.PI * 14;
+          const radius = 0.12 + 0.18 * Math.sin(t * Math.PI);
+          x = Math.cos(angle) * radius * 1.25;
+          y = loop * Math.sin(angle * 2) * 0.13;
+          z = Math.sin(angle) * radius;
         }
         break;
       }
 
       case 'responsive': {
-        if (variant !== 1) {
-          const cols = variant === 2 ? 6 : 12;
+        if (baseMode === 0) {
+          // Variant 0: 12-Column 960.gs Proportional Architectural Grid
+          const cols = 12;
           const col = i % cols;
           const row = Math.floor(i / cols);
           const maxRows = Math.ceil(count / cols);
-          const colCenter = -0.28 + (col / (cols - 1)) * 0.56;
-          x = colCenter + ((i % 2) - 0.5) * 0.015;
-          y = ((row / maxRows) - 0.5) * 0.3;
+          const colCenter = -0.29 + (col / (cols - 1)) * 0.58;
+          x = colCenter + ((i % 2) - 0.5) * 0.014;
+          y = (row / maxRows - 0.5) * 0.3;
           z = Math.sin(col * 0.5) * 0.02;
-        } else {
-          if (i < count * 0.4) {
-            const p = i / (count * 0.4);
+        } else if (baseMode === 1) {
+          // Variant 1: Capacitive iPhone Bezel + 3 Stacked Touch Cards
+          if (i < count * 0.42) {
+            const p = i / (count * 0.42);
             const angle = p * Math.PI * 2;
             const pw = 0.15;
             const ph = 0.22;
@@ -248,6 +356,22 @@ function generateSculptureCoordinates(
             else { x = cw; y = cy - ch + p * ch * 2; }
             z = 0;
           }
+        } else {
+          // Variant 2: Multi-Device Triptych (Desktop + Tablet + Mobile Viewports)
+          const dev = i % 3;
+          const devices = [
+            { cx: -0.22, cy: 0.0, w: 0.13, h: 0.095, z: -0.03 }, // Desktop
+            { cx: 0.04, cy: 0.02, w: 0.085, h: 0.115, z: 0.01 },  // Tablet
+            { cx: 0.23, cy: 0.04, w: 0.048, h: 0.095, z: 0.05 },  // Mobile
+          ];
+          const d = devices[dev];
+          const edge = Math.floor(i / 3) % 4;
+          const p = ((i * 23) % 100) / 100;
+          if (edge === 0) { x = d.cx - d.w + p * d.w * 2; y = d.cy - d.h; }
+          else if (edge === 1) { x = d.cx - d.w + p * d.w * 2; y = d.cy + d.h; }
+          else if (edge === 2) { x = d.cx - d.w; y = d.cy - d.h + p * d.h * 2; }
+          else { x = d.cx + d.w; y = d.cy - d.h + p * d.h * 2; }
+          z = d.z;
         }
         break;
       }
@@ -258,17 +382,25 @@ function generateSculptureCoordinates(
         const iy = (Math.floor(i / side) % side) / side - 0.5;
         const iz = (Math.floor(i / (side * side)) % side) / side - 0.5;
 
-        if (variant === 0 || variant === 2) {
+        if (baseMode === 0) {
+          // Variant 0: 4 Modular Swiss Bento Grid Quadrants
           const tile = i % 4;
-          const tx = (tile % 2 === 0 ? -0.15 : 0.15) + ix * 0.22;
-          const ty = (tile < 2 ? -0.09 : 0.09) + iy * 0.14;
-          x = tx;
-          y = ty;
+          x = (tile % 2 === 0 ? -0.15 : 0.15) + ix * 0.22;
+          y = (tile < 2 ? -0.09 : 0.09) + iy * 0.14;
           z = 0.0;
+        } else if (baseMode === 1) {
+          // Variant 1: 3D Atomic Design Crystalline Lattice Cube
+          x = ix * 0.30;
+          y = iy * 0.30;
+          z = iz * 0.30;
         } else {
-          x = ix * 0.29;
-          y = iy * 0.29;
-          z = iz * 0.29;
+          // Variant 2: Isometric Z-Elevation Material Paper Stack (4 Stacked Horizontal Decks)
+          const deck = i % 4;
+          const gx = ((i * 13) % 28) / 28 - 0.5;
+          const gz = (Math.floor(i / 28) % 20) / 20 - 0.5;
+          x = gx * 0.44 + (deck - 1.5) * 0.03;
+          y = (deck - 1.5) * 0.075;
+          z = gz * 0.32;
         }
         break;
       }
@@ -279,7 +411,14 @@ function generateSculptureCoordinates(
         const u = (i % cols) / cols - 0.5;
         const v = Math.floor(i / cols) / rows - 0.5;
 
-        if (variant === 1) {
+        if (baseMode === 0) {
+          // Variant 0: Undulating GPU Vertex Displacement Terrain
+          const dist = Math.sqrt(u * u + v * v);
+          x = u * 0.66;
+          z = v * 0.52;
+          y = Math.sin(dist * 14.0) * 0.095;
+        } else if (baseMode === 1) {
+          // Variant 1: Parametric 3D Torus Knot (p=3, q=7)
           const a = t * Math.PI * 2 * 3;
           const b = t * Math.PI * 2 * 7;
           const r = 0.17 + 0.065 * Math.cos(b);
@@ -287,46 +426,134 @@ function generateSculptureCoordinates(
           y = r * Math.sin(a) * 0.48;
           z = 0.08 * Math.sin(b);
         } else {
-          const dist = Math.sqrt(u * u + v * v);
-          x = u * 0.65;
-          z = v * 0.5;
-          y = Math.sin(dist * (variant === 2 ? 20.0 : 12.0)) * 0.09;
+          // Variant 2: 3D Scrollytelling Camera Tunnel / Dolly Helix
+          const ringIdx = i % 16;
+          const depthT = ringIdx / 15; // 0 to 1
+          const ringR = 0.07 + depthT * 0.24;
+          const angle = t * Math.PI * 30;
+          x = Math.cos(angle) * ringR * 1.2;
+          y = Math.sin(angle) * ringR * 0.85;
+          z = (depthT - 0.5) * 0.46;
         }
         break;
       }
 
       case 'neural': {
-        const cluster = i % 7;
-        const centers = [
-          [0, 0, 0],
-          [-0.21, -0.09, 0.05],
-          [0.21, -0.09, -0.05],
-          [-0.17, 0.1, -0.07],
-          [0.17, 0.1, 0.07],
-          [0, -0.14, 0.09],
-          [0, 0.14, -0.09],
-        ];
-        const [cx, cy, cz] = centers[cluster];
-        const rad = (variant === 1 ? 0.11 : 0.075) * Math.cbrt(Math.random());
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-
-        x = cx + rad * Math.sin(phi) * Math.cos(theta);
-        y = cy + rad * Math.sin(phi) * Math.sin(theta);
-        z = cz + rad * Math.cos(phi);
+        if (baseMode === 0) {
+          // Variant 0: 7-Cluster Synaptic Cortex Topology
+          const cluster = i % 7;
+          const centers = [
+            [0, 0, 0],
+            [-0.21, -0.09, 0.05],
+            [0.21, -0.09, -0.05],
+            [-0.17, 0.1, -0.07],
+            [0.17, 0.1, 0.07],
+            [0, -0.14, 0.09],
+            [0, 0.14, -0.09],
+          ];
+          const [cx, cy, cz] = centers[cluster];
+          const rad = 0.075 * Math.cbrt(Math.random());
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.acos(2 * Math.random() - 1);
+          x = cx + rad * Math.sin(phi) * Math.cos(theta);
+          y = cy + rad * Math.sin(phi) * Math.sin(theta);
+          z = cz + rad * Math.cos(phi);
+        } else if (baseMode === 1) {
+          // Variant 1: 4-Layer Deep Transformer Tensor Planes (Input -> Attention -> Output)
+          const layer = i % 4;
+          const lx = -0.27 + layer * 0.18;
+          const gy = (((i * 11) % 16) / 15 - 0.5) * 0.26;
+          const gz = ((Math.floor(i / 16) % 12) / 11 - 0.5) * 0.24;
+          x = lx;
+          y = gy;
+          z = gz;
+        } else {
+          // Variant 2: Autonomous Multi-Agent Orbital Swarm (Core + 6 Orbiting Agent Rings)
+          const agent = i % 7;
+          if (agent === 0) {
+            const phi = Math.acos(1 - 2 * t);
+            const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+            x = 0.08 * Math.sin(phi) * Math.cos(theta);
+            y = 0.08 * Math.sin(phi) * Math.sin(theta);
+            z = 0.08 * Math.cos(phi);
+          } else {
+            const orbitAngle = (agent / 6) * Math.PI * 2 + t * Math.PI * 6;
+            const orbitR = 0.14 + (agent % 3) * 0.07;
+            x = Math.cos(orbitAngle) * orbitR * 1.15;
+            y = Math.sin(orbitAngle * 2) * 0.13 * (agent % 2 === 0 ? 1 : -1);
+            z = Math.sin(orbitAngle) * orbitR;
+          }
+        }
         break;
       }
 
       case 'singularity': {
-        const arm = i % 4;
-        const radius = Math.pow(t, 0.65) * (variant === 1 ? 0.38 : 0.29);
-        const spin = radius * (variant === 2 ? 5.0 : 12.0) + (arm * Math.PI) / 2;
-
-        x = Math.cos(spin) * radius * 0.82;
-        y = (Math.random() - 0.5) * (variant === 1 ? 0.22 : 0.055 * (1 - t * 0.7));
-        z = Math.sin(spin) * radius;
+        if (baseMode === 0) {
+          // Variant 0: 4-Arm Galactic Logarithmic Singularity Spiral
+          const arm = i % 4;
+          const radius = Math.pow(t, 0.65) * 0.30;
+          const spin = radius * 12.0 + (arm * Math.PI) / 2;
+          x = Math.cos(spin) * radius * 0.85;
+          y = (Math.random() - 0.5) * 0.055 * (1 - t * 0.7);
+          z = Math.sin(spin) * radius;
+        } else if (baseMode === 1) {
+          // Variant 1: Einstein-Rosen Spatial Wormhole Hourglass Bridge
+          const u = (t - 0.5) * 2; // -1 to 1
+          const waistR = 0.065 + u * u * 0.24;
+          const angle = i * 0.38;
+          x = Math.cos(angle) * waistR * 1.15;
+          y = u * 0.19;
+          z = Math.sin(angle) * waistR;
+        } else {
+          // Variant 2: 4D Tesseract Hypercube (Inner Cube + Outer Cube + 8 Diagonal Bridges)
+          const edgeIdx = i % 32;
+          const p = ((i * 23) % 100) / 100 * 2 - 1; // -1 to 1
+          const edges: [number, number, number, number, number, number][] = [
+            [-1, -1, -1, 1, -1, -1], [-1, 1, -1, 1, 1, -1], [-1, -1, 1, 1, -1, 1], [-1, 1, 1, 1, 1, 1],
+            [-1, -1, -1, -1, 1, -1], [1, -1, -1, 1, 1, -1], [-1, -1, 1, -1, 1, 1], [1, -1, 1, 1, 1, 1],
+            [-1, -1, -1, -1, -1, 1], [1, -1, -1, 1, -1, 1], [-1, 1, -1, -1, 1, 1], [1, 1, -1, 1, 1, 1],
+          ];
+          const alpha = (p + 1) * 0.5;
+          if (edgeIdx < 12) {
+            const e = edges[edgeIdx];
+            const s = 0.21;
+            x = (e[0] + (e[3] - e[0]) * alpha) * s;
+            y = (e[1] + (e[4] - e[1]) * alpha) * s * 0.82;
+            z = (e[2] + (e[5] - e[2]) * alpha) * s;
+          } else if (edgeIdx < 24) {
+            const e = edges[edgeIdx - 12];
+            const s = 0.095;
+            x = (e[0] + (e[3] - e[0]) * alpha) * s;
+            y = (e[1] + (e[4] - e[1]) * alpha) * s * 0.82;
+            z = (e[2] + (e[5] - e[2]) * alpha) * s;
+          } else {
+            const corner = edgeIdx - 24;
+            const cx = corner & 1 ? 1 : -1;
+            const cy = corner & 2 ? 1 : -1;
+            const cz = corner & 4 ? 1 : -1;
+            const s = 0.095 + alpha * (0.21 - 0.095);
+            x = cx * s;
+            y = cy * s * 0.82;
+            z = cz * s;
+          }
+        }
         break;
       }
+    }
+
+    // Apply subtle architectural harmonic twist when viewing a Spec (tierMode=1) or Milestone (tierMode=2)
+    if (tierMode === 1) {
+      const angle = y * 1.6;
+      const rx = x * Math.cos(angle) - z * Math.sin(angle);
+      const rz = x * Math.sin(angle) + z * Math.cos(angle);
+      x = rx * 1.06;
+      z = rz * 1.06;
+    } else if (tierMode === 2) {
+      const angle = x * 1.8;
+      const ry = y * Math.cos(angle) - z * Math.sin(angle);
+      const rz = y * Math.sin(angle) + z * Math.cos(angle);
+      y = ry * 1.05;
+      z = rz * 1.08;
     }
 
     // Center the 3D sculpture at y = +0.24 so it sits cleanly below the 4-line particle story
@@ -355,6 +582,14 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       overrideWord,
       customWord,
       onCanvasClick,
+    });
+
+    const activeStoryRef = useRef<ParticleNodeStory>({
+      kicker: ERAS[0].phases[0].tag,
+      word: ERAS[0].phases[0].word,
+      line1: ERAS[0].phases[0].line1,
+      line2: ERAS[0].phases[0].line2,
+      sculptVariant: 0,
     });
 
     const morphBoostRef = useRef({ value: 0 });
@@ -386,6 +621,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         word: phase.word,
         line1: phase.line1,
         line2: phase.line2,
+        sculptVariant: phase.sculptVariant,
       };
 
       if (overrideWord) {
@@ -401,16 +637,31 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             word: overrideWord,
             line1: phase.line1,
             line2: phase.line2,
+            sculptVariant: phase.sculptVariant,
           };
         }
       } else if (activeEraIndex === 8 && customWord.trim().length > 0) {
+        const cleanWord = customWord.trim().toUpperCase().slice(0, 12);
+        const charHash = cleanWord
+          .split('')
+          .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+        const customLines: [string, string][] = [
+          [`"${cleanWord}" MATERIALIZES IN LIVING LIGHT`, 'SCULPTED ACROSS SEVEN THOUSAND PARTICLES'],
+          [`YOUR INTENT "${cleanWord}" BECOMES ARCHITECTURE`, 'FLOATING IN THREE DIMENSIONAL SPACE'],
+          [`FROM 1989 CERN TO "${cleanWord}" IN 2026`, 'THE NEXT HORIZON OF THE WEB IS YOURS'],
+        ];
+        const [cLine1, cLine2] = customLines[charHash % customLines.length];
+
         activeStory = {
-          kicker: 'CHAPTER 08 · LIVE PARTICLE SYNTHESIZER',
-          word: customWord.trim().slice(0, 12),
-          line1: 'SCULPTED LIVE FROM YOUR INTENT',
-          line2: 'EVERY WORD TELLS THE STORY IN LIGHT',
+          kicker: `CHAPTER 08 · LIVE SYNTHESIS [${cleanWord.length} CHARS]`,
+          word: cleanWord,
+          line1: cLine1,
+          line2: cLine2,
+          sculptVariant: charHash % 9,
         };
       }
+
+      activeStoryRef.current = activeStory;
 
       const { coords: textTargets, tiers } = sampleMultiLineParticleStory(
         activeStory,
@@ -420,7 +671,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
 
       const sculptTargets = generateSculptureCoordinates(
         era.shapeType,
-        phase.sculptVariant,
+        activeStory.sculptVariant,
         SCULPT_PARTICLES
       );
 
@@ -637,8 +888,11 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         ctx.lineTo(width, height * 0.52);
         ctx.stroke();
 
+        const activeStory = activeStoryRef.current;
+        const baseVariant = activeStory.sculptVariant % 3;
+
         // 3. Smooth Interactive 3D Rotation for Central Sculpture (with Click Spin Impulse)
-        const isFlatPlane = era.shapeType === 'flat' && phase.sculptVariant !== 1;
+        const isFlatPlane = era.shapeType === 'flat' && baseVariant === 0;
         const rotY =
           (era.shapeType === 'terminal' ||
           era.shapeType === 'table' ||
@@ -675,7 +929,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           let tz = targets[i3 + 2];
 
           if (i >= TEXT_PARTICLES && i < streamStart) {
-            if (era.shapeType === 'wave3d' && phase.sculptVariant !== 1) {
+            if (era.shapeType === 'wave3d' && baseVariant === 0) {
               const d = Math.sqrt(tx * tx + tz * tz);
               ty = Math.sin(d * 14.0 - time * 3.0) * 0.09 + 0.24;
             } else if (era.shapeType === 'cascade' && i % 3 === 2) {
@@ -788,9 +1042,19 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           let rightSlot = 0;
           const cardH = 48;
 
-          era.sculptureCallouts.forEach((callout) => {
-            const line1 = `${callout.code} // ${callout.title}`;
-            const line2 = callout.value;
+          era.sculptureCallouts.forEach((callout, cIdx) => {
+            const line1 =
+              cIdx === 0
+                ? `${callout.code}.V${activeStory.sculptVariant + 1} // ${activeStory.word}`
+                : cIdx === 2
+                  ? `${callout.code} // ${phase.word}`
+                  : `${callout.code} // ${callout.title}`;
+            const line2 =
+              cIdx === 0
+                ? activeStory.kicker
+                : cIdx === 2
+                  ? phase.caption
+                  : callout.value;
 
             // Measure exact text widths so the glass box always wraps the text with generous padding
             ctx.font = '700 10px "JetBrains Mono", monospace';
