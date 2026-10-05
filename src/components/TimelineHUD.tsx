@@ -85,18 +85,20 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = ({
               <button
                 key={era.id}
                 onClick={() => onSelectEra(idx)}
-                className={`flex items-center gap-2 py-1 font-mono text-[10px] tracking-widest uppercase transition-colors cursor-pointer shrink-0 ${
-                  isActive ? 'text-white font-bold' : 'text-neutral-600 hover:text-neutral-300'
+                className={`flex items-center gap-1.5 px-2 py-1 rounded font-mono text-[10px] tracking-wider uppercase transition-all cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'bg-white text-black font-bold'
+                    : 'text-neutral-400 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <span
                   className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    isActive ? 'bg-white scale-125' : 'bg-white/20'
+                    isActive ? 'bg-black' : 'bg-white/40'
                   }`}
                 />
                 <span>{era.chapter}</span>
-                <span className="hidden md:inline text-[9px] opacity-75">
-                  {era.year.split(' ')[0]}
+                <span className="hidden md:inline text-[9px] opacity-90">
+                  {era.id}
                 </span>
               </button>
             );
