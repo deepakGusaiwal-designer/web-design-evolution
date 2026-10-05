@@ -9,8 +9,8 @@ export const App: React.FC = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollVelocity, setScrollVelocity] = useState(0);
   const [activeEraIndex, setActiveEraIndex] = useState(0);
-  const [altModes, setAltModes] = useState<Record<number, boolean>>({});
-  const [selectedNodeIndex, setSelectedNodeIndex] = useState<number | null>(null);
+  const [activePhaseIndex, setActivePhaseIndex] = useState(0);
+  const [overrideWord, setOverrideWord] = useState<string | null>(null);
   const [customWord, setCustomWord] = useState('IMAGINE');
   const [pureParticleMode, setPureParticleMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
@@ -18,6 +18,8 @@ export const App: React.FC = () => {
   const targetProgressRef = useRef(0);
   const currentProgressRef = useRef(0);
   const prevEraRef = useRef(0);
+  const prevPhaseRef = useRef(0);
+  const manualPhaseOverrideRef = useRef(false);
   const soundEnabledRef = useRef(soundEnabled);
 
   useEffect(() => {
@@ -27,35 +29,40 @@ export const App: React.FC = () => {
   const selectEra = useCallback((index: number) => {
     const clamped = Math.max(0, Math.min(ERAS.length - 1, index));
     targetProgressRef.current = clamped / (ERAS.length - 1);
-    setSelectedNodeIndex(null);
+    manualPhaseOverrideRef.current = false;
+    setActivePhaseIndex(0);
+    setOverrideWord(null);
     if (soundEnabledRef.current) {
       playArchitecturalPulse(180 + clamped * 45, 0.16);
     }
   }, []);
 
-  const handleSelectNode = useCallback((idx: number | null) => {
-    setSelectedNodeIndex(idx);
+  const handleSelectPhase = useCallback((eraIdx: number, phaseIdx: number) => {
+    manualPhaseOverrideRef.current = true;
+    prevPhaseRef.current = phaseIdx;
+    setActivePhaseIndex(phaseIdx);
+    setOverrideWord(null);
+    if (eraIdx !== prevEraRef.current) {
+      targetProgressRef.current = eraIdx / (ERAS.length - 1);
+    }
     if (soundEnabledRef.current) {
-      playArchitecturalPulse(idx !== null ? 460 + idx * 35 : 260, 0.14);
+      playArchitecturalPulse(300 + phaseIdx * 80, 0.14);
     }
   }, []);
 
-  const toggleAltMode = useCallback(() => {
-    setSelectedNodeIndex(null);
-    setAltModes((prev) => {
-      const nextVal = !prev[activeEraIndex];
-      if (soundEnabledRef.current) {
-        playArchitecturalPulse(nextVal ? 420 : 280, 0.18);
-      }
-      return { ...prev, [activeEraIndex]: nextVal };
-    });
-  }, [activeEraIndex]);
+  const handleSelectOverrideWord = useCallback((word: string | null) => {
+    setOverrideWord(word);
+    if (soundEnabledRef.current) {
+      playArchitecturalPulse(word ? 440 : 260, 0.14);
+    }
+  }, []);
 
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      manualPhaseOverrideRef.current = false;
       const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      const step = delta * 0.00022;
+      const step = delta * 0.0002;
       targetProgressRef.current = Math.max(0, Math.min(1, targetProgressRef.current + step));
     };
 
@@ -90,6 +97,7 @@ export const App: React.FC = () => {
         return;
       }
       isDragging = true;
+      manualPhaseOverrideRef.current = false;
       startX = e.clientX;
       startProgress = targetProgressRef.current;
     };
@@ -124,13 +132,26 @@ export const App: React.FC = () => {
       setScrollProgress(next);
       setScrollVelocity(velocity);
 
-      const eraIdx = Math.round(next * (ERAS.length - 1));
+      const totalIntervals = ERAS.length - 1;
+      const eraFloat = next * totalIntervals;
+      const eraIdx = Math.round(eraFloat);
+
       if (eraIdx !== prevEraRef.current) {
         prevEraRef.current = eraIdx;
         setActiveEraIndex(eraIdx);
-        setSelectedNodeIndex(null);
+        setOverrideWord(null);
         if (soundEnabledRef.current) {
           playArchitecturalPulse(200 + eraIdx * 40, 0.14);
+        }
+      }
+
+      // Derive sequential sub-phase (0, 1, or 2) as user scrolls across each station
+      if (!manualPhaseOverrideRef.current) {
+        const localOffset = eraFloat - eraIdx + 0.5; // 0.0 to 1.0 across the station window
+        const derivedPhase = localOffset < 0.36 ? 0 : localOffset < 0.68 ? 1 : 2;
+        if (derivedPhase !== prevPhaseRef.current) {
+          prevPhaseRef.current = derivedPhase;
+          setActivePhaseIndex(derivedPhase);
         }
       }
 
@@ -149,25 +170,22 @@ export const App: React.FC = () => {
     };
   }, [selectEra]);
 
-  const currentAltMode = !!altModes[activeEraIndex];
-
   return (
     <div className="relative w-screen h-screen bg-[#050505] text-white overflow-hidden select-none font-dm">
-      {/* 1. Monochrome 3D Particle Engine (Forms Words, Glyphs, Sculptures, Satellites & Histogram) */}
+      {/* 1. Clean Monochrome 3D Particle Engine */}
       <ParticleEngine
         activeEraIndex={activeEraIndex}
+        activePhaseIndex={activePhaseIndex}
         scrollProgress={scrollProgress}
         scrollVelocity={scrollVelocity}
-        isAltMode={currentAltMode}
+        overrideWord={overrideWord}
         customWord={customWord}
-        selectedNodeIndex={selectedNodeIndex}
-        onSelectNode={handleSelectNode}
         onCanvasClick={() => {
           if (soundEnabled) playArchitecturalPulse(310, 0.12);
         }}
       />
 
-      {/* 2. Top & Bottom Monochrome Architectural Timeline HUD */}
+      {/* 2. Minimal Top & Bottom Timeline HUD */}
       <TimelineHUD
         activeEraIndex={activeEraIndex}
         scrollProgress={scrollProgress}
@@ -182,16 +200,16 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* 3. Horizontal Scrolling Information Stations */}
+      {/* 3. Spacious Split-Margin Horizontal Stage */}
       <HorizontalStage
         scrollProgress={scrollProgress}
         activeEraIndex={activeEraIndex}
-        isAltMode={currentAltMode}
-        onToggleAltMode={toggleAltMode}
+        activePhaseIndex={activePhaseIndex}
+        onSelectPhase={handleSelectPhase}
+        overrideWord={overrideWord}
+        onSelectOverrideWord={handleSelectOverrideWord}
         customWord={customWord}
         onChangeCustomWord={setCustomWord}
-        selectedNodeIndex={selectedNodeIndex}
-        onSelectNode={handleSelectNode}
         onSelectEra={selectEra}
         pureParticleMode={pureParticleMode}
       />

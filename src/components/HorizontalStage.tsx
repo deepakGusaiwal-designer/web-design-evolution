@@ -1,31 +1,29 @@
 import React from 'react';
 import { ERAS } from '../data/eras';
-import { ArrowRight, ArrowLeft, Sparkles, Terminal, RotateCcw, Crosshair } from 'lucide-react';
+import { ArrowRight, ArrowLeft, RotateCcw } from 'lucide-react';
 
 interface HorizontalStageProps {
   scrollProgress: number; // 0 to 1
   activeEraIndex: number;
-  isAltMode: boolean;
-  onToggleAltMode: () => void;
+  activePhaseIndex: number;
+  onSelectPhase: (eraIdx: number, phaseIdx: number) => void;
+  overrideWord: string | null;
+  onSelectOverrideWord: (word: string | null) => void;
   customWord: string;
   onChangeCustomWord: (val: string) => void;
-  selectedNodeIndex: number | null;
-  onSelectNode: (idx: number | null) => void;
   onSelectEra: (index: number) => void;
   pureParticleMode: boolean;
 }
 
-const PRESET_WORDS = ['IMAGINE', 'FUTURE', 'SPATIAL', 'SYNAPSE', 'BEYOND', 'THE WEB'];
-
 export const HorizontalStage: React.FC<HorizontalStageProps> = ({
   scrollProgress,
   activeEraIndex,
-  isAltMode,
-  onToggleAltMode,
+  activePhaseIndex,
+  onSelectPhase,
+  overrideWord,
+  onSelectOverrideWord,
   customWord,
   onChangeCustomWord,
-  selectedNodeIndex,
-  onSelectNode,
   onSelectEra,
   pureParticleMode,
 }) => {
@@ -38,7 +36,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
         pureParticleMode ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* Horizontal Track of 9 Stations (900vw wide) */}
+      {/* Horizontal Track of 9 Clean Stations (900vw wide) */}
       <div
         className="flex h-full will-change-transform"
         style={{
@@ -48,263 +46,191 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
       >
         {ERAS.map((era, idx) => {
           const isActive = idx === activeEraIndex;
-          const activeNode =
-            isActive && selectedNodeIndex !== null
-              ? era.particleNodes[selectedNodeIndex]
-              : null;
 
           return (
             <section
               key={era.id}
-              className="relative w-screen h-full flex flex-col justify-end pb-14 sm:pb-16 px-4 sm:px-8 lg:px-14"
+              className="relative w-screen h-full flex flex-col justify-between pt-20 pb-18 px-6 sm:px-10 lg:px-14"
             >
-              {/* Subtle vertical station divider line on left edge */}
-              <div className="absolute left-0 top-13 bottom-13 w-px bg-white/[0.06]" />
-
-              {/* Bottom Architectural Information Deck */}
+              {/* Main Split-Margin Layout: Left Editorial + Open Center Particle Stage + Right Archival */}
               <div
-                className={`pointer-events-auto w-full max-w-7xl mx-auto mono-panel p-4 sm:p-5 lg:p-6 transition-all duration-500 relative ${
-                  isActive
-                    ? 'opacity-100 translate-y-0 border-white/25 shadow-[0_0_50px_rgba(0,0,0,0.92)]'
-                    : 'opacity-35 translate-y-2 border-white/10'
+                className={`flex-1 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 transition-opacity duration-500 ${
+                  isActive ? 'opacity-100' : 'opacity-20'
                 }`}
               >
-                {/* Architectural Corner Crosshairs */}
-                <span className="absolute -top-1.5 -left-1.5 text-white/60 font-mono text-xs leading-none">+</span>
-                <span className="absolute -top-1.5 -right-1.5 text-white/60 font-mono text-xs leading-none">+</span>
-                <span className="absolute -bottom-1.5 -left-1.5 text-white/60 font-mono text-xs leading-none">+</span>
-                <span className="absolute -bottom-1.5 -right-1.5 text-white/60 font-mono text-xs leading-none">+</span>
-
-                {/* TOP STRIP OF DECK: 6 Interactive Particle Satellite Node Selector Pills */}
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-4 border-b border-white/10">
-                  <div className="flex items-center gap-2 font-mono text-[10px] text-neutral-400 uppercase tracking-wider">
-                    <Crosshair className="w-3 h-3 text-white" />
-                    <span className="text-white font-bold">PARTICLE INFO NODES:</span>
-                    <span className="hidden sm:inline text-neutral-500">
-                      (CLICK NODE TO MORPH SKY PARTICLES & INSPECT)
-                    </span>
+                {/* LEFT MARGIN: Clean Swiss Editorial Typography (Max 300px wide) */}
+                <div className="pointer-events-auto w-full lg:w-[290px] xl:w-[320px] flex flex-col gap-4 bg-black/45 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none p-4 lg:p-0 border border-white/10 lg:border-0">
+                  <div className="flex items-center gap-3 font-mono text-[11px] tracking-[0.2em] text-neutral-400">
+                    <span className="text-white font-bold">/{era.chapter}</span>
+                    <span className="text-neutral-600">—</span>
+                    <span>{era.year}</span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    {era.particleNodes.map((node, nIdx) => {
-                      const isNodeSelected = isActive && selectedNodeIndex === nIdx;
+                  <h2 className="font-dm text-2xl sm:text-3xl font-bold tracking-tight text-white leading-[1.1]">
+                    {era.title}
+                  </h2>
+
+                  <p className="font-dm text-xs sm:text-sm text-neutral-300 italic leading-relaxed border-l border-white/30 pl-3.5">
+                    {era.quote}
+                  </p>
+
+                  <p className="font-dm text-xs text-neutral-400 leading-relaxed hidden sm:block">
+                    {era.summary}
+                  </p>
+
+                  {/* Minimal Spec Hairline Row */}
+                  <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/10">
+                    {era.specs.map((spec) => {
+                      const isSelected = isActive && overrideWord === spec.particleWord;
                       return (
                         <button
-                          key={node.id}
-                          onClick={() => onSelectNode(isNodeSelected ? null : nIdx)}
-                          className={`px-2 py-1 font-mono text-[10px] uppercase tracking-wider border transition-all cursor-pointer ${
-                            isNodeSelected
-                              ? 'bg-white text-black border-white font-bold shadow-[0_0_15px_rgba(255,255,255,0.4)]'
-                              : 'bg-black/60 text-neutral-300 border-white/15 hover:border-white/50 hover:text-white'
-                          }`}
+                          key={spec.label}
+                          onClick={() =>
+                            onSelectOverrideWord(isSelected ? null : spec.particleWord)
+                          }
+                          className="text-left group cursor-pointer"
+                          title={`Click to morph particles into "${spec.particleWord}"`}
                         >
-                          <span className="opacity-60 mr-1">{node.code}</span>
-                          <span>{node.title.split(' ')[0]}</span>
+                          <div className="font-mono text-[9px] text-neutral-500 uppercase tracking-wider group-hover:text-neutral-300 transition-colors">
+                            {spec.label}
+                          </div>
+                          <div
+                            className={`font-mono text-[11px] font-semibold mt-0.5 transition-colors ${
+                              isSelected
+                                ? 'text-white underline underline-offset-4'
+                                : 'text-neutral-200 group-hover:text-white'
+                            }`}
+                          >
+                            {spec.value}
+                          </div>
                         </button>
                       );
                     })}
-                    {activeNode && (
-                      <button
-                        onClick={() => onSelectNode(null)}
-                        className="px-2 py-1 font-mono text-[10px] uppercase bg-white/15 text-white border border-white/30 hover:bg-white hover:text-black transition-colors cursor-pointer"
-                      >
-                        RESET WORD
-                      </button>
-                    )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                  {/* COLUMN 1 (4 Cols): Era Identity, Quote & Specs */}
-                  <div className="lg:col-span-4 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/10 pb-3 lg:pb-0 lg:pr-5">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="px-2 py-0.5 bg-white text-black font-mono text-[10px] font-bold tracking-widest uppercase">
-                          CH.{era.chapter}
-                        </span>
-                        <span className="font-mono text-xs text-neutral-400 tracking-wider font-semibold">
-                          {era.year}
-                        </span>
-                        <span className="ml-auto font-mono text-[10px] text-neutral-500">
-                          {era.telemetry.coreStack}
-                        </span>
-                      </div>
+                {/* CENTER 55% OF SCREEN: 100% Open Unobstructed Space for Particle Word & 3D Sculpture */}
+                <div className="hidden lg:block flex-1 h-full pointer-events-none" />
 
-                      <h2 className="font-dm text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-white uppercase leading-tight mb-2">
-                        {era.title}
-                      </h2>
-
-                      <p className="font-dm text-xs text-neutral-300 italic leading-relaxed border-l-2 border-white/40 pl-3">
-                        {era.quote}
-                      </p>
-                    </div>
-
-                    {/* Archival Spec Pills */}
-                    <div className="grid grid-cols-3 gap-1.5 mt-3 pt-2.5 border-t border-white/10">
-                      {era.specs.map((spec) => (
-                        <div key={spec.label} className="bg-white/[0.03] border border-white/10 px-2 py-1">
-                          <div className="font-mono text-[8px] text-neutral-500 uppercase tracking-wider">
-                            {spec.label}
-                          </div>
-                          <div className="font-mono text-[10px] text-white font-semibold truncate mt-0.5">
-                            {spec.value}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                {/* RIGHT MARGIN: Minimal Archival Milestones (Click any milestone to morph particles) */}
+                <div className="pointer-events-auto hidden lg:flex w-[270px] xl:w-[300px] flex-col gap-5">
+                  <div className="font-mono text-[10px] tracking-[0.2em] text-neutral-500 uppercase border-b border-white/10 pb-2">
+                    KEY MILESTONES // CLICK TO MORPH
                   </div>
 
-                  {/* COLUMN 2 (4 Cols): Active Particle Node Dossier OR Historical Narrative */}
-                  <div className="lg:col-span-4 flex flex-col justify-between h-full border-b lg:border-b-0 lg:border-r border-white/10 pb-3 lg:pb-0 lg:pr-5">
-                    {activeNode ? (
-                      <div className="bg-white/[0.05] border border-white/30 p-3 mb-3">
-                        <div className="flex items-center justify-between font-mono text-[10px] text-neutral-400 mb-1">
-                          <span className="text-white font-bold">
-                            LOCKED SATELLITE // {activeNode.code} ({activeNode.year})
-                          </span>
-                          <span className="text-neutral-300">{activeNode.metric}</span>
-                        </div>
-                        <div className="font-dm text-sm font-black text-white uppercase mb-1">
-                          {activeNode.title}
-                        </div>
-                        <p className="font-dm text-xs text-neutral-200 leading-relaxed">
-                          {activeNode.detail}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="font-dm text-xs sm:text-[13px] text-neutral-300 leading-relaxed mb-3">
-                        {era.summary}
-                      </p>
-                    )}
-
-                    {/* Special Live Particle Word Synthesizer on Final Chapter (08) */}
-                    {idx === 8 ? (
-                      <div className="space-y-2 bg-white/[0.03] border border-white/15 p-2.5">
-                        <div className="flex items-center justify-between font-mono text-[9px] text-neutral-400 uppercase tracking-wider">
-                          <span className="flex items-center gap-1.5 text-white">
-                            <Terminal className="w-3 h-3" />
-                            LIVE PARTICLE WORD SYNTHESIZER
-                          </span>
-                          <span>7,600 PARTICLES</span>
-                        </div>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            maxLength={14}
-                            value={customWord}
-                            onChange={(e) => {
-                              onSelectNode(null);
-                              onChangeCustomWord(e.target.value);
-                            }}
-                            placeholder="TYPE ANY WORD..."
-                            className="w-full bg-black border border-white/30 px-2.5 py-1 font-mono text-xs text-white uppercase tracking-widest focus:outline-none focus:border-white"
-                          />
-                          <button
-                            onClick={onToggleAltMode}
-                            className="px-3 py-1 bg-white text-black font-mono text-[10px] font-bold uppercase tracking-wider hover:bg-neutral-200 transition-colors cursor-pointer shrink-0"
-                          >
-                            {isAltMode ? 'CONVERGE' : 'EXPLODE'}
-                          </button>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {PRESET_WORDS.map((word) => (
-                            <button
-                              key={word}
-                              onClick={() => {
-                                onSelectNode(null);
-                                onChangeCustomWord(word);
-                              }}
-                              className={`px-2 py-0.5 font-mono text-[9px] uppercase border transition-colors cursor-pointer ${
-                                customWord.toUpperCase() === word && selectedNodeIndex === null
-                                  ? 'bg-white text-black border-white font-bold'
-                                  : 'bg-black/60 text-neutral-400 border-white/15 hover:text-white hover:border-white/40'
-                              }`}
-                            >
-                              {word}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      /* Interactive Particle Sculpture State Button */
-                      <div className="flex items-center gap-2 pt-1">
+                  <div className="flex flex-col gap-4">
+                    {era.milestones.map((m) => {
+                      const isSelected = isActive && overrideWord === m.particleWord;
+                      return (
                         <button
-                          onClick={onToggleAltMode}
-                          className={`w-full flex items-center justify-center gap-2 px-4 py-2 font-mono text-[11px] font-bold uppercase tracking-wider border transition-all cursor-pointer ${
-                            isAltMode
-                              ? 'bg-white text-black border-white shadow-[0_0_25px_rgba(255,255,255,0.35)]'
-                              : 'bg-white/[0.06] text-white border-white/30 hover:bg-white hover:text-black'
+                          key={m.year + m.title}
+                          onClick={() =>
+                            onSelectOverrideWord(isSelected ? null : m.particleWord)
+                          }
+                          className={`text-left group border-l pl-3.5 transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-white'
+                              : 'border-white/15 hover:border-white/60'
                           }`}
                         >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>{isAltMode ? era.interactionActiveLabel : era.interactionLabel}</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* COLUMN 3 (4 Cols): Chronological Era Milestones & Station Stepper */}
-                  <div className="lg:col-span-4 flex flex-col justify-between h-full">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between font-mono text-[9px] text-neutral-500 uppercase tracking-widest mb-1">
-                        <span>ARCHIVAL MILESTONES // {era.year}</span>
-                        <span>WEIGHT: {era.telemetry.pageWeight}</span>
-                      </div>
-                      {era.milestones.map((m) => (
-                        <div
-                          key={m.year + m.title}
-                          className="flex items-start gap-2.5 bg-white/[0.02] border border-white/[0.07] px-2.5 py-1.5 hover:border-white/25 transition-colors"
-                        >
-                          <span className="font-mono text-[10px] font-bold text-white bg-white/10 px-1.5 py-0.5 shrink-0">
-                            {m.year}
-                          </span>
-                          <div className="min-w-0">
-                            <div className="font-dm text-xs font-bold text-white leading-tight">
-                              {m.title}
-                            </div>
-                            <div className="font-dm text-[11px] text-neutral-400 leading-tight mt-0.5">
-                              {m.desc}
-                            </div>
+                          <div className="flex items-center justify-between font-mono text-[10px] text-neutral-400">
+                            <span className={isSelected ? 'text-white font-bold' : ''}>
+                              {m.year}
+                            </span>
+                            <span className="text-[9px] text-neutral-600 group-hover:text-neutral-300 transition-colors">
+                              [{m.particleWord}]
+                            </span>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Quick Prev / Next Station Controls */}
-                    <div className="flex items-center justify-between gap-2 mt-2.5 pt-2 border-t border-white/10">
-                      <button
-                        onClick={() => onSelectEra(Math.max(0, idx - 1))}
-                        disabled={idx === 0}
-                        className="flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider border border-white/15 text-neutral-300 hover:text-white hover:border-white/40 disabled:opacity-25 disabled:pointer-events-none cursor-pointer transition-colors"
-                      >
-                        <ArrowLeft className="w-3 h-3" />
-                        <span>PREV ERA</span>
-                      </button>
-
-                      <span className="font-mono text-[9px] text-neutral-500 uppercase">
-                        7,600 PARTICLES ACTIVE
-                      </span>
-
-                      {idx < totalStations - 1 ? (
-                        <button
-                          onClick={() => onSelectEra(idx + 1)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider bg-white text-black font-bold hover:bg-neutral-200 cursor-pointer transition-colors"
-                        >
-                          <span>NEXT ERA</span>
-                          <ArrowRight className="w-3 h-3" />
+                          <div className="font-dm text-xs font-semibold text-white mt-0.5 group-hover:translate-x-0.5 transition-transform">
+                            {m.title}
+                          </div>
+                          <div className="font-dm text-[11px] text-neutral-500 leading-snug mt-0.5">
+                            {m.desc}
+                          </div>
                         </button>
-                      ) : (
-                        <button
-                          onClick={() => onSelectEra(0)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider bg-white text-black font-bold hover:bg-neutral-200 cursor-pointer transition-colors"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>RESTART 1989</span>
-                        </button>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
+              </div>
+
+              {/* BOTTOM CENTER: Compact Minimal 3-Phase Particle Bar & Prev/Next Stepper */}
+              <div
+                className={`pointer-events-auto w-full max-w-2xl mx-auto flex flex-wrap items-center justify-between gap-3 px-3 py-2 mono-panel rounded-full transition-opacity duration-500 ${
+                  isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+              >
+                {/* Prev Era Button */}
+                <button
+                  onClick={() => onSelectEra(Math.max(0, idx - 1))}
+                  disabled={idx === 0}
+                  className="w-7 h-7 rounded-full flex items-center justify-center border border-white/15 text-neutral-400 hover:text-white hover:border-white/50 disabled:opacity-20 disabled:pointer-events-none cursor-pointer transition-colors"
+                  title="Previous Era"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Center: 3 Sequential Particle Phases OR Live Word Input on Final Era */}
+                {idx === 8 ? (
+                  <div className="flex items-center gap-2 flex-1 justify-center px-2">
+                    <span className="font-mono text-[10px] text-neutral-400 uppercase hidden sm:inline">
+                      SYNTHESIZE:
+                    </span>
+                    <input
+                      type="text"
+                      maxLength={12}
+                      value={customWord}
+                      onChange={(e) => {
+                        onSelectOverrideWord(null);
+                        onChangeCustomWord(e.target.value);
+                      }}
+                      placeholder="TYPE WORD..."
+                      className="w-36 sm:w-44 bg-black/80 border border-white/25 rounded-full px-3 py-1 font-mono text-xs text-white text-center uppercase tracking-widest focus:outline-none focus:border-white"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    {era.phases.map((phase, pIdx) => {
+                      const isPhaseActive =
+                        isActive && activePhaseIndex === pIdx && overrideWord === null;
+                      return (
+                        <button
+                          key={phase.tag}
+                          onClick={() => {
+                            onSelectOverrideWord(null);
+                            onSelectPhase(idx, pIdx);
+                          }}
+                          className={`px-3 py-1 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer ${
+                            isPhaseActive
+                              ? 'bg-white text-black font-bold'
+                              : 'text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          {phase.word}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Next / Restart Era Button */}
+                {idx < totalStations - 1 ? (
+                  <button
+                    onClick={() => onSelectEra(idx + 1)}
+                    className="w-7 h-7 rounded-full flex items-center justify-center bg-white text-black hover:bg-neutral-200 cursor-pointer transition-colors"
+                    title="Next Era"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onSelectEra(0)}
+                    className="w-7 h-7 rounded-full flex items-center justify-center bg-white text-black hover:bg-neutral-200 cursor-pointer transition-colors"
+                    title="Restart Journey"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             </section>
           );
