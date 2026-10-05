@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { ERAS, type ParticleShapeType } from '../data/eras';
+import { ERAS, type ParticleShapeType, type ParticleNodeStory } from '../data/eras';
 import type { ScrollMotionState } from './WaterShader';
 
 interface ParticleEngineProps {
@@ -12,78 +12,108 @@ interface ParticleEngineProps {
   onCanvasClick?: () => void;
 }
 
-const TOTAL_PARTICLES = 6200;
-const TEXT_PARTICLES = 3200;   // 0 .. 3199: Ultra-dense uniform dot-matrix Particle Word
-const SCULPT_PARTICLES = 2500; // 3200 .. 5699: Central 3D Architectural Sculpture
-// 5700 .. 6199 (500 particles): Subtle Horizontal Parallax Dust
+const TOTAL_PARTICLES = 9600;
+const TEXT_PARTICLES = 7200;   // 0 .. 7199: 4-Line Multi-Tier Particle Story
+const SCULPT_PARTICLES = 2000; // 7200 .. 9199: Central 3D Architectural Sculpture
+// 9200 .. 9599 (400 particles): Subtle Horizontal Parallax Dust
 
 const BUCKET_STYLES = [
-  'rgba(255, 255, 255, 0.98)',
-  'rgba(215, 215, 215, 0.78)',
-  'rgba(155, 155, 155, 0.52)',
-  'rgba(95, 95, 95, 0.28)',
+  'rgba(255, 255, 255, 0.99)', // Bucket 0: Pure White Headline & Hovered Particles
+  'rgba(232, 232, 232, 0.94)', // Bucket 1: Crisp Silver-White Story Narrative Lines 1 & 2
+  'rgba(175, 175, 175, 0.85)', // Bucket 2: Architectural Gray Chapter Kicker & Mid Sculpture
+  'rgba(105, 105, 105, 0.34)', // Bucket 3: Deep Sculpture & Ambient Stream Particles
 ] as const;
 
+interface SampledStoryData {
+  coords: Float32Array;
+  tiers: Uint8Array; // 0 = Headline, 1 = Story Lines 1&2, 2 = Kicker
+}
+
 /**
- * Rasterizes the main word onto an offscreen canvas and maps all 3,200 particles
- * uniformly across every letter stroke with zero gaps or Swiss-cheese holes.
+ * Rasterizes the full 4-line story (Kicker + Monumental Headline + Story Line 1 + Story Line 2)
+ * onto a high-res offscreen canvas and maps all 7,200 text particles across a uniform 2px grid.
  */
-function sampleCrispParticleWord(mainWord: string, count: number): Float32Array {
-  const result = new Float32Array(count * 3);
+function sampleMultiLineParticleStory(
+  story: ParticleNodeStory,
+  count: number
+): SampledStoryData {
+  const coords = new Float32Array(count * 3);
+  const tiers = new Uint8Array(count);
+
   const canvas = document.createElement('canvas');
-  const w = 920;
-  const h = 180;
+  const w = 1240;
+  const h = 420;
   canvas.width = w;
   canvas.height = h;
   const ctx = canvas.getContext('2d');
 
-  if (!ctx) return result;
+  if (!ctx) return { coords, tiers };
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, w, h);
-
-  ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  const text = mainWord.toUpperCase();
-  const len = text.length;
-  const fontSize = len > 11 ? 92 : len > 8 ? 108 : 124;
-  ctx.font = `900 ${fontSize}px "DM Sans", sans-serif`;
-  ctx.fillText(text, w / 2, h / 2);
+  // Tier 2 (Encoded in Red channel): Chapter Kicker Line
+  ctx.fillStyle = '#ff0000';
+  ctx.font = '800 24px "DM Sans", sans-serif';
+  ctx.fillText(story.kicker.toUpperCase(), w / 2, 46);
+
+  // Tier 0 (Encoded in Green channel): Monumental Story Headline
+  ctx.fillStyle = '#00ff00';
+  const headText = story.word.toUpperCase();
+  const headLen = headText.length;
+  const headSize = headLen > 13 ? 76 : headLen > 10 ? 86 : 96;
+  ctx.font = `900 ${headSize}px "DM Sans", sans-serif`;
+  ctx.fillText(headText, w / 2, 145);
+
+  // Tier 1 (Encoded in Blue channel): Two-Line Narrative Story in Particles
+  ctx.fillStyle = '#0000ff';
+  ctx.font = '800 34px "DM Sans", sans-serif';
+  ctx.fillText(story.line1.toUpperCase(), w / 2, 266);
+  ctx.fillText(story.line2.toUpperCase(), w / 2, 326);
 
   const imgData = ctx.getImageData(0, 0, w, h).data;
-  const validPixels: { x: number; y: number }[] = [];
+  const validPixels: { x: number; y: number; tier: number }[] = [];
 
+  // Uniform 2px dot-matrix grid scan across all 4 story lines
   for (let y = 0; y < h; y += 2) {
     for (let x = 0; x < w; x += 2) {
       const idx = (y * w + x) * 4;
-      if (imgData[idx] > 140) {
-        validPixels.push({
-          x: (x / w) * 2 - 1,
-          y: (y / h) * 2 - 1,
-        });
+      const r = imgData[idx];
+      const g = imgData[idx + 1];
+      const b = imgData[idx + 2];
+
+      if (g > 130) {
+        validPixels.push({ x: (x / w) * 2 - 1, y: (y / h) * 2 - 1, tier: 0 });
+      } else if (b > 130) {
+        validPixels.push({ x: (x / w) * 2 - 1, y: (y / h) * 2 - 1, tier: 1 });
+      } else if (r > 130) {
+        validPixels.push({ x: (x / w) * 2 - 1, y: (y / h) * 2 - 1, tier: 2 });
       }
     }
   }
 
   const totalValid = validPixels.length;
-  if (totalValid === 0) return result;
+  if (totalValid === 0) return { coords, tiers };
 
   for (let i = 0; i < count; i++) {
     const pixelIndex = Math.floor((i / count) * totalValid);
     const sample = validPixels[pixelIndex];
 
-    result[i * 3] = sample.x * 0.46;
-    result[i * 3 + 1] = sample.y * 0.125 - 0.44;
-    result[i * 3 + 2] = 0;
+    // Upper stage: spans y = -0.58 to y = -0.04 at Z = 0 for razor-sharp alignment
+    coords[i * 3] = sample.x * 0.40;
+    coords[i * 3 + 1] = sample.y * 0.26 - 0.31;
+    coords[i * 3 + 2] = 0;
+    tiers[i] = sample.tier;
   }
 
-  return result;
+  return { coords, tiers };
 }
 
 /**
  * Generates clean 3D coordinates for the Era's Architectural Sculpture
+ * Positioned in the lower stage (centered around y = +0.24) below the 4-line particle story.
  */
 function generateSculptureCoordinates(
   shape: ParticleShapeType,
@@ -104,14 +134,14 @@ function generateSculptureCoordinates(
           const sub = Math.floor(count * 0.72);
           const phi = Math.acos(1 - (2 * (i % sub)) / sub);
           const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-          const r = variant === 0 ? 0.27 : variant === 1 ? 0.31 + (i % 3) * 0.025 : 0.23;
+          const r = variant === 0 ? 0.21 : variant === 1 ? 0.24 + (i % 3) * 0.02 : 0.19;
           x = r * Math.sin(phi) * Math.cos(theta);
           y = r * Math.sin(phi) * Math.sin(theta);
           z = r * Math.cos(phi);
         } else {
           const angle = t * Math.PI * 24;
-          const ringR = variant === 1 ? 0.44 : 0.38;
-          const tilt = variant === 2 ? 0.5 : 0.22;
+          const ringR = variant === 1 ? 0.36 : 0.32;
+          const tilt = variant === 2 ? 0.45 : 0.2;
           x = Math.cos(angle) * ringR;
           y = Math.sin(angle) * ringR * tilt;
           z = Math.sin(angle) * ringR;
@@ -123,20 +153,20 @@ function generateSculptureCoordinates(
         if (i < count * 0.25) {
           const edge = i % 4;
           const p = ((i * 13) % 100) / 100;
-          const w = 0.36;
-          const h = 0.23;
+          const w = 0.31;
+          const h = 0.18;
           if (edge === 0) { x = -w + p * w * 2; y = -h; }
           else if (edge === 1) { x = -w + p * w * 2; y = h; }
           else if (edge === 2) { x = -w; y = -h + p * h * 2; }
           else { x = w; y = -h + p * h * 2; }
           z = -0.02;
         } else {
-          const row = i % 12;
-          const col = Math.floor(i / 12) % 36;
-          const tabShift = variant === 1 ? ((row % 3) + 1) * 0.05 : 0;
-          x = -0.3 + (col / 36) * 0.6 + tabShift;
-          y = -0.17 + (row / 12) * 0.34;
-          z = variant === 2 ? Math.sin(row * 0.6) * 0.06 : 0;
+          const row = i % 10;
+          const col = Math.floor(i / 10) % 34;
+          const tabShift = variant === 1 ? ((row % 3) + 1) * 0.04 : 0;
+          x = -0.26 + (col / 34) * 0.52 + tabShift;
+          y = -0.14 + (row / 10) * 0.28;
+          z = variant === 2 ? Math.sin(row * 0.6) * 0.05 : 0;
         }
         break;
       }
@@ -146,15 +176,15 @@ function generateSculptureCoordinates(
         const p = ((i * 29) % 200) / 200;
         const edge = i % 4;
         const cells = [
-          { cx: 0.0, cy: -0.17, cw: 0.32, ch: 0.045, cz: 0 },
-          { cx: -0.22, cy: 0.01, cw: 0.09, ch: 0.11, cz: 0.03 },
-          { cx: 0.01, cy: 0.01, cw: 0.12, ch: 0.11, cz: -0.02 },
-          { cx: 0.23, cy: 0.01, cw: 0.08, ch: 0.11, cz: 0.04 },
-          { cx: 0.0, cy: 0.18, cw: 0.32, ch: 0.035, cz: -0.02 },
+          { cx: 0.0, cy: -0.14, cw: 0.28, ch: 0.038, cz: 0 },
+          { cx: -0.19, cy: 0.01, cw: 0.08, ch: 0.09, cz: 0.03 },
+          { cx: 0.01, cy: 0.01, cw: 0.10, ch: 0.09, cz: -0.02 },
+          { cx: 0.20, cy: 0.01, cw: 0.07, ch: 0.09, cz: 0.04 },
+          { cx: 0.0, cy: 0.15, cw: 0.28, ch: 0.03, cz: -0.02 },
         ];
         const c = cells[cellIndex];
-        const explode = variant === 1 ? 1.2 : variant === 2 ? 1.32 : 1.0;
-        const zBoost = variant > 0 ? (cellIndex - 2) * 0.1 * variant : c.cz;
+        const explode = variant === 1 ? 1.18 : variant === 2 ? 1.28 : 1.0;
+        const zBoost = variant > 0 ? (cellIndex - 2) * 0.08 * variant : c.cz;
 
         if (edge === 0) { x = c.cx * explode - c.cw + p * c.cw * 2; y = c.cy * explode - c.ch; }
         else if (edge === 1) { x = c.cx * explode - c.cw + p * c.cw * 2; y = c.cy * explode + c.ch; }
@@ -166,22 +196,22 @@ function generateSculptureCoordinates(
 
       case 'cascade': {
         const layer = i % 3;
-        const spread = variant === 0 ? 0.1 : variant === 1 ? 0.19 : 0.24;
+        const spread = variant === 0 ? 0.09 : variant === 1 ? 0.16 : 0.21;
         const lx = (layer - 1) * spread;
-        const lz = (layer - 1) * (variant === 2 ? 0.18 : 0.09);
+        const lz = (layer - 1) * (variant === 2 ? 0.15 : 0.08);
 
         if (layer < 2 && variant !== 1) {
           const gx = ((i * 17) % 24) / 24 - 0.5;
-          const gy = (Math.floor(i / 24) % 20) / 20 - 0.5;
-          x = lx + gx * 0.38;
-          y = gy * 0.28;
-          z = lz + gx * 0.15;
+          const gy = (Math.floor(i / 24) % 18) / 18 - 0.5;
+          x = lx + gx * 0.32;
+          y = gy * 0.22;
+          z = lz + gx * 0.12;
         } else {
-          const waveX = (t - 0.5) * 0.76;
+          const waveX = (t - 0.5) * 0.66;
           const freq = variant === 1 ? 16.0 : 10.0;
           x = waveX;
-          y = Math.sin(waveX * freq + (i % 5)) * 0.14;
-          z = lz + Math.cos(waveX * 7.0) * 0.08;
+          y = Math.sin(waveX * freq + (i % 5)) * 0.11;
+          z = lz + Math.cos(waveX * 7.0) * 0.07;
         }
         break;
       }
@@ -192,24 +222,24 @@ function generateSculptureCoordinates(
           const col = i % cols;
           const row = Math.floor(i / cols);
           const maxRows = Math.ceil(count / cols);
-          const colCenter = -0.32 + (col / (cols - 1)) * 0.64;
-          x = colCenter + ((i % 2) - 0.5) * 0.018;
-          y = ((row / maxRows) - 0.5) * 0.38;
-          z = Math.sin(col * 0.5) * 0.025;
+          const colCenter = -0.28 + (col / (cols - 1)) * 0.56;
+          x = colCenter + ((i % 2) - 0.5) * 0.015;
+          y = ((row / maxRows) - 0.5) * 0.3;
+          z = Math.sin(col * 0.5) * 0.02;
         } else {
           if (i < count * 0.4) {
             const p = i / (count * 0.4);
             const angle = p * Math.PI * 2;
-            const pw = 0.17;
-            const ph = 0.28;
+            const pw = 0.15;
+            const ph = 0.22;
             x = Math.sign(Math.cos(angle)) * Math.pow(Math.abs(Math.cos(angle)), 0.3) * pw;
             y = Math.sign(Math.sin(angle)) * Math.pow(Math.abs(Math.sin(angle)), 0.3) * ph;
             z = 0.02;
           } else {
             const cardIdx = i % 3;
-            const cy = -0.14 + cardIdx * 0.14;
-            const cw = 0.12;
-            const ch = 0.042;
+            const cy = -0.11 + cardIdx * 0.11;
+            const cw = 0.105;
+            const ch = 0.034;
             const edge = i % 4;
             const p = ((i * 19) % 100) / 100;
             if (edge === 0) { x = -cw + p * cw * 2; y = cy - ch; }
@@ -230,21 +260,21 @@ function generateSculptureCoordinates(
 
         if (variant === 0 || variant === 2) {
           const tile = i % 4;
-          const tx = (tile % 2 === 0 ? -0.17 : 0.17) + ix * 0.26;
-          const ty = (tile < 2 ? -0.11 : 0.11) + iy * 0.17;
+          const tx = (tile % 2 === 0 ? -0.15 : 0.15) + ix * 0.22;
+          const ty = (tile < 2 ? -0.09 : 0.09) + iy * 0.14;
           x = tx;
           y = ty;
           z = 0.0;
         } else {
-          x = ix * 0.36;
-          y = iy * 0.36;
-          z = iz * 0.36;
+          x = ix * 0.29;
+          y = iy * 0.29;
+          z = iz * 0.29;
         }
         break;
       }
 
       case 'wave3d': {
-        const cols = 46;
+        const cols = 42;
         const rows = Math.floor(count / cols);
         const u = (i % cols) / cols - 0.5;
         const v = Math.floor(i / cols) / rows - 0.5;
@@ -252,15 +282,15 @@ function generateSculptureCoordinates(
         if (variant === 1) {
           const a = t * Math.PI * 2 * 3;
           const b = t * Math.PI * 2 * 7;
-          const r = 0.2 + 0.08 * Math.cos(b);
-          x = r * Math.cos(a) * 0.82;
-          y = r * Math.sin(a) * 0.56;
-          z = 0.1 * Math.sin(b);
+          const r = 0.17 + 0.065 * Math.cos(b);
+          x = r * Math.cos(a) * 0.78;
+          y = r * Math.sin(a) * 0.48;
+          z = 0.08 * Math.sin(b);
         } else {
           const dist = Math.sqrt(u * u + v * v);
-          x = u * 0.75;
-          z = v * 0.6;
-          y = Math.sin(dist * (variant === 2 ? 20.0 : 12.0)) * 0.11;
+          x = u * 0.65;
+          z = v * 0.5;
+          y = Math.sin(dist * (variant === 2 ? 20.0 : 12.0)) * 0.09;
         }
         break;
       }
@@ -269,15 +299,15 @@ function generateSculptureCoordinates(
         const cluster = i % 7;
         const centers = [
           [0, 0, 0],
-          [-0.24, -0.11, 0.06],
-          [0.24, -0.11, -0.06],
-          [-0.2, 0.13, -0.08],
-          [0.2, 0.13, 0.08],
-          [0, -0.17, 0.11],
-          [0, 0.17, -0.11],
+          [-0.21, -0.09, 0.05],
+          [0.21, -0.09, -0.05],
+          [-0.17, 0.1, -0.07],
+          [0.17, 0.1, 0.07],
+          [0, -0.14, 0.09],
+          [0, 0.14, -0.09],
         ];
         const [cx, cy, cz] = centers[cluster];
-        const rad = (variant === 1 ? 0.14 : 0.09) * Math.cbrt(Math.random());
+        const rad = (variant === 1 ? 0.11 : 0.075) * Math.cbrt(Math.random());
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(2 * Math.random() - 1);
 
@@ -289,18 +319,19 @@ function generateSculptureCoordinates(
 
       case 'singularity': {
         const arm = i % 4;
-        const radius = Math.pow(t, 0.65) * (variant === 1 ? 0.48 : 0.35);
+        const radius = Math.pow(t, 0.65) * (variant === 1 ? 0.38 : 0.29);
         const spin = radius * (variant === 2 ? 5.0 : 12.0) + (arm * Math.PI) / 2;
 
         x = Math.cos(spin) * radius * 0.82;
-        y = (Math.random() - 0.5) * (variant === 1 ? 0.28 : 0.07 * (1 - t * 0.7));
+        y = (Math.random() - 0.5) * (variant === 1 ? 0.22 : 0.055 * (1 - t * 0.7));
         z = Math.sin(spin) * radius;
         break;
       }
     }
 
+    // Center the 3D sculpture at y = +0.24 so it sits cleanly below the 4-line particle story
     coords[i * 3] = x;
-    coords[i * 3 + 1] = y + 0.08;
+    coords[i * 3 + 1] = y + 0.24;
     coords[i * 3 + 2] = z;
   }
 
@@ -343,18 +374,50 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
     const velocityRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
     const shadesRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES));
     const sizesRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES));
+    const textTiersRef = useRef<Uint8Array>(new Uint8Array(TEXT_PARTICLES));
 
     useEffect(() => {
       const era = ERAS[activeEraIndex] || ERAS[0];
       const phase = era.phases[activePhaseIndex] || era.phases[0];
 
-      const displayWord = overrideWord
-        ? overrideWord
-        : activeEraIndex === 8 && customWord.trim().length > 0
-          ? customWord.trim().slice(0, 12)
-          : phase.word;
+      // Resolve full 4-line story for the current phase, spec override, milestone override, or custom word
+      let activeStory: ParticleNodeStory = {
+        kicker: phase.tag,
+        word: phase.word,
+        line1: phase.line1,
+        line2: phase.line2,
+      };
 
-      const textTargets = sampleCrispParticleWord(displayWord, TEXT_PARTICLES);
+      if (overrideWord) {
+        const matchedSpec = era.specs.find((s) => s.particleWord === overrideWord);
+        const matchedMilestone = era.milestones.find((m) => m.particleWord === overrideWord);
+        if (matchedSpec) {
+          activeStory = matchedSpec.story;
+        } else if (matchedMilestone) {
+          activeStory = matchedMilestone.story;
+        } else {
+          activeStory = {
+            kicker: `ERA ${era.chapter} · ARCHIVE NODE`,
+            word: overrideWord,
+            line1: phase.line1,
+            line2: phase.line2,
+          };
+        }
+      } else if (activeEraIndex === 8 && customWord.trim().length > 0) {
+        activeStory = {
+          kicker: 'CHAPTER 08 · LIVE PARTICLE SYNTHESIZER',
+          word: customWord.trim().slice(0, 12),
+          line1: 'SCULPTED LIVE FROM YOUR INTENT',
+          line2: 'EVERY WORD TELLS THE STORY IN LIGHT',
+        };
+      }
+
+      const { coords: textTargets, tiers } = sampleMultiLineParticleStory(
+        activeStory,
+        TEXT_PARTICLES
+      );
+      textTiersRef.current.set(tiers);
+
       const sculptTargets = generateSculptureCoordinates(
         era.shapeType,
         phase.sculptVariant,
@@ -362,8 +425,15 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       );
 
       const targets = targetsRef.current;
+      const sizes = sizesRef.current;
       targets.set(textTargets, 0);
       targets.set(sculptTargets, TEXT_PARTICLES * 3);
+
+      // Assign crisp dot sizes per story tier (Headline = 2.05px, Story = 1.8px, Kicker = 1.65px)
+      for (let i = 0; i < TEXT_PARTICLES; i++) {
+        const tier = tiers[i];
+        sizes[i] = tier === 0 ? 2.05 : tier === 1 ? 1.8 : 1.65;
+      }
 
       const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
       for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
@@ -372,10 +442,9 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         targets[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
       }
 
-      // GSAP-driven snappy spring acceleration during morph transitions
       gsap.fromTo(
         morphBoostRef.current,
-        { value: 0.08 },
+        { value: 0.085 },
         { value: 0, duration: 0.75, ease: 'power3.out', overwrite: true }
       );
     }, [activeEraIndex, activePhaseIndex, overrideWord, customWord]);
@@ -404,6 +473,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       const targets = targetsRef.current;
       const shades = shadesRef.current;
       const sizes = sizesRef.current;
+      const textTiers = textTiersRef.current;
       const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
 
       for (let i = 0; i < TOTAL_PARTICLES; i++) {
@@ -413,10 +483,10 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
 
         if (i < TEXT_PARTICLES) {
           shades[i] = 1.0;
-          sizes[i] = 2.1;
+          sizes[i] = 1.9;
         } else if (i < streamStart) {
           shades[i] = 0.55 + Math.random() * 0.45;
-          sizes[i] = 1.5 + Math.random() * 0.8;
+          sizes[i] = 1.45 + Math.random() * 0.75;
         } else {
           shades[i] = 0.14 + Math.random() * 0.22;
           sizes[i] = 1.0 + Math.random() * 0.5;
@@ -510,7 +580,6 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       const drawSizes = new Float32Array(TOTAL_PARTICLES);
       const bucketIndices = new Uint8Array(TOTAL_PARTICLES);
 
-      // Synchronized with GSAP global ticker for locked 60/120fps execution
       const onTick = (gsapTime: number) => {
         const time = gsapTime * 0.8;
         mouse.vx *= 0.88;
@@ -521,7 +590,6 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         const {
           activeEraIndex: eraIdx,
           activePhaseIndex: phaseIdx,
-          overrideWord: ovWord,
         } = stateRef.current;
         const sVel = motionRef.current.velocity;
         const era = ERAS[eraIdx] || ERAS[0];
@@ -530,12 +598,12 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         // 1. Transparent Clear so WebGL Water Shader Shines Through
         ctx.clearRect(0, 0, width, height);
 
-        // 2. Subtle Architectural Center Equator Hairline
+        // 2. Subtle Architectural Equator Hairline Separating Story & Sculpture
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(0, height * 0.53);
-        ctx.lineTo(width, height * 0.53);
+        ctx.moveTo(0, height * 0.52);
+        ctx.lineTo(width, height * 0.52);
         ctx.stroke();
 
         // 3. Smooth Interactive 3D Rotation for Central Sculpture
@@ -559,16 +627,16 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         const sinX = Math.sin(rotX);
 
         const vel = velocityRef.current;
-        const scaleX = Math.min(width * 0.46, 700);
-        const scaleY = Math.min(height * 0.45, 480);
+        const scaleX = Math.min(width * 0.46, 720);
+        const scaleY = Math.min(height * 0.46, 490);
         const centerX = width * 0.5;
-        const centerY = height * 0.48;
+        const centerY = height * 0.5;
 
         const horizontalWind = Math.max(-0.07, Math.min(0.07, sVel * -0.0015));
         const streak = Math.min(10, Math.abs(sVel) * 0.22);
         const morphBoost = morphBoostRef.current.value;
 
-        // 4. Update & Project All Particles (Zero String Allocations!)
+        // 4. Update & Project All 9,600 Particles
         for (let i = 0; i < TOTAL_PARTICLES; i++) {
           const i3 = i * 3;
           let tx = targets[i3];
@@ -578,19 +646,19 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           if (i >= TEXT_PARTICLES && i < streamStart) {
             if (era.shapeType === 'wave3d' && phase.sculptVariant !== 1) {
               const d = Math.sqrt(tx * tx + tz * tz);
-              ty = Math.sin(d * 14.0 - time * 3.0) * 0.11 + 0.08;
+              ty = Math.sin(d * 14.0 - time * 3.0) * 0.09 + 0.24;
             } else if (era.shapeType === 'cascade' && i % 3 === 2) {
-              ty = Math.sin(tx * 12.0 + time * 3.6) * 0.12 + 0.08;
+              ty = Math.sin(tx * 12.0 + time * 3.6) * 0.10 + 0.24;
             }
 
-            const localY = ty - 0.08;
+            const localY = ty - 0.24;
             const rx = tx * cosY - tz * sinY;
             const rz1 = tx * sinY + tz * cosY;
             const ry = localY * cosX - rz1 * sinX;
             const rz2 = localY * sinX + rz1 * cosX;
 
             tx = rx;
-            ty = ry + 0.08;
+            ty = ry + 0.24;
             tz = rz2;
           } else if (i >= streamStart) {
             targets[i3] -= 0.0014 + horizontalWind * 0.35;
@@ -618,21 +686,21 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             const dx = sx - mouse.x;
             const dy = sy - mouse.y;
             const distSq = dx * dx + dy * dy;
-            const maxR = i < TEXT_PARTICLES ? 95 : 135;
+            const maxR = i < TEXT_PARTICLES ? 88 : 130;
             if (distSq < maxR * maxR && distSq > 1) {
               const dist = Math.sqrt(distSq);
               const factor = 1 - dist / maxR;
               const smoothFactor = factor * factor;
               hoverBoost = smoothFactor;
 
-              const push = i < TEXT_PARTICLES ? 22 : 30;
+              const push = i < TEXT_PARTICLES ? 20 : 28;
               sx += (dx / dist) * smoothFactor * push;
               sy += (dy / dist) * smoothFactor * push;
 
-              const velImpulse = i < TEXT_PARTICLES ? 0.0022 : 0.0032;
+              const velImpulse = i < TEXT_PARTICLES ? 0.002 : 0.003;
               vel[i3] += ((dx / dist) * velImpulse + mouse.vx * 0.00012) * smoothFactor;
               vel[i3 + 1] += ((dy / dist) * velImpulse + mouse.vy * 0.00012) * smoothFactor;
-              vel[i3 + 2] += Math.sin(i) * 0.0018 * smoothFactor;
+              vel[i3 + 2] += Math.sin(i) * 0.0016 * smoothFactor;
             }
           }
 
@@ -642,19 +710,22 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           const baseSize = i < TEXT_PARTICLES ? sizes[i] : sizes[i] * perspective * 0.92;
           drawSizes[i] = baseSize * (1 + hoverBoost * 0.55);
 
-          if (i < TEXT_PARTICLES || hoverBoost > 0.25) {
+          if (hoverBoost > 0.25) {
             bucketIndices[i] = 0;
+          } else if (i < TEXT_PARTICLES) {
+            bucketIndices[i] = textTiers[i]; // 0 = Headline, 1 = Story Lines, 2 = Kicker
           } else {
             const lum = shades[i] * perspective;
             bucketIndices[i] = lum > 0.78 ? 0 : lum > 0.56 ? 1 : lum > 0.34 ? 2 : 3;
           }
         }
 
-        // 4B. Ultra-Fast Batched Path Draw (Only 4 fill() calls per frame instead of 6,200!)
+        // 4B. Batched Path Draw (4 fill() calls for all 9,600 particles)
         for (let b = 0; b < 4; b++) {
           ctx.fillStyle = BUCKET_STYLES[b];
           ctx.beginPath();
-          for (let i = b === 0 ? 0 : TEXT_PARTICLES; i < TOTAL_PARTICLES; i++) {
+          const startIdx = b === 3 ? TEXT_PARTICLES : 0;
+          for (let i = startIdx; i < TOTAL_PARTICLES; i++) {
             if (bucketIndices[i] === b) {
               const sz = drawSizes[i];
               ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz + streak, sz);
@@ -663,43 +734,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           ctx.fill();
         }
 
-        // 5. Frosted Glassmorphic Phase Header Badge Above the Particle Word
-        const headerY = Math.max(104, centerY - 0.64 * scaleY);
-        const badgeText = ovWord
-          ? `INSPECTING ARCHIVE NODE // ${ovWord} // ${era.year}`
-          : `${phase.tag} — ${phase.caption}`;
-
-        ctx.font = '600 11px "JetBrains Mono", monospace';
-        const textWidth = ctx.measureText(badgeText).width;
-        const pillW = textWidth + 32;
-        const pillH = 26;
-        const pillX = centerX - pillW / 2;
-        const pillY = headerY - pillH / 2;
-
-        const pillGrad = ctx.createLinearGradient(pillX, pillY, pillX, pillY + pillH);
-        pillGrad.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
-        pillGrad.addColorStop(1, 'rgba(10, 10, 10, 0.55)');
-
-        ctx.beginPath();
-        ctx.roundRect(pillX, pillY, pillW, pillH, 13);
-        ctx.fillStyle = pillGrad;
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.24)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(pillX + 12, pillY + 0.5);
-        ctx.lineTo(pillX + pillW - 12, pillY + 0.5);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.stroke();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(badgeText, centerX, headerY + 0.5);
-
-        // 6. Subtle Structural Filaments inside the 3D Sculpture
+        // 5. Subtle Structural Filaments inside the 3D Sculpture
         ctx.lineWidth = 0.6;
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
         ctx.beginPath();
@@ -709,20 +744,20 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           const y1 = screenY[i];
           const x2 = screenX[i + 1];
           const y2 = screenY[i + 1];
-          if ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) < 3200) {
+          if ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) < 3000) {
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
           }
         }
         ctx.stroke();
 
-        // 7. Render 4 Frosted Glassmorphic 3D Sculpture Callout Blocks on Canvas
-        if (width >= 1120) {
+        // 6. Render 4 Frosted Glassmorphic 3D Sculpture Callout Blocks on Canvas
+        if (width >= 1180) {
           let leftSlot = 0;
           let rightSlot = 0;
-          const cardW = 176;
-          const cardH = 46;
-          const outerRadius = Math.max(270, Math.min(415, width * 0.5 - 318));
+          const cardW = 174;
+          const cardH = 44;
+          const outerRadius = Math.max(265, Math.min(405, width * 0.5 - 308));
 
           era.sculptureCallouts.forEach((callout) => {
             const rx = callout.x * cosY - callout.z * sinY;
@@ -732,13 +767,14 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
 
             const perspective = 1.85 / (1.85 - rz2);
             const ax = centerX + rx * scaleX * perspective;
-            const ay = centerY + (ry + 0.08) * scaleY * perspective;
+            const ay = centerY + (ry + 0.24) * scaleY * perspective;
 
             const isLeft = callout.side === 'left';
             const slotIdx = isLeft ? leftSlot++ : rightSlot++;
             const dir = isLeft ? -1 : 1;
 
-            const slotOffsetY = slotIdx === 0 ? -0.05 * scaleY : 0.23 * scaleY;
+            // Stationary lower-stage vertical slots aligned with the 3D sculpture
+            const slotOffsetY = slotIdx === 0 ? 0.12 * scaleY : 0.34 * scaleY;
             const cardCenterY = centerY + slotOffsetY;
             const cardEdgeX = centerX + dir * (outerRadius - cardW);
             const cardX = isLeft ? cardEdgeX - cardW : cardEdgeX;
@@ -786,15 +822,15 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
 
             ctx.font = '700 10px "JetBrains Mono", monospace';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(`${callout.code} // ${callout.title}`, textX, cardY + 16);
+            ctx.fillText(`${callout.code} // ${callout.title}`, textX, cardY + 15);
 
             ctx.font = '500 11px "DM Sans", sans-serif';
             ctx.fillStyle = '#e5e5e5';
-            ctx.fillText(callout.value, textX, cardY + 32);
+            ctx.fillText(callout.value, textX, cardY + 31);
           });
         }
 
-        // 8. Expanding Triple Concentric Water Ripple Rings on Click
+        // 7. Expanding Triple Concentric Water Ripple Rings on Click
         if (shockwave.active) {
           shockwave.radius += 11;
           shockwave.alpha *= 0.92;

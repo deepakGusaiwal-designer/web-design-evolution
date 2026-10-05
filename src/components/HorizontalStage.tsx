@@ -102,15 +102,15 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                 className="glass-subcard rounded-lg p-2.5 flex flex-col gap-1"
               >
                 <div className="flex items-center justify-between font-mono text-[9px] text-neutral-300 uppercase tracking-widest">
-                  <span>{overrideWord ? 'ACTIVE NODE OVERRIDE' : activePhase.tag}</span>
+                  <span>{overrideWord ? 'ACTIVE STORY NODE' : activePhase.tag}</span>
                   <span className="text-white font-bold">
                     [{overrideWord || activePhase.word}]
                   </span>
                 </div>
                 <div className="font-dm text-xs text-white font-medium leading-snug">
                   {overrideWord
-                    ? `Morphing 3,200 text particles into "${overrideWord}"`
-                    : activePhase.caption}
+                    ? `7,200 story particles narrating "${overrideWord}"`
+                    : `${activePhase.line1} — ${activePhase.line2}`}
                 </div>
               </div>
 
