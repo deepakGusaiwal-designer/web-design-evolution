@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { ERAS, type ParticleShapeType } from '../data/eras';
+import type { ScrollMotionState } from './WaterShader';
 
 interface ParticleEngineProps {
   activeEraIndex: number;
-  activePhaseIndex: number; // 0, 1, or 2 within the current era
-  scrollProgress: number;   // 0 to 1 across entire horizontal track
-  scrollVelocity: number;   // horizontal scroll speed
+  activePhaseIndex: number;
+  motionRef: React.MutableRefObject<ScrollMotionState>;
   overrideWord: string | null;
   customWord: string;
   onCanvasClick?: () => void;
@@ -15,6 +16,13 @@ const TOTAL_PARTICLES = 6200;
 const TEXT_PARTICLES = 3200;   // 0 .. 3199: Ultra-dense uniform dot-matrix Particle Word
 const SCULPT_PARTICLES = 2500; // 3200 .. 5699: Central 3D Architectural Sculpture
 // 5700 .. 6199 (500 particles): Subtle Horizontal Parallax Dust
+
+const BUCKET_STYLES = [
+  'rgba(255, 255, 255, 0.98)',
+  'rgba(215, 215, 215, 0.78)',
+  'rgba(155, 155, 155, 0.52)',
+  'rgba(95, 95, 95, 0.28)',
+] as const;
 
 /**
  * Rasterizes the main word onto an offscreen canvas and maps all 3,200 particles
@@ -47,7 +55,6 @@ function sampleCrispParticleWord(mainWord: string, count: number): Float32Array 
   const imgData = ctx.getImageData(0, 0, w, h).data;
   const validPixels: { x: number; y: number }[] = [];
 
-  // Uniform 2px dot-matrix grid scan
   for (let y = 0; y < h; y += 2) {
     for (let x = 0; x < w; x += 2) {
       const idx = (y * w + x) * 4;
@@ -63,12 +70,10 @@ function sampleCrispParticleWord(mainWord: string, count: number): Float32Array 
   const totalValid = validPixels.length;
   if (totalValid === 0) return result;
 
-  // Evenly distribute all `count` particles across the ordered validPixels array
   for (let i = 0; i < count; i++) {
     const pixelIndex = Math.floor((i / count) * totalValid);
     const sample = validPixels[pixelIndex];
 
-    // Keep Z=0 so perspective never distorts letter alignment
     result[i * 3] = sample.x * 0.46;
     result[i * 3 + 1] = sample.y * 0.125 - 0.44;
     result[i * 3 + 2] = 0;
@@ -192,7 +197,6 @@ function generateSculptureCoordinates(
           y = ((row / maxRows) - 0.5) * 0.38;
           z = Math.sin(col * 0.5) * 0.025;
         } else {
-          // Crisp Smartphone Bezel + Clean Horizontal Card Outlines
           if (i < count * 0.4) {
             const p = i / (count * 0.4);
             const angle = p * Math.PI * 2;
@@ -202,7 +206,6 @@ function generateSculptureCoordinates(
             y = Math.sign(Math.sin(angle)) * Math.pow(Math.abs(Math.sin(angle)), 0.3) * ph;
             z = 0.02;
           } else {
-            // Crisp card wireframes inside phone instead of noisy blotches
             const cardIdx = i % 3;
             const cy = -0.14 + cardIdx * 0.14;
             const cw = 0.12;
@@ -304,541 +307,533 @@ function generateSculptureCoordinates(
   return coords;
 }
 
-export const ParticleEngine: React.FC<ParticleEngineProps> = ({
-  activeEraIndex,
-  activePhaseIndex,
-  scrollProgress,
-  scrollVelocity,
-  overrideWord,
-  customWord,
-  onCanvasClick,
-}) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  const stateRef = useRef({
+export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
+  ({
     activeEraIndex,
     activePhaseIndex,
-    scrollProgress,
-    scrollVelocity,
+    motionRef,
     overrideWord,
     customWord,
     onCanvasClick,
-  });
+  }) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  useEffect(() => {
-    stateRef.current = {
+    const stateRef = useRef({
       activeEraIndex,
       activePhaseIndex,
-      scrollProgress,
-      scrollVelocity,
       overrideWord,
       customWord,
       onCanvasClick,
-    };
-  }, [
-    activeEraIndex,
-    activePhaseIndex,
-    scrollProgress,
-    scrollVelocity,
-    overrideWord,
-    customWord,
-    onCanvasClick,
-  ]);
+    });
 
-  const targetsRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
-  const currentRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
-  const velocityRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
-  const shadesRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES));
-  const sizesRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES));
+    const morphBoostRef = useRef({ value: 0 });
 
-  useEffect(() => {
-    const era = ERAS[activeEraIndex] || ERAS[0];
-    const phase = era.phases[activePhaseIndex] || era.phases[0];
+    useEffect(() => {
+      stateRef.current = {
+        activeEraIndex,
+        activePhaseIndex,
+        overrideWord,
+        customWord,
+        onCanvasClick,
+      };
+    }, [activeEraIndex, activePhaseIndex, overrideWord, customWord, onCanvasClick]);
 
-    const displayWord = overrideWord
-      ? overrideWord
-      : activeEraIndex === 8 && customWord.trim().length > 0
-        ? customWord.trim().slice(0, 12)
-        : phase.word;
+    const targetsRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
+    const currentRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
+    const velocityRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
+    const shadesRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES));
+    const sizesRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES));
 
-    const textTargets = sampleCrispParticleWord(displayWord, TEXT_PARTICLES);
-    const sculptTargets = generateSculptureCoordinates(
-      era.shapeType,
-      phase.sculptVariant,
-      SCULPT_PARTICLES
-    );
+    useEffect(() => {
+      const era = ERAS[activeEraIndex] || ERAS[0];
+      const phase = era.phases[activePhaseIndex] || era.phases[0];
 
-    const targets = targetsRef.current;
-    targets.set(textTargets, 0);
-    targets.set(sculptTargets, TEXT_PARTICLES * 3);
+      const displayWord = overrideWord
+        ? overrideWord
+        : activeEraIndex === 8 && customWord.trim().length > 0
+          ? customWord.trim().slice(0, 12)
+          : phase.word;
 
-    const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
-    for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
-      targets[i * 3] = (Math.random() - 0.5) * 2.4;
-      targets[i * 3 + 1] = (Math.random() - 0.5) * 1.9;
-      targets[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
-    }
-  }, [activeEraIndex, activePhaseIndex, overrideWord, customWord]);
+      const textTargets = sampleCrispParticleWord(displayWord, TEXT_PARTICLES);
+      const sculptTargets = generateSculptureCoordinates(
+        era.shapeType,
+        phase.sculptVariant,
+        SCULPT_PARTICLES
+      );
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
+      const targets = targetsRef.current;
+      targets.set(textTargets, 0);
+      targets.set(sculptTargets, TEXT_PARTICLES * 3);
 
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    const updateSize = () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-
-    const current = currentRef.current;
-    const targets = targetsRef.current;
-    const shades = shadesRef.current;
-    const sizes = sizesRef.current;
-    const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
-
-    for (let i = 0; i < TOTAL_PARTICLES; i++) {
-      current[i * 3] = (Math.random() - 0.5) * 2.2;
-      current[i * 3 + 1] = (Math.random() - 0.5) * 1.8;
-      current[i * 3 + 2] = (Math.random() - 0.5) * 1.0;
-
-      if (i < TEXT_PARTICLES) {
-        // Pure solid white for maximum word legibility
-        shades[i] = 1.0;
-        sizes[i] = 2.1;
-      } else if (i < streamStart) {
-        shades[i] = 0.55 + Math.random() * 0.45;
-        sizes[i] = 1.5 + Math.random() * 0.8;
-      } else {
-        shades[i] = 0.14 + Math.random() * 0.22;
-        sizes[i] = 1.0 + Math.random() * 0.5;
-      }
-    }
-
-    const mouse = {
-      x: -9999,
-      y: -9999,
-      vx: 0,
-      vy: 0,
-      normX: 0,
-      normY: 0,
-      smoothNormX: 0,
-      smoothNormY: 0,
-      active: false,
-    };
-
-    const shockwave = {
-      x: 0,
-      y: 0,
-      radius: 0,
-      alpha: 0,
-      active: false,
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      const dx = e.clientX - mouse.x;
-      const dy = e.clientY - mouse.y;
-      if (mouse.active) {
-        mouse.vx = Math.max(-28, Math.min(28, dx));
-        mouse.vy = Math.max(-28, Math.min(28, dy));
-      }
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      mouse.normX = (e.clientX / width) * 2 - 1;
-      mouse.normY = (e.clientY / height) * 2 - 1;
-      mouse.active = true;
-    };
-
-    const onPointerLeave = () => {
-      mouse.active = false;
-      mouse.x = -9999;
-      mouse.y = -9999;
-    };
-
-    const onPointerDown = (e: PointerEvent) => {
-      const target = e.target as HTMLElement;
-      if (
-        target &&
-        (target.tagName === 'BUTTON' ||
-          target.tagName === 'INPUT' ||
-          target.closest('button') ||
-          target.closest('input'))
-      ) {
-        return;
+      const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
+      for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
+        targets[i * 3] = (Math.random() - 0.5) * 2.4;
+        targets[i * 3 + 1] = (Math.random() - 0.5) * 1.9;
+        targets[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
       }
 
-      shockwave.x = e.clientX;
-      shockwave.y = e.clientY;
-      shockwave.radius = 6;
-      shockwave.alpha = 0.85;
-      shockwave.active = true;
+      // GSAP-driven snappy spring acceleration during morph transitions
+      gsap.fromTo(
+        morphBoostRef.current,
+        { value: 0.08 },
+        { value: 0, duration: 0.75, ease: 'power3.out', overwrite: true }
+      );
+    }, [activeEraIndex, activePhaseIndex, overrideWord, customWord]);
 
-      const clickNormX = (e.clientX / width) * 2 - 1;
-      const clickNormY = (e.clientY / height) * 2 - 1;
-      const vel = velocityRef.current;
+    useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d', { alpha: true });
+      if (!ctx) return;
+
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+
+      const updateSize = () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+      updateSize();
+      window.addEventListener('resize', updateSize);
+
+      const current = currentRef.current;
+      const targets = targetsRef.current;
+      const shades = shadesRef.current;
+      const sizes = sizesRef.current;
+      const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
 
       for (let i = 0; i < TOTAL_PARTICLES; i++) {
-        const dx = current[i * 3] - clickNormX;
-        const dy = current[i * 3 + 1] - clickNormY;
-        const distSq = dx * dx + dy * dy + 0.01;
-        if (distSq < 0.35) {
-          const dist = Math.sqrt(distSq);
-          const force = (0.048 / dist) * (1 - distSq / 0.35);
-          vel[i * 3] += (dx / dist) * force;
-          vel[i * 3 + 1] += (dy / dist) * force;
-          vel[i * 3 + 2] += (Math.random() - 0.5) * 0.04;
+        current[i * 3] = (Math.random() - 0.5) * 2.2;
+        current[i * 3 + 1] = (Math.random() - 0.5) * 1.8;
+        current[i * 3 + 2] = (Math.random() - 0.5) * 1.0;
+
+        if (i < TEXT_PARTICLES) {
+          shades[i] = 1.0;
+          sizes[i] = 2.1;
+        } else if (i < streamStart) {
+          shades[i] = 0.55 + Math.random() * 0.45;
+          sizes[i] = 1.5 + Math.random() * 0.8;
+        } else {
+          shades[i] = 0.14 + Math.random() * 0.22;
+          sizes[i] = 1.0 + Math.random() * 0.5;
         }
       }
 
-      stateRef.current.onCanvasClick?.();
-    };
+      const mouse = {
+        x: -9999,
+        y: -9999,
+        vx: 0,
+        vy: 0,
+        normX: 0,
+        normY: 0,
+        smoothNormX: 0,
+        smoothNormY: 0,
+        active: false,
+      };
 
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerleave', onPointerLeave, { passive: true });
-    window.addEventListener('pointerdown', onPointerDown, { passive: true });
+      const shockwave = {
+        x: 0,
+        y: 0,
+        radius: 0,
+        alpha: 0,
+        active: false,
+      };
 
-    let rafId: number;
-    let time = 0;
-
-    const screenX = new Float32Array(TOTAL_PARTICLES);
-    const screenY = new Float32Array(TOTAL_PARTICLES);
-
-    const render = () => {
-      time += 0.013;
-      mouse.vx *= 0.88;
-      mouse.vy *= 0.88;
-      mouse.smoothNormX += ((mouse.active ? mouse.normX : 0) - mouse.smoothNormX) * 0.08;
-      mouse.smoothNormY += ((mouse.active ? mouse.normY : 0) - mouse.smoothNormY) * 0.08;
-
-      const {
-        activeEraIndex: eraIdx,
-        activePhaseIndex: phaseIdx,
-        scrollVelocity: sVel,
-        overrideWord: ovWord,
-      } = stateRef.current;
-      const era = ERAS[eraIdx] || ERAS[0];
-      const phase = era.phases[phaseIdx] || era.phases[0];
-
-      // 1. Transparent Clear so WebGL Water Shader Shines Through
-      ctx.clearRect(0, 0, width, height);
-
-      // 2. Subtle Architectural Center Equator Hairline
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, height * 0.53);
-      ctx.lineTo(width, height * 0.53);
-      ctx.stroke();
-
-      // 3. Smooth Interactive 3D Rotation for Central Sculpture
-      const isFlatPlane = era.shapeType === 'flat' && phase.sculptVariant !== 1;
-      const rotY =
-        era.shapeType === 'terminal' ||
-        era.shapeType === 'table' ||
-        era.shapeType === 'responsive' ||
-        isFlatPlane
-          ? Math.sin(time * 0.5) * 0.14 + mouse.smoothNormX * 0.18
-          : time * 0.26 + mouse.smoothNormX * 0.34;
-
-      const rotX =
-        era.shapeType === 'wave3d'
-          ? 0.38 + mouse.smoothNormY * 0.15
-          : Math.cos(time * 0.38) * 0.07 + mouse.smoothNormY * 0.14;
-
-      const cosY = Math.cos(rotY);
-      const sinY = Math.sin(rotY);
-      const cosX = Math.cos(rotX);
-      const sinX = Math.sin(rotX);
-
-      const vel = velocityRef.current;
-      const scaleX = Math.min(width * 0.46, 700);
-      const scaleY = Math.min(height * 0.45, 480);
-      const centerX = width * 0.5;
-      const centerY = height * 0.48;
-
-      const horizontalWind = Math.max(-0.07, Math.min(0.07, sVel * -0.0015));
-
-      // 4. Update & Project All Particles with Interactive Mouse Physics
-      for (let i = 0; i < TOTAL_PARTICLES; i++) {
-        const i3 = i * 3;
-        let tx = targets[i3];
-        let ty = targets[i3 + 1];
-        let tz = targets[i3 + 2];
-
-        if (i >= TEXT_PARTICLES && i < streamStart) {
-          if (era.shapeType === 'wave3d' && phase.sculptVariant !== 1) {
-            const d = Math.sqrt(tx * tx + tz * tz);
-            ty = Math.sin(d * 14.0 - time * 3.0) * 0.11 + 0.08;
-          } else if (era.shapeType === 'cascade' && i % 3 === 2) {
-            ty = Math.sin(tx * 12.0 + time * 3.6) * 0.12 + 0.08;
-          }
-
-          const localY = ty - 0.08;
-          const rx = tx * cosY - tz * sinY;
-          const rz1 = tx * sinY + tz * cosY;
-          const ry = localY * cosX - rz1 * sinX;
-          const rz2 = localY * sinX + rz1 * cosX;
-
-          tx = rx;
-          ty = ry + 0.08;
-          tz = rz2;
-        } else if (i >= streamStart) {
-          targets[i3] -= 0.0014 + horizontalWind * 0.35;
-          if (targets[i3] < -1.25) targets[i3] = 1.25;
-          if (targets[i3] > 1.25) targets[i3] = -1.25;
-          tx = targets[i3];
-          // Buoyant liquid wave undulation for submerged ambient particles
-          ty += Math.sin(tx * 4.5 + time * 1.8 + (i % 17) * 0.3) * 0.04;
-        }
-
-        const spring = i < TEXT_PARTICLES ? 0.14 : 0.095;
-        vel[i3] = (vel[i3] + (tx - current[i3]) * spring + horizontalWind * 0.08) * 0.76;
-        vel[i3 + 1] = (vel[i3 + 1] + (ty - current[i3 + 1]) * spring) * 0.76;
-        vel[i3 + 2] = (vel[i3 + 2] + (tz - current[i3 + 2]) * spring) * 0.76;
-
-        current[i3] += vel[i3];
-        current[i3 + 1] += vel[i3 + 1];
-        current[i3 + 2] += vel[i3 + 2];
-
-        const perspective = 1.85 / (1.85 - current[i3 + 2]);
-        let sx = centerX + current[i3] * scaleX * perspective;
-        let sy = centerY + current[i3 + 1] * scaleY * perspective;
-        let hoverBoost = 0;
-
-        // Interactive Mouse Repulsion + Swirl Impulse on Particles
+      const onPointerMove = (e: PointerEvent) => {
+        const dx = e.clientX - mouse.x;
+        const dy = e.clientY - mouse.y;
         if (mouse.active) {
-          const dx = sx - mouse.x;
-          const dy = sy - mouse.y;
-          const distSq = dx * dx + dy * dy;
-          const maxR = i < TEXT_PARTICLES ? 95 : 135;
-          if (distSq < maxR * maxR && distSq > 1) {
+          mouse.vx = Math.max(-28, Math.min(28, dx));
+          mouse.vy = Math.max(-28, Math.min(28, dy));
+        }
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+        mouse.normX = (e.clientX / width) * 2 - 1;
+        mouse.normY = (e.clientY / height) * 2 - 1;
+        mouse.active = true;
+      };
+
+      const onPointerLeave = () => {
+        mouse.active = false;
+        mouse.x = -9999;
+        mouse.y = -9999;
+      };
+
+      const onPointerDown = (e: PointerEvent) => {
+        const target = e.target as HTMLElement;
+        if (
+          target &&
+          (target.tagName === 'BUTTON' ||
+            target.tagName === 'INPUT' ||
+            target.closest('button') ||
+            target.closest('input'))
+        ) {
+          return;
+        }
+
+        shockwave.x = e.clientX;
+        shockwave.y = e.clientY;
+        shockwave.radius = 6;
+        shockwave.alpha = 0.85;
+        shockwave.active = true;
+
+        const clickNormX = (e.clientX / width) * 2 - 1;
+        const clickNormY = (e.clientY / height) * 2 - 1;
+        const vel = velocityRef.current;
+
+        for (let i = 0; i < TOTAL_PARTICLES; i++) {
+          const dx = current[i * 3] - clickNormX;
+          const dy = current[i * 3 + 1] - clickNormY;
+          const distSq = dx * dx + dy * dy + 0.01;
+          if (distSq < 0.35) {
             const dist = Math.sqrt(distSq);
-            const factor = 1 - dist / maxR;
-            const smoothFactor = factor * factor;
-            hoverBoost = smoothFactor;
-
-            // Elastic screen-space parting + physical 3D spring velocity impulse
-            const push = i < TEXT_PARTICLES ? 22 : 30;
-            sx += (dx / dist) * smoothFactor * push;
-            sy += (dy / dist) * smoothFactor * push;
-
-            const velImpulse = i < TEXT_PARTICLES ? 0.0022 : 0.0032;
-            vel[i3] += ((dx / dist) * velImpulse + mouse.vx * 0.00012) * smoothFactor;
-            vel[i3 + 1] += ((dy / dist) * velImpulse + mouse.vy * 0.00012) * smoothFactor;
-            vel[i3 + 2] += (Math.sin(i) * 0.0018) * smoothFactor;
+            const force = (0.048 / dist) * (1 - distSq / 0.35);
+            vel[i * 3] += (dx / dist) * force;
+            vel[i * 3 + 1] += (dy / dist) * force;
+            vel[i * 3 + 2] += (Math.random() - 0.5) * 0.04;
           }
         }
 
-        screenX[i] = sx;
-        screenY[i] = sy;
+        stateRef.current.onCanvasClick?.();
+      };
 
-        const depthBoost = Math.max(0.3, Math.min(1.25, perspective));
-        const brightness =
-          i < TEXT_PARTICLES
-            ? 255
-            : Math.min(255, Math.floor((shades[i] * depthBoost + hoverBoost * 0.45) * 255));
-        const alpha =
-          i < TEXT_PARTICLES
-            ? 0.98
-            : Math.min(0.96, shades[i] * depthBoost + hoverBoost * 0.35);
-        const baseSize = i < TEXT_PARTICLES ? sizes[i] : sizes[i] * perspective * 0.92;
-        const size = baseSize * (1 + hoverBoost * 0.55);
-        const streak = Math.min(12, Math.abs(sVel) * 0.25);
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerleave', onPointerLeave, { passive: true });
+      window.addEventListener('pointerdown', onPointerDown, { passive: true });
 
-        ctx.fillStyle = `rgba(${brightness}, ${brightness}, ${brightness}, ${alpha.toFixed(2)})`;
-        ctx.fillRect(sx - size * 0.5, sy - size * 0.5, size + streak, size);
-      }
+      const screenX = new Float32Array(TOTAL_PARTICLES);
+      const screenY = new Float32Array(TOTAL_PARTICLES);
+      const drawSizes = new Float32Array(TOTAL_PARTICLES);
+      const bucketIndices = new Uint8Array(TOTAL_PARTICLES);
 
-      // 5. Frosted Glassmorphic Phase Header Badge Above the Particle Word
-      const headerY = Math.max(104, centerY - 0.64 * scaleY);
-      const badgeText = ovWord
-        ? `INSPECTING ARCHIVE NODE // ${ovWord} // ${era.year}`
-        : `${phase.tag} — ${phase.caption}`;
+      // Synchronized with GSAP global ticker for locked 60/120fps execution
+      const onTick = (gsapTime: number) => {
+        const time = gsapTime * 0.8;
+        mouse.vx *= 0.88;
+        mouse.vy *= 0.88;
+        mouse.smoothNormX += ((mouse.active ? mouse.normX : 0) - mouse.smoothNormX) * 0.1;
+        mouse.smoothNormY += ((mouse.active ? mouse.normY : 0) - mouse.smoothNormY) * 0.1;
 
-      ctx.font = '600 11px "JetBrains Mono", monospace';
-      const textWidth = ctx.measureText(badgeText).width;
-      const pillW = textWidth + 32;
-      const pillH = 26;
-      const pillX = centerX - pillW / 2;
-      const pillY = headerY - pillH / 2;
+        const {
+          activeEraIndex: eraIdx,
+          activePhaseIndex: phaseIdx,
+          overrideWord: ovWord,
+        } = stateRef.current;
+        const sVel = motionRef.current.velocity;
+        const era = ERAS[eraIdx] || ERAS[0];
+        const phase = era.phases[phaseIdx] || era.phases[0];
 
-      const pillGrad = ctx.createLinearGradient(pillX, pillY, pillX, pillY + pillH);
-      pillGrad.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
-      pillGrad.addColorStop(1, 'rgba(10, 10, 10, 0.55)');
+        // 1. Transparent Clear so WebGL Water Shader Shines Through
+        ctx.clearRect(0, 0, width, height);
 
-      ctx.beginPath();
-      ctx.roundRect(pillX, pillY, pillW, pillH, 13);
-      ctx.fillStyle = pillGrad;
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.24)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Top specular glass highlight on pill
-      ctx.beginPath();
-      ctx.moveTo(pillX + 12, pillY + 0.5);
-      ctx.lineTo(pillX + pillW - 12, pillY + 0.5);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.stroke();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(badgeText, centerX, headerY + 0.5);
-
-      // 6. Subtle Structural Filaments inside the 3D Sculpture
-      ctx.lineWidth = 0.6;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-      ctx.beginPath();
-      const step = era.shapeType === 'neural' ? 5 : 11;
-      for (let i = TEXT_PARTICLES; i < streamStart - step; i += step) {
-        const x1 = screenX[i];
-        const y1 = screenY[i];
-        const x2 = screenX[i + 1];
-        const y2 = screenY[i + 1];
-        if ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) < 3200) {
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-        }
-      }
-      ctx.stroke();
-
-      // 7. Render 4 Frosted Glassmorphic 3D Sculpture Callout Blocks on Canvas
-      if (width >= 1120) {
-        let leftSlot = 0;
-        let rightSlot = 0;
-        const cardW = 176;
-        const cardH = 46;
-        const outerRadius = Math.max(270, Math.min(415, width * 0.5 - 318));
-
-        era.sculptureCallouts.forEach((callout) => {
-          // Rotate anchor point with the 3D sculpture
-          const rx = callout.x * cosY - callout.z * sinY;
-          const rz1 = callout.x * sinY + callout.z * cosY;
-          const ry = callout.y * cosX - rz1 * sinX;
-          const rz2 = callout.y * sinX + rz1 * cosX;
-
-          const perspective = 1.85 / (1.85 - rz2);
-          const ax = centerX + rx * scaleX * perspective;
-          const ay = centerY + (ry + 0.08) * scaleY * perspective;
-
-          const isLeft = callout.side === 'left';
-          const slotIdx = isLeft ? leftSlot++ : rightSlot++;
-          const dir = isLeft ? -1 : 1;
-
-          // Stationary vertical slot so callout text stays rock-solid & readable
-          const slotOffsetY = slotIdx === 0 ? -0.05 * scaleY : 0.23 * scaleY;
-          const cardCenterY = centerY + slotOffsetY;
-          const cardEdgeX = centerX + dir * (outerRadius - cardW);
-          const cardX = isLeft ? cardEdgeX - cardW : cardEdgeX;
-          const cardY = cardCenterY - cardH / 2;
-          const elbowX = cardEdgeX - dir * 18;
-
-          // Anchor point square on the 3D sculpture
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(ax - 2.5, ay - 2.5, 5, 5);
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(ax - 5.5, ay - 5.5, 11, 11);
-
-          // Crisp 2-Segment CAD Leader Line connecting 3D Node -> Elbow -> Glass Callout Block
-          ctx.beginPath();
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
-          ctx.lineWidth = 1;
-          ctx.moveTo(ax, ay);
-          ctx.lineTo(elbowX, cardCenterY);
-          ctx.lineTo(cardEdgeX, cardCenterY);
-          ctx.stroke();
-
-          // Frosted Glassmorphic Callout Block
-          const boxGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
-          boxGrad.addColorStop(0, 'rgba(255, 255, 255, 0.11)');
-          boxGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
-          boxGrad.addColorStop(1, 'rgba(8, 8, 8, 0.52)');
-
-          ctx.beginPath();
-          ctx.roundRect(cardX, cardY, cardW, cardH, 8);
-          ctx.fillStyle = boxGrad;
-          ctx.fill();
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // Top inner glass specular highlight
-          ctx.beginPath();
-          ctx.moveTo(cardX + 8, cardY + 0.5);
-          ctx.lineTo(cardX + cardW - 8, cardY + 0.5);
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
-          ctx.stroke();
-
-          // Luminous White Accent Bar on inner edge of Callout Block
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-          ctx.fillRect(isLeft ? cardEdgeX - 2.5 : cardEdgeX + 0.5, cardY + 8, 2, cardH - 16);
-
-          // Callout Typography (100% Crisp & Readable)
-          const textX = isLeft ? cardEdgeX - 11 : cardEdgeX + 11;
-          ctx.textAlign = isLeft ? 'right' : 'left';
-
-          ctx.font = '700 10px "JetBrains Mono", monospace';
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(`${callout.code} // ${callout.title}`, textX, cardY + 16);
-
-          ctx.font = '500 11px "DM Sans", sans-serif';
-          ctx.fillStyle = '#e5e5e5';
-          ctx.fillText(callout.value, textX, cardY + 32);
-        });
-      }
-
-      // 8. Expanding Triple Concentric Water Ripple Rings on Click
-      if (shockwave.active) {
-        shockwave.radius += 11;
-        shockwave.alpha *= 0.92;
+        // 2. Subtle Architectural Center Equator Hairline
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, height * 0.53);
+        ctx.lineTo(width, height * 0.53);
+        ctx.stroke();
 
-        const rings = [1.0, 0.68, 0.38];
-        rings.forEach((scale, idx) => {
-          const r = shockwave.radius * scale;
-          if (r > 2) {
-            const ringAlpha = shockwave.alpha * (1 - idx * 0.28);
-            ctx.strokeStyle = `rgba(255, 255, 255, ${ringAlpha.toFixed(3)})`;
-            ctx.beginPath();
-            ctx.arc(shockwave.x, shockwave.y, r, 0, Math.PI * 2);
-            ctx.stroke();
+        // 3. Smooth Interactive 3D Rotation for Central Sculpture
+        const isFlatPlane = era.shapeType === 'flat' && phase.sculptVariant !== 1;
+        const rotY =
+          era.shapeType === 'terminal' ||
+          era.shapeType === 'table' ||
+          era.shapeType === 'responsive' ||
+          isFlatPlane
+            ? Math.sin(time * 0.5) * 0.14 + mouse.smoothNormX * 0.18
+            : time * 0.26 + mouse.smoothNormX * 0.34;
+
+        const rotX =
+          era.shapeType === 'wave3d'
+            ? 0.38 + mouse.smoothNormY * 0.15
+            : Math.cos(time * 0.38) * 0.07 + mouse.smoothNormY * 0.14;
+
+        const cosY = Math.cos(rotY);
+        const sinY = Math.sin(rotY);
+        const cosX = Math.cos(rotX);
+        const sinX = Math.sin(rotX);
+
+        const vel = velocityRef.current;
+        const scaleX = Math.min(width * 0.46, 700);
+        const scaleY = Math.min(height * 0.45, 480);
+        const centerX = width * 0.5;
+        const centerY = height * 0.48;
+
+        const horizontalWind = Math.max(-0.07, Math.min(0.07, sVel * -0.0015));
+        const streak = Math.min(10, Math.abs(sVel) * 0.22);
+        const morphBoost = morphBoostRef.current.value;
+
+        // 4. Update & Project All Particles (Zero String Allocations!)
+        for (let i = 0; i < TOTAL_PARTICLES; i++) {
+          const i3 = i * 3;
+          let tx = targets[i3];
+          let ty = targets[i3 + 1];
+          let tz = targets[i3 + 2];
+
+          if (i >= TEXT_PARTICLES && i < streamStart) {
+            if (era.shapeType === 'wave3d' && phase.sculptVariant !== 1) {
+              const d = Math.sqrt(tx * tx + tz * tz);
+              ty = Math.sin(d * 14.0 - time * 3.0) * 0.11 + 0.08;
+            } else if (era.shapeType === 'cascade' && i % 3 === 2) {
+              ty = Math.sin(tx * 12.0 + time * 3.6) * 0.12 + 0.08;
+            }
+
+            const localY = ty - 0.08;
+            const rx = tx * cosY - tz * sinY;
+            const rz1 = tx * sinY + tz * cosY;
+            const ry = localY * cosX - rz1 * sinX;
+            const rz2 = localY * sinX + rz1 * cosX;
+
+            tx = rx;
+            ty = ry + 0.08;
+            tz = rz2;
+          } else if (i >= streamStart) {
+            targets[i3] -= 0.0014 + horizontalWind * 0.35;
+            if (targets[i3] < -1.25) targets[i3] = 1.25;
+            if (targets[i3] > 1.25) targets[i3] = -1.25;
+            tx = targets[i3];
+            ty += Math.sin(tx * 4.5 + time * 1.8 + (i % 17) * 0.3) * 0.04;
           }
-        });
 
-        if (shockwave.alpha < 0.02) shockwave.active = false;
-      }
+          const spring = (i < TEXT_PARTICLES ? 0.16 : 0.11) + morphBoost;
+          vel[i3] = (vel[i3] + (tx - current[i3]) * spring + horizontalWind * 0.08) * 0.74;
+          vel[i3 + 1] = (vel[i3 + 1] + (ty - current[i3 + 1]) * spring) * 0.74;
+          vel[i3 + 2] = (vel[i3 + 2] + (tz - current[i3 + 2]) * spring) * 0.74;
 
-      rafId = requestAnimationFrame(render);
-    };
+          current[i3] += vel[i3];
+          current[i3 + 1] += vel[i3 + 1];
+          current[i3 + 2] += vel[i3 + 2];
 
-    rafId = requestAnimationFrame(render);
+          const perspective = 1.85 / (1.85 - current[i3 + 2]);
+          let sx = centerX + current[i3] * scaleX * perspective;
+          let sy = centerY + current[i3 + 1] * scaleY * perspective;
+          let hoverBoost = 0;
 
-    return () => {
-      window.removeEventListener('resize', updateSize);
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerleave', onPointerLeave);
-      window.removeEventListener('pointerdown', onPointerDown);
-      cancelAnimationFrame(rafId);
-    };
-  }, []);
+          if (mouse.active) {
+            const dx = sx - mouse.x;
+            const dy = sy - mouse.y;
+            const distSq = dx * dx + dy * dy;
+            const maxR = i < TEXT_PARTICLES ? 95 : 135;
+            if (distSq < maxR * maxR && distSq > 1) {
+              const dist = Math.sqrt(distSq);
+              const factor = 1 - dist / maxR;
+              const smoothFactor = factor * factor;
+              hoverBoost = smoothFactor;
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-none z-[5]"
-    />
-  );
-};
+              const push = i < TEXT_PARTICLES ? 22 : 30;
+              sx += (dx / dist) * smoothFactor * push;
+              sy += (dy / dist) * smoothFactor * push;
+
+              const velImpulse = i < TEXT_PARTICLES ? 0.0022 : 0.0032;
+              vel[i3] += ((dx / dist) * velImpulse + mouse.vx * 0.00012) * smoothFactor;
+              vel[i3 + 1] += ((dy / dist) * velImpulse + mouse.vy * 0.00012) * smoothFactor;
+              vel[i3 + 2] += Math.sin(i) * 0.0018 * smoothFactor;
+            }
+          }
+
+          screenX[i] = sx;
+          screenY[i] = sy;
+
+          const baseSize = i < TEXT_PARTICLES ? sizes[i] : sizes[i] * perspective * 0.92;
+          drawSizes[i] = baseSize * (1 + hoverBoost * 0.55);
+
+          if (i < TEXT_PARTICLES || hoverBoost > 0.25) {
+            bucketIndices[i] = 0;
+          } else {
+            const lum = shades[i] * perspective;
+            bucketIndices[i] = lum > 0.78 ? 0 : lum > 0.56 ? 1 : lum > 0.34 ? 2 : 3;
+          }
+        }
+
+        // 4B. Ultra-Fast Batched Path Draw (Only 4 fill() calls per frame instead of 6,200!)
+        for (let b = 0; b < 4; b++) {
+          ctx.fillStyle = BUCKET_STYLES[b];
+          ctx.beginPath();
+          for (let i = b === 0 ? 0 : TEXT_PARTICLES; i < TOTAL_PARTICLES; i++) {
+            if (bucketIndices[i] === b) {
+              const sz = drawSizes[i];
+              ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz + streak, sz);
+            }
+          }
+          ctx.fill();
+        }
+
+        // 5. Frosted Glassmorphic Phase Header Badge Above the Particle Word
+        const headerY = Math.max(104, centerY - 0.64 * scaleY);
+        const badgeText = ovWord
+          ? `INSPECTING ARCHIVE NODE // ${ovWord} // ${era.year}`
+          : `${phase.tag} — ${phase.caption}`;
+
+        ctx.font = '600 11px "JetBrains Mono", monospace';
+        const textWidth = ctx.measureText(badgeText).width;
+        const pillW = textWidth + 32;
+        const pillH = 26;
+        const pillX = centerX - pillW / 2;
+        const pillY = headerY - pillH / 2;
+
+        const pillGrad = ctx.createLinearGradient(pillX, pillY, pillX, pillY + pillH);
+        pillGrad.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
+        pillGrad.addColorStop(1, 'rgba(10, 10, 10, 0.55)');
+
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, pillW, pillH, 13);
+        ctx.fillStyle = pillGrad;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.24)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(pillX + 12, pillY + 0.5);
+        ctx.lineTo(pillX + pillW - 12, pillY + 0.5);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, centerX, headerY + 0.5);
+
+        // 6. Subtle Structural Filaments inside the 3D Sculpture
+        ctx.lineWidth = 0.6;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.beginPath();
+        const step = era.shapeType === 'neural' ? 5 : 11;
+        for (let i = TEXT_PARTICLES; i < streamStart - step; i += step) {
+          const x1 = screenX[i];
+          const y1 = screenY[i];
+          const x2 = screenX[i + 1];
+          const y2 = screenY[i + 1];
+          if ((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) < 3200) {
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+          }
+        }
+        ctx.stroke();
+
+        // 7. Render 4 Frosted Glassmorphic 3D Sculpture Callout Blocks on Canvas
+        if (width >= 1120) {
+          let leftSlot = 0;
+          let rightSlot = 0;
+          const cardW = 176;
+          const cardH = 46;
+          const outerRadius = Math.max(270, Math.min(415, width * 0.5 - 318));
+
+          era.sculptureCallouts.forEach((callout) => {
+            const rx = callout.x * cosY - callout.z * sinY;
+            const rz1 = callout.x * sinY + callout.z * cosY;
+            const ry = callout.y * cosX - rz1 * sinX;
+            const rz2 = callout.y * sinX + rz1 * cosX;
+
+            const perspective = 1.85 / (1.85 - rz2);
+            const ax = centerX + rx * scaleX * perspective;
+            const ay = centerY + (ry + 0.08) * scaleY * perspective;
+
+            const isLeft = callout.side === 'left';
+            const slotIdx = isLeft ? leftSlot++ : rightSlot++;
+            const dir = isLeft ? -1 : 1;
+
+            const slotOffsetY = slotIdx === 0 ? -0.05 * scaleY : 0.23 * scaleY;
+            const cardCenterY = centerY + slotOffsetY;
+            const cardEdgeX = centerX + dir * (outerRadius - cardW);
+            const cardX = isLeft ? cardEdgeX - cardW : cardEdgeX;
+            const cardY = cardCenterY - cardH / 2;
+            const elbowX = cardEdgeX - dir * 18;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(ax - 2.5, ay - 2.5, 5, 5);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(ax - 5.5, ay - 5.5, 11, 11);
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
+            ctx.lineWidth = 1;
+            ctx.moveTo(ax, ay);
+            ctx.lineTo(elbowX, cardCenterY);
+            ctx.lineTo(cardEdgeX, cardCenterY);
+            ctx.stroke();
+
+            const boxGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
+            boxGrad.addColorStop(0, 'rgba(255, 255, 255, 0.11)');
+            boxGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
+            boxGrad.addColorStop(1, 'rgba(8, 8, 8, 0.52)');
+
+            ctx.beginPath();
+            ctx.roundRect(cardX, cardY, cardW, cardH, 8);
+            ctx.fillStyle = boxGrad;
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(cardX + 8, cardY + 0.5);
+            ctx.lineTo(cardX + cardW - 8, cardY + 0.5);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(isLeft ? cardEdgeX - 2.5 : cardEdgeX + 0.5, cardY + 8, 2, cardH - 16);
+
+            const textX = isLeft ? cardEdgeX - 11 : cardEdgeX + 11;
+            ctx.textAlign = isLeft ? 'right' : 'left';
+
+            ctx.font = '700 10px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(`${callout.code} // ${callout.title}`, textX, cardY + 16);
+
+            ctx.font = '500 11px "DM Sans", sans-serif';
+            ctx.fillStyle = '#e5e5e5';
+            ctx.fillText(callout.value, textX, cardY + 32);
+          });
+        }
+
+        // 8. Expanding Triple Concentric Water Ripple Rings on Click
+        if (shockwave.active) {
+          shockwave.radius += 11;
+          shockwave.alpha *= 0.92;
+          ctx.lineWidth = 1;
+
+          const rings = [1.0, 0.68, 0.38];
+          rings.forEach((scale, idx) => {
+            const r = shockwave.radius * scale;
+            if (r > 2) {
+              const ringAlpha = shockwave.alpha * (1 - idx * 0.28);
+              ctx.strokeStyle = `rgba(255, 255, 255, ${ringAlpha.toFixed(3)})`;
+              ctx.beginPath();
+              ctx.arc(shockwave.x, shockwave.y, r, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+          });
+
+          if (shockwave.alpha < 0.02) shockwave.active = false;
+        }
+      };
+
+      gsap.ticker.add(onTick);
+
+      return () => {
+        window.removeEventListener('resize', updateSize);
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerleave', onPointerLeave);
+        window.removeEventListener('pointerdown', onPointerDown);
+        gsap.ticker.remove(onTick);
+      };
+    }, [motionRef]);
+
+    return (
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 w-full h-full pointer-events-none z-[5]"
+      />
+    );
+  }
+);
 
 export default ParticleEngine;

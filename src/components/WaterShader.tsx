@@ -1,9 +1,13 @@
 import React, { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+
+export interface ScrollMotionState {
+  progress: number;
+  velocity: number;
+}
 
 interface WaterShaderProps {
-  scrollProgress: number;
-  scrollVelocity: number;
-  activeEraIndex: number;
+  motionRef: React.MutableRefObject<ScrollMotionState>;
 }
 
 const VERTEX_SHADER = `
@@ -109,32 +113,15 @@ const FRAGMENT_SHADER = `
   }
 `;
 
-export const WaterShader: React.FC<WaterShaderProps> = ({
-  scrollProgress,
-  scrollVelocity,
-  activeEraIndex,
-}) => {
+export const WaterShader: React.FC<WaterShaderProps> = React.memo(({ motionRef }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stateRef = useRef({
-    scrollProgress,
-    scrollVelocity,
-    activeEraIndex,
-  });
-
-  useEffect(() => {
-    stateRef.current = {
-      scrollProgress,
-      scrollVelocity,
-      activeEraIndex,
-    };
-  }, [scrollProgress, scrollVelocity, activeEraIndex]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const gl =
-      canvas.getContext('webgl', { antialias: true, depth: false, stencil: false }) ||
+      canvas.getContext('webgl', { antialias: false, depth: false, stencil: false, powerPreference: 'high-performance' }) ||
       (canvas.getContext('experimental-webgl') as WebGLRenderingContext | null);
 
     if (!gl) return;
@@ -181,48 +168,45 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
     const uScrollLoc = gl.getUniformLocation(program, 'uScroll');
     const uVelLoc = gl.getUniformLocation(program, 'uVelocity');
 
-    const startTime = performance.now();
-    let smoothScroll = stateRef.current.scrollProgress;
+    let smoothScroll = motionRef.current.progress;
     let smoothVel = 0;
 
     const updateSize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      canvas.width = Math.floor(window.innerWidth * dpr);
-      canvas.height = Math.floor(window.innerHeight * dpr);
+      // 1.0x resolution for silky smooth low-frequency liquid waves at minimal GPU cost
+      canvas.width = Math.floor(window.innerWidth);
+      canvas.height = Math.floor(window.innerHeight);
       gl.viewport(0, 0, canvas.width, canvas.height);
     };
 
     updateSize();
     window.addEventListener('resize', updateSize);
 
-    let rafId: number;
-    const render = () => {
-      const elapsed = (performance.now() - startTime) * 0.001;
-      const { scrollProgress: sProg, scrollVelocity: sVel } = stateRef.current;
+    // Driven by unified GSAP ticker for zero-jitter frame synchronization
+    const onTick = (time: number) => {
+      const { progress: sProg, velocity: sVel } = motionRef.current;
 
-      smoothScroll += (sProg - smoothScroll) * 0.06;
-      smoothVel += (sVel - smoothVel) * 0.08;
+      smoothScroll += (sProg - smoothScroll) * 0.1;
+      smoothVel += (sVel - smoothVel) * 0.1;
 
-      gl.uniform1f(uTimeLoc, elapsed);
+      gl.uniform1f(uTimeLoc, time);
       gl.uniform2f(uResLoc, canvas.width, canvas.height);
       gl.uniform1f(uScrollLoc, smoothScroll);
       gl.uniform1f(uVelLoc, smoothVel);
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
-      rafId = requestAnimationFrame(render);
     };
 
-    rafId = requestAnimationFrame(render);
+    gsap.ticker.add(onTick);
 
     return () => {
       window.removeEventListener('resize', updateSize);
-      cancelAnimationFrame(rafId);
+      gsap.ticker.remove(onTick);
       gl.deleteBuffer(buffer);
       gl.deleteProgram(program);
       gl.deleteShader(vs);
       gl.deleteShader(fs);
     };
-  }, []);
+  }, [motionRef]);
 
   return (
     <canvas
@@ -230,6 +214,6 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
       className="fixed inset-0 w-full h-full pointer-events-none z-0"
     />
   );
-};
+});
 
 export default WaterShader;
