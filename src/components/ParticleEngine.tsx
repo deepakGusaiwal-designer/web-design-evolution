@@ -505,11 +505,16 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         active: false,
       };
 
-      const shockwave = {
+      const vortexNodes = new Int32Array(24);
+      const vortex = {
         x: 0,
         y: 0,
-        radius: 0,
-        alpha: 0,
+        normX: 0,
+        normY: 0,
+        strength: 0,
+        nodeCount: 0,
+        sculptSpinAngle: 0,
+        sculptSpinVel: 0,
         active: false,
       };
 
@@ -545,28 +550,51 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           return;
         }
 
-        shockwave.x = e.clientX;
-        shockwave.y = e.clientY;
-        shockwave.radius = 6;
-        shockwave.alpha = 0.85;
-        shockwave.active = true;
-
         const clickNormX = (e.clientX / width) * 2 - 1;
         const clickNormY = (e.clientY / height) * 2 - 1;
+
+        vortex.x = e.clientX;
+        vortex.y = e.clientY;
+        vortex.normX = clickNormX;
+        vortex.normY = clickNormY;
+        vortex.strength = 1.0;
+        vortex.active = true;
+        // Impart a crisp 3D rotational spin impulse to the central sculpture
+        vortex.sculptSpinVel += clickNormX >= 0 ? 0.055 : -0.055;
+
         const vel = velocityRef.current;
+        let captured = 0;
+        // Step through particles to apply tangential 3D vortex swirl + capture constellation nodes
+        const stride = Math.max(1, Math.floor(TOTAL_PARTICLES / 480));
 
         for (let i = 0; i < TOTAL_PARTICLES; i++) {
           const dx = current[i * 3] - clickNormX;
           const dy = current[i * 3 + 1] - clickNormY;
-          const distSq = dx * dx + dy * dy + 0.01;
-          if (distSq < 0.35) {
+          const distSq = dx * dx + dy * dy + 0.004;
+
+          if (distSq < 0.38) {
             const dist = Math.sqrt(distSq);
-            const force = (0.048 / dist) * (1 - distSq / 0.35);
-            vel[i * 3] += (dx / dist) * force;
-            vel[i * 3 + 1] += (dy / dist) * force;
-            vel[i * 3 + 2] += (Math.random() - 0.5) * 0.04;
+            const falloff = 1 - distSq / 0.38;
+            // Tangential orbital swirl vector (-dy, dx) + inward gravitational pull (-dx, -dy)
+            const tangentX = -dy / dist;
+            const tangentY = dx / dist;
+            const pullX = -dx / dist;
+            const pullY = -dy / dist;
+
+            const swirlForce = 0.046 * falloff;
+            const pullForce = 0.024 * falloff;
+
+            vel[i * 3] += tangentX * swirlForce + pullX * pullForce;
+            vel[i * 3 + 1] += tangentY * swirlForce + pullY * pullForce;
+            // Quantum Z-depth lift toward the camera
+            vel[i * 3 + 2] += (0.05 * falloff) * (i % 2 === 0 ? 1 : -0.7);
+
+            if (captured < 24 && i % stride === 0 && distSq < 0.24) {
+              vortexNodes[captured++] = i;
+            }
           }
         }
+        vortex.nodeCount = captured;
 
         stateRef.current.onCanvasClick?.();
       };
@@ -587,6 +615,9 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         mouse.smoothNormX += ((mouse.active ? mouse.normX : 0) - mouse.smoothNormX) * 0.1;
         mouse.smoothNormY += ((mouse.active ? mouse.normY : 0) - mouse.smoothNormY) * 0.1;
 
+        vortex.sculptSpinAngle += vortex.sculptSpinVel;
+        vortex.sculptSpinVel *= 0.93;
+
         const {
           activeEraIndex: eraIdx,
           activePhaseIndex: phaseIdx,
@@ -606,15 +637,15 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         ctx.lineTo(width, height * 0.52);
         ctx.stroke();
 
-        // 3. Smooth Interactive 3D Rotation for Central Sculpture
+        // 3. Smooth Interactive 3D Rotation for Central Sculpture (with Click Spin Impulse)
         const isFlatPlane = era.shapeType === 'flat' && phase.sculptVariant !== 1;
         const rotY =
-          era.shapeType === 'terminal' ||
+          (era.shapeType === 'terminal' ||
           era.shapeType === 'table' ||
           era.shapeType === 'responsive' ||
           isFlatPlane
             ? Math.sin(time * 0.5) * 0.14 + mouse.smoothNormX * 0.18
-            : time * 0.26 + mouse.smoothNormX * 0.34;
+            : time * 0.26 + mouse.smoothNormX * 0.34) + vortex.sculptSpinAngle;
 
         const rotX =
           era.shapeType === 'wave3d'
@@ -842,25 +873,104 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           });
         }
 
-        // 7. Expanding Triple Concentric Water Ripple Rings on Click
-        if (shockwave.active) {
-          shockwave.radius += 11;
-          shockwave.alpha *= 0.92;
-          ctx.lineWidth = 1;
+        // 7. Quantum Vortex Constellation Lattice & Architectural Telemetry Lock-On (No Ripple Rings)
+        if (vortex.active) {
+          vortex.strength *= 0.94;
+          const s = vortex.strength;
+          const vx = vortex.x;
+          const vy = vortex.y;
 
-          const rings = [1.0, 0.68, 0.38];
-          rings.forEach((scale, idx) => {
-            const r = shockwave.radius * scale;
-            if (r > 2) {
-              const ringAlpha = shockwave.alpha * (1 - idx * 0.28);
-              ctx.strokeStyle = `rgba(255, 255, 255, ${ringAlpha.toFixed(3)})`;
-              ctx.beginPath();
-              ctx.arc(shockwave.x, shockwave.y, r, 0, Math.PI * 2);
-              ctx.stroke();
+          // 7A. Dynamic Neural Constellation Web linking click origin to swirling particles
+          if (vortex.nodeCount > 0) {
+            ctx.lineWidth = 0.85;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${(s * 0.42).toFixed(3)})`;
+            ctx.beginPath();
+            for (let n = 0; n < vortex.nodeCount; n++) {
+              const pIdx = vortexNodes[n];
+              const px = screenX[pIdx];
+              const py = screenY[pIdx];
+              ctx.moveTo(vx, vy);
+              ctx.lineTo(px, py);
+
+              if (n > 0) {
+                const prevIdx = vortexNodes[n - 1];
+                ctx.moveTo(screenX[prevIdx], screenY[prevIdx]);
+                ctx.lineTo(px, py);
+              }
             }
-          });
+            ctx.stroke();
 
-          if (shockwave.alpha < 0.02) shockwave.active = false;
+            // Crisp monochrome square vertex anchors on linked constellation particles
+            ctx.fillStyle = `rgba(255, 255, 255, ${(s * 0.95).toFixed(3)})`;
+            for (let n = 0; n < vortex.nodeCount; n++) {
+              const pIdx = vortexNodes[n];
+              ctx.fillRect(screenX[pIdx] - 2, screenY[pIdx] - 2, 4, 4);
+            }
+          }
+
+          // 7B. Precision Architectural Lock-On Crosshair & Contracting Corner Brackets
+          const bracketSpread = 14 + (1 - s) * 26;
+          const bracketLen = 7;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${(s * 0.85).toFixed(3)})`;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+
+          // Top-Left L-Bracket
+          ctx.moveTo(vx - bracketSpread, vy - bracketSpread + bracketLen);
+          ctx.lineTo(vx - bracketSpread, vy - bracketSpread);
+          ctx.lineTo(vx - bracketSpread + bracketLen, vy - bracketSpread);
+
+          // Top-Right L-Bracket
+          ctx.moveTo(vx + bracketSpread - bracketLen, vy - bracketSpread);
+          ctx.lineTo(vx + bracketSpread, vy - bracketSpread);
+          ctx.lineTo(vx + bracketSpread, vy - bracketSpread + bracketLen);
+
+          // Bottom-Right L-Bracket
+          ctx.moveTo(vx + bracketSpread, vy + bracketSpread - bracketLen);
+          ctx.lineTo(vx + bracketSpread, vy + bracketSpread);
+          ctx.lineTo(vx + bracketSpread - bracketLen, vy + bracketSpread);
+
+          // Bottom-Left L-Bracket
+          ctx.moveTo(vx - bracketSpread + bracketLen, vy + bracketSpread);
+          ctx.lineTo(vx - bracketSpread, vy + bracketSpread);
+          ctx.lineTo(vx - bracketSpread, vy + bracketSpread - bracketLen);
+
+          // Orthogonal Laser Axis Hairlines
+          const axisOuter = bracketSpread + 14;
+          ctx.moveTo(vx - axisOuter, vy);
+          ctx.lineTo(vx - 6, vy);
+          ctx.moveTo(vx + 6, vy);
+          ctx.lineTo(vx + axisOuter, vy);
+          ctx.moveTo(vx, vy - axisOuter);
+          ctx.lineTo(vx, vy - 6);
+          ctx.moveTo(vx, vy + 6);
+          ctx.lineTo(vx + 0, vy + axisOuter);
+          ctx.stroke();
+
+          // Rotating Geometric Diamond Core at Click Vertex
+          ctx.save();
+          ctx.translate(vx, vy);
+          ctx.rotate(Math.PI * 0.25 + (1 - s) * 2.4);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${(s * 0.95).toFixed(3)})`;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(-4.5, -4.5, 9, 9);
+          ctx.restore();
+
+          // Live Coordinate & Synaptic Node Telemetry Tag
+          const tagSide = vx > width - 210 ? -1 : 1;
+          const tagX = vx + tagSide * (bracketSpread + 12);
+          ctx.textAlign = tagSide === 1 ? 'left' : 'right';
+          ctx.textBaseline = 'middle';
+          ctx.font = '700 9px "JetBrains Mono", monospace';
+          ctx.fillStyle = `rgba(255, 255, 255, ${(s * 0.9).toFixed(3)})`;
+          const coordStr = `VORTEX LOCK // ${vortex.normX >= 0 ? '+' : ''}${vortex.normX.toFixed(2)}X ${vortex.normY >= 0 ? '+' : ''}${vortex.normY.toFixed(2)}Y`;
+          ctx.fillText(coordStr, tagX, vy - 7);
+          ctx.fillStyle = `rgba(210, 210, 210, ${(s * 0.72).toFixed(3)})`;
+          ctx.fillText(`CONSTELLATION // ${vortex.nodeCount} NODES LINKED`, tagX, vy + 6);
+
+          if (vortex.strength < 0.02) {
+            vortex.active = false;
+          }
         }
       };
 
