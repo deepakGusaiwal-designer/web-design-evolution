@@ -755,11 +755,22 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         if (width >= 1180) {
           let leftSlot = 0;
           let rightSlot = 0;
-          const cardW = 174;
-          const cardH = 44;
-          const outerRadius = Math.max(265, Math.min(405, width * 0.5 - 308));
+          const cardH = 48;
 
           era.sculptureCallouts.forEach((callout) => {
+            const line1 = `${callout.code} // ${callout.title}`;
+            const line2 = callout.value;
+
+            // Measure exact text widths so the glass box always wraps the text with generous padding
+            ctx.font = '700 10px "JetBrains Mono", monospace';
+            const w1 = ctx.measureText(line1).width;
+            ctx.font = '500 11px "DM Sans", sans-serif';
+            const w2 = ctx.measureText(line2).width;
+
+            const cardW = Math.max(188, Math.ceil(Math.max(w1, w2)) + 28);
+            const maxOuterRadius = Math.max(300, Math.min(430, width * 0.5 - 312));
+            const innerOffset = Math.max(105, maxOuterRadius - cardW);
+
             const rx = callout.x * cosY - callout.z * sinY;
             const rz1 = callout.x * sinY + callout.z * cosY;
             const ry = callout.y * cosX - rz1 * sinX;
@@ -776,7 +787,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             // Stationary lower-stage vertical slots aligned with the 3D sculpture
             const slotOffsetY = slotIdx === 0 ? 0.12 * scaleY : 0.34 * scaleY;
             const cardCenterY = centerY + slotOffsetY;
-            const cardEdgeX = centerX + dir * (outerRadius - cardW);
+            const cardEdgeX = centerX + dir * innerOffset;
             const cardX = isLeft ? cardEdgeX - cardW : cardEdgeX;
             const cardY = cardCenterY - cardH / 2;
             const elbowX = cardEdgeX - dir * 18;
@@ -798,7 +809,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             const boxGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
             boxGrad.addColorStop(0, 'rgba(255, 255, 255, 0.11)');
             boxGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
-            boxGrad.addColorStop(1, 'rgba(8, 8, 8, 0.52)');
+            boxGrad.addColorStop(1, 'rgba(8, 8, 8, 0.62)');
 
             ctx.beginPath();
             ctx.roundRect(cardX, cardY, cardW, cardH, 8);
@@ -817,16 +828,17 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.fillRect(isLeft ? cardEdgeX - 2.5 : cardEdgeX + 0.5, cardY + 8, 2, cardH - 16);
 
-            const textX = isLeft ? cardEdgeX - 11 : cardEdgeX + 11;
+            const textX = isLeft ? cardEdgeX - 13 : cardEdgeX + 13;
             ctx.textAlign = isLeft ? 'right' : 'left';
+            ctx.textBaseline = 'middle';
 
             ctx.font = '700 10px "JetBrains Mono", monospace';
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(`${callout.code} // ${callout.title}`, textX, cardY + 15);
+            ctx.fillText(line1, textX, cardY + 16);
 
             ctx.font = '500 11px "DM Sans", sans-serif';
             ctx.fillStyle = '#e5e5e5';
-            ctx.fillText(callout.value, textX, cardY + 31);
+            ctx.fillText(line2, textX, cardY + 33);
           });
         }
 

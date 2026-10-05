@@ -420,7 +420,7 @@ export const ERAS: EraData[] = [
     title: 'CSS Zen & Flash Era',
     quote: '“One HTML file. Hundreds of visual worlds via CSS.” — Dave Shea',
     summary:
-      'CSS separated structure from style while Macromedia Flash turned browsers into interactive cinemas.',
+      'CSS separated structure from style while Flash and AJAX pushed browsers toward immersive, interactive experiences.',
     phases: [
       {
         tag: 'CHAPTER 03.A · 2003 CSS ZEN GARDEN',
