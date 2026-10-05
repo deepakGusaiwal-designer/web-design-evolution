@@ -23,12 +23,8 @@ const FRAGMENT_SHADER = `
   uniform vec2 uResolution;
   uniform float uScroll;
   uniform float uVelocity;
-  uniform vec2 uMouse;
-  uniform float uMouseSpeed;
-  // Up to 6 smooth click/wake ripples: xy = position, z = birthTime, w = amplitude
-  uniform vec4 uRipples[6];
 
-  // Ultra-smooth C-infinity domain-warped liquid heightfield (zero grid noise or jagged artifacts)
+  // Ultra-smooth C-infinity domain-warped liquid heightfield (autonomous, does not follow cursor)
   float liquidField(vec2 p, float t) {
     // Gentle horizontal current from timeline scroll
     vec2 q = p * 1.55 + vec2(uScroll * 2.2 + t * 0.07, -t * 0.04);
@@ -44,27 +40,7 @@ const FRAGMENT_SHADER = `
     // Broad, velvety harmonic water swells
     float swell1 = sin(q.x * 1.25 + q.y * 0.85 + t * 0.45) * 0.5;
     float swell2 = cos(q.x * 0.95 - q.y * 1.30 - t * 0.38) * 0.5;
-    float h = (swell1 + swell2) * 0.5;
-
-    // Smooth interactive cursor depression / wake
-    float mouseDist = length(p - uMouse);
-    float mouseWake = exp(-mouseDist * mouseDist * 8.5) * (0.18 + uMouseSpeed * 0.35);
-    h += sin(mouseDist * 10.0 - t * 3.5) * mouseWake;
-
-    // Smooth wide-wavelength concentric click/move ripples
-    for (int i = 0; i < 6; i++) {
-      vec4 rip = uRipples[i];
-      float age = t - rip.z;
-      if (age > 0.0 && age < 5.0 && rip.w > 0.001) {
-        float d = length(p - rip.xy);
-        float phase = d * 11.0 - age * 4.8;
-        float env = exp(-d * 2.6) * exp(-age * 0.85) * smoothstep(0.0, 0.25, age);
-        float packet = exp(-pow(d - age * 0.42, 2.0) * 7.0);
-        h += sin(phase) * env * packet * rip.w * 0.45;
-      }
-    }
-
-    return h;
+    return (swell1 + swell2) * 0.5;
   }
 
   // Sub-pixel triangular dither to eliminate 8-bit banding in deep dark gradients
@@ -117,7 +93,7 @@ const FRAGMENT_SHADER = `
     vec3 color = mix(abyssBlack, deepWater, waveBlend);
     color = mix(color, darkCrest, pow(diff1, 2.0) * 0.5 + diff2 * 0.2);
 
-    // Subtle silky silver-gray specular highlights on water swells & ripples
+    // Subtle silky silver-gray specular highlights on water swells
     color += vec3(0.11, 0.115, 0.125) * spec1;
     color += vec3(0.05, 0.055, 0.06) * spec2;
     color += vec3(0.04, 0.042, 0.048) * fresnel;
@@ -204,59 +180,10 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
     const uResLoc = gl.getUniformLocation(program, 'uResolution');
     const uScrollLoc = gl.getUniformLocation(program, 'uScroll');
     const uVelLoc = gl.getUniformLocation(program, 'uVelocity');
-    const uMouseLoc = gl.getUniformLocation(program, 'uMouse');
-    const uMouseSpeedLoc = gl.getUniformLocation(program, 'uMouseSpeed');
-    const uRipplesLoc = gl.getUniformLocation(program, 'uRipples[0]');
 
-    const ripples = new Float32Array(6 * 4);
-    let rippleWriteIdx = 0;
     const startTime = performance.now();
-
-    // Smoothly interpolated time, scroll, and pointer state
     let smoothScroll = stateRef.current.scrollProgress;
     let smoothVel = 0;
-    let targetMouseX = 0;
-    let targetMouseY = 0;
-    let smoothMouseX = 0;
-    let smoothMouseY = 0;
-    let smoothMouseSpeed = 0;
-
-    const toShaderCoords = (clientX: number, clientY: number) => {
-      const w = window.innerWidth || 1;
-      const h = window.innerHeight || 1;
-      const aspect = w / h;
-      const uvX = clientX / w;
-      const uvY = 1.0 - clientY / h;
-      return {
-        x: (uvX - 0.5) * aspect,
-        y: uvY - 0.5,
-      };
-    };
-
-    const addRipple = (clientX: number, clientY: number, amplitude: number) => {
-      const pos = toShaderCoords(clientX, clientY);
-      const nowSec = (performance.now() - startTime) * 0.001;
-      const base = rippleWriteIdx * 4;
-      ripples[base] = pos.x;
-      ripples[base + 1] = pos.y;
-      ripples[base + 2] = nowSec;
-      ripples[base + 3] = amplitude;
-      rippleWriteIdx = (rippleWriteIdx + 1) % 6;
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      const pos = toShaderCoords(e.clientX, e.clientY);
-      const dx = pos.x - targetMouseX;
-      const dy = pos.y - targetMouseY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      smoothMouseSpeed = Math.min(1.0, smoothMouseSpeed + dist * 2.5);
-      targetMouseX = pos.x;
-      targetMouseY = pos.y;
-    };
-
-    const onPointerDown = (e: PointerEvent) => {
-      addRipple(e.clientX, e.clientY, 0.9);
-    };
 
     const updateSize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -267,30 +194,19 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
 
     updateSize();
     window.addEventListener('resize', updateSize);
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
-    window.addEventListener('pointerdown', onPointerDown, { passive: true });
 
     let rafId: number;
     const render = () => {
       const elapsed = (performance.now() - startTime) * 0.001;
       const { scrollProgress: sProg, scrollVelocity: sVel } = stateRef.current;
 
-      // Exponential smoothing on all uniforms so shader motion is 100% butter-smooth
       smoothScroll += (sProg - smoothScroll) * 0.06;
       smoothVel += (sVel - smoothVel) * 0.08;
-      smoothMouseX += (targetMouseX - smoothMouseX) * 0.07;
-      smoothMouseY += (targetMouseY - smoothMouseY) * 0.07;
-      smoothMouseSpeed *= 0.92;
 
       gl.uniform1f(uTimeLoc, elapsed);
       gl.uniform2f(uResLoc, canvas.width, canvas.height);
       gl.uniform1f(uScrollLoc, smoothScroll);
       gl.uniform1f(uVelLoc, smoothVel);
-      gl.uniform2f(uMouseLoc, smoothMouseX, smoothMouseY);
-      gl.uniform1f(uMouseSpeedLoc, smoothMouseSpeed);
-      if (uRipplesLoc) {
-        gl.uniform4fv(uRipplesLoc, ripples);
-      }
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
       rafId = requestAnimationFrame(render);
@@ -300,8 +216,6 @@ export const WaterShader: React.FC<WaterShaderProps> = ({
 
     return () => {
       window.removeEventListener('resize', updateSize);
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerdown', onPointerDown);
       cancelAnimationFrame(rafId);
       gl.deleteBuffer(buffer);
       gl.deleteProgram(program);

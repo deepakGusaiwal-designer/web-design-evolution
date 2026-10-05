@@ -424,28 +424,12 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       }
     }
 
-    const mouse = {
-      x: -9999,
-      y: -9999,
-      normX: 0,
-      normY: 0,
-      active: false,
-    };
-
     const shockwave = {
       x: 0,
       y: 0,
       radius: 0,
       alpha: 0,
       active: false,
-    };
-
-    const onPointerMove = (e: PointerEvent) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-      mouse.normX = (e.clientX / width) * 2 - 1;
-      mouse.normY = (e.clientY / height) * 2 - 1;
-      mouse.active = true;
     };
 
     const onPointerDown = (e: PointerEvent) => {
@@ -485,7 +469,6 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       stateRef.current.onCanvasClick?.();
     };
 
-    window.addEventListener('pointermove', onPointerMove, { passive: true });
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
 
     let rafId: number;
@@ -516,20 +499,20 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       ctx.lineTo(width, height * 0.53);
       ctx.stroke();
 
-      // 3. 3D Rotation for Central Sculpture
+      // 3. Autonomous 3D Rotation for Central Sculpture (Does not follow cursor)
       const isFlatPlane = era.shapeType === 'flat' && phase.sculptVariant !== 1;
       const rotY =
         era.shapeType === 'terminal' ||
         era.shapeType === 'table' ||
         era.shapeType === 'responsive' ||
         isFlatPlane
-          ? Math.sin(time * 0.5) * 0.14 + (mouse.active ? mouse.normX * 0.15 : 0)
-          : time * 0.26 + (mouse.active ? mouse.normX * 0.32 : 0);
+          ? Math.sin(time * 0.5) * 0.14
+          : time * 0.26;
 
       const rotX =
         era.shapeType === 'wave3d'
-          ? 0.38 + (mouse.active ? mouse.normY * 0.14 : 0)
-          : Math.cos(time * 0.38) * 0.07 + (mouse.active ? mouse.normY * 0.12 : 0);
+          ? 0.38
+          : Math.cos(time * 0.38) * 0.07;
 
       const cosY = Math.cos(rotY);
       const sinY = Math.sin(rotY);
@@ -587,21 +570,8 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
         current[i3 + 2] += vel[i3 + 2];
 
         const perspective = 1.85 / (1.85 - current[i3 + 2]);
-        let sx = centerX + current[i3] * scaleX * perspective;
-        let sy = centerY + current[i3 + 1] * scaleY * perspective;
-
-        if (mouse.active) {
-          const dx = sx - mouse.x;
-          const dy = sy - mouse.y;
-          const distSq = dx * dx + dy * dy;
-          const maxR = i < TEXT_PARTICLES ? 85 : 115;
-          if (distSq < maxR * maxR && distSq > 1) {
-            const dist = Math.sqrt(distSq);
-            const factor = 1 - dist / maxR;
-            sx += (dx / dist) * factor * 18;
-            sy += (dy / dist) * factor * 18;
-          }
-        }
+        const sx = centerX + current[i3] * scaleX * perspective;
+        const sy = centerY + current[i3 + 1] * scaleY * perspective;
 
         screenX[i] = sx;
         screenY[i] = sy;
@@ -755,7 +725,6 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
 
     return () => {
       window.removeEventListener('resize', updateSize);
-      window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerdown', onPointerDown);
       cancelAnimationFrame(rafId);
     };
@@ -764,7 +733,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-auto cursor-crosshair z-[5]"
+      className="fixed inset-0 w-full h-full pointer-events-none z-[5]"
     />
   );
 };
