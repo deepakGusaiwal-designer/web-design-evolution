@@ -586,7 +586,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
         ctx.fillRect(sx - size * 0.5, sy - size * 0.5, size + streak, size);
       }
 
-      // 5. Crisp Vector Phase Header Badge Above the Particle Word (100% Legible!)
+      // 5. Frosted Glassmorphic Phase Header Badge Above the Particle Word
       const headerY = Math.max(104, centerY - 0.64 * scaleY);
       const badgeText = ovWord
         ? `INSPECTING ARCHIVE NODE // ${ovWord} // ${era.year}`
@@ -594,14 +594,29 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
 
       ctx.font = '600 11px "JetBrains Mono", monospace';
       const textWidth = ctx.measureText(badgeText).width;
-      const pillW = textWidth + 28;
-      const pillH = 24;
+      const pillW = textWidth + 32;
+      const pillH = 26;
+      const pillX = centerX - pillW / 2;
+      const pillY = headerY - pillH / 2;
 
-      ctx.fillStyle = 'rgba(10, 12, 16, 0.92)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+      const pillGrad = ctx.createLinearGradient(pillX, pillY, pillX, pillY + pillH);
+      pillGrad.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
+      pillGrad.addColorStop(1, 'rgba(10, 10, 10, 0.55)');
+
+      ctx.beginPath();
+      ctx.roundRect(pillX, pillY, pillW, pillH, 13);
+      ctx.fillStyle = pillGrad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.24)';
       ctx.lineWidth = 1;
-      ctx.fillRect(centerX - pillW / 2, headerY - pillH / 2, pillW, pillH);
-      ctx.strokeRect(centerX - pillW / 2, headerY - pillH / 2, pillW, pillH);
+      ctx.stroke();
+
+      // Top specular glass highlight on pill
+      ctx.beginPath();
+      ctx.moveTo(pillX + 12, pillY + 0.5);
+      ctx.lineTo(pillX + pillW - 12, pillY + 0.5);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.stroke();
 
       ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
@@ -625,13 +640,12 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       }
       ctx.stroke();
 
-      // 7. Render 4 Crystal-Clear 3D Sculpture Callout Badges on Canvas
-      // Positioned cleanly outside the sculpture and inside the Left/Right panels
+      // 7. Render 4 Frosted Glassmorphic 3D Sculpture Callout Blocks on Canvas
       if (width >= 1120) {
         let leftSlot = 0;
         let rightSlot = 0;
-        const cardW = 172;
-        const cardH = 44;
+        const cardW = 176;
+        const cardH = 46;
         const outerRadius = Math.max(270, Math.min(415, width * 0.5 - 318));
 
         era.sculptureCallouts.forEach((callout) => {
@@ -664,36 +678,51 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
           ctx.lineWidth = 1;
           ctx.strokeRect(ax - 5.5, ay - 5.5, 11, 11);
 
-          // Crisp 2-Segment CAD Leader Line connecting 3D Node -> Elbow -> Callout Card
+          // Crisp 2-Segment CAD Leader Line connecting 3D Node -> Elbow -> Glass Callout Block
           ctx.beginPath();
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.36)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
           ctx.lineWidth = 1;
           ctx.moveTo(ax, ay);
           ctx.lineTo(elbowX, cardCenterY);
           ctx.lineTo(cardEdgeX, cardCenterY);
           ctx.stroke();
 
-          // High-Contrast Callout Badge Box
-          ctx.fillStyle = 'rgba(8, 10, 14, 0.90)';
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.26)';
-          ctx.fillRect(cardX, cardY, cardW, cardH);
-          ctx.strokeRect(cardX, cardY, cardW, cardH);
+          // Frosted Glassmorphic Callout Block
+          const boxGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
+          boxGrad.addColorStop(0, 'rgba(255, 255, 255, 0.11)');
+          boxGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
+          boxGrad.addColorStop(1, 'rgba(8, 8, 8, 0.52)');
 
-          // Crisp White Accent Bar on inner edge of Callout Box
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(isLeft ? cardEdgeX - 2 : cardEdgeX, cardY, 2, cardH);
+          ctx.beginPath();
+          ctx.roundRect(cardX, cardY, cardW, cardH, 8);
+          ctx.fillStyle = boxGrad;
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Top inner glass specular highlight
+          ctx.beginPath();
+          ctx.moveTo(cardX + 8, cardY + 0.5);
+          ctx.lineTo(cardX + cardW - 8, cardY + 0.5);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
+          ctx.stroke();
+
+          // Luminous White Accent Bar on inner edge of Callout Block
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.fillRect(isLeft ? cardEdgeX - 2.5 : cardEdgeX + 0.5, cardY + 8, 2, cardH - 16);
 
           // Callout Typography (100% Crisp & Readable)
-          const textX = isLeft ? cardEdgeX - 10 : cardEdgeX + 10;
+          const textX = isLeft ? cardEdgeX - 11 : cardEdgeX + 11;
           ctx.textAlign = isLeft ? 'right' : 'left';
 
           ctx.font = '700 10px "JetBrains Mono", monospace';
           ctx.fillStyle = '#ffffff';
-          ctx.fillText(`${callout.code} // ${callout.title}`, textX, cardY + 15);
+          ctx.fillText(`${callout.code} // ${callout.title}`, textX, cardY + 16);
 
           ctx.font = '500 11px "DM Sans", sans-serif';
-          ctx.fillStyle = '#d4d4d4';
-          ctx.fillText(callout.value, textX, cardY + 31);
+          ctx.fillStyle = '#e5e5e5';
+          ctx.fillText(callout.value, textX, cardY + 32);
         });
       }
 

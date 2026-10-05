@@ -84,23 +84,23 @@ const FRAGMENT_SHADER = `
     // Gentle Fresnel sheen
     float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
 
-    // Deep Dark Monochrome Obsidian-Water Palette (#020203 -> #0b0c0f)
-    vec3 abyssBlack = vec3(0.010, 0.011, 0.013);
-    vec3 deepWater  = vec3(0.028, 0.030, 0.035);
-    vec3 darkCrest  = vec3(0.062, 0.066, 0.074);
+    // Pure Pitch-Black (#000000) Monochrome Liquid Palette
+    vec3 pitchBlack = vec3(0.0, 0.0, 0.0);
+    vec3 deepLiquid = vec3(0.014, 0.014, 0.014);
+    vec3 darkCrest  = vec3(0.036, 0.036, 0.036);
 
     float waveBlend = smoothstep(-0.75, 0.75, hC);
-    vec3 color = mix(abyssBlack, deepWater, waveBlend);
-    color = mix(color, darkCrest, pow(diff1, 2.0) * 0.5 + diff2 * 0.2);
+    vec3 color = mix(pitchBlack, deepLiquid, waveBlend);
+    color = mix(color, darkCrest, pow(diff1, 2.2) * 0.45 + diff2 * 0.15);
 
-    // Subtle silky silver-gray specular highlights on water swells
-    color += vec3(0.11, 0.115, 0.125) * spec1;
-    color += vec3(0.05, 0.055, 0.06) * spec2;
-    color += vec3(0.04, 0.042, 0.048) * fresnel;
+    // Subtle pure-monochrome specular sheen on liquid swells
+    color += vec3(0.065) * spec1;
+    color += vec3(0.030) * spec2;
+    color += vec3(0.022) * fresnel;
 
-    // Gentle radial vignette so edges & UI panels sit on pure deep black
-    float vignette = smoothstep(1.25, 0.20, length(p * vec2(0.75, 0.95)));
-    color *= (0.40 + 0.60 * vignette);
+    // Vignette fades outer edges into pure #000000 pitch black
+    float vignette = smoothstep(1.20, 0.22, length(p * vec2(0.75, 0.95)));
+    color *= vignette;
 
     // Add sub-bit dither for zero banding
     color += dither(gl_FragCoord.xy);

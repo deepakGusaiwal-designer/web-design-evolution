@@ -172,7 +172,7 @@ export const App: React.FC = () => {
   }, [selectEra]);
 
   return (
-    <div className="relative w-screen h-screen bg-[#050505] text-white overflow-hidden select-none font-dm">
+    <div className="relative w-screen h-screen bg-black text-white overflow-hidden select-none font-dm">
       {/* 0. WebGL GLSL Water & Caustics Shader Background */}
       <WaterShader
         scrollProgress={scrollProgress}

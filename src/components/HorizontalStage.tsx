@@ -36,23 +36,23 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
         pureParticleMode ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* Main Viewport-Locked Split Stage: Left Panel + Open Center Particle Stage + Right Panel */}
+      {/* Main Viewport-Locked Split Stage: Left Glass Panel + Open Center Particle Stage + Right Glass Panel */}
       <div className="relative w-full h-full flex flex-col justify-between pt-24 pb-6 px-4 sm:px-6 lg:px-7">
         <div className="flex-1 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          {/* LEFT PANEL: High-Contrast Era & Active Particle Phase Information */}
+          {/* LEFT PANEL: Frosted Glassmorphism Era & Active Particle Phase Block */}
           <aside
             key={`left-${era.id}`}
-            className="pointer-events-auto w-full lg:w-[272px] xl:w-[292px] flex flex-col gap-3.5 bg-[#0a0a0a]/92 backdrop-blur-md p-4 border border-white/18 shadow-2xl"
+            className="pointer-events-auto w-full lg:w-[276px] xl:w-[296px] flex flex-col gap-3.5 glass-panel rounded-xl p-4"
           >
             {/* Chapter & Year Header */}
-            <div className="flex items-center justify-between border-b border-white/12 pb-2">
+            <div className="flex items-center justify-between border-b border-white/15 pb-2.5">
               <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.18em]">
-                <span className="bg-white text-black font-bold px-1.5 py-0.5 text-[10px]">
+                <span className="bg-white/20 text-white border border-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] font-bold px-2 py-0.5 rounded text-[10px]">
                   /{era.chapter}
                 </span>
                 <span className="text-white font-semibold">{era.year}</span>
               </div>
-              <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider">
+              <span className="font-mono text-[10px] text-neutral-300 uppercase tracking-wider">
                 {era.id}
               </span>
             </div>
@@ -62,8 +62,8 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
               {era.title}
             </h2>
 
-            {/* Active Particle Phase Readout Box (Always Crystal Clear) */}
-            <div className="bg-white/[0.06] border border-white/20 p-2.5 flex flex-col gap-1">
+            {/* Active Particle Phase Glass Sub-Block */}
+            <div className="glass-subcard rounded-lg p-2.5 flex flex-col gap-1">
               <div className="flex items-center justify-between font-mono text-[9px] text-neutral-300 uppercase tracking-widest">
                 <span>{overrideWord ? 'ACTIVE NODE OVERRIDE' : activePhase.tag}</span>
                 <span className="text-white font-bold">
@@ -78,7 +78,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
             </div>
 
             {/* Era Quote */}
-            <p className="font-dm text-xs text-neutral-200 italic leading-relaxed border-l-2 border-white/60 pl-3">
+            <p className="font-dm text-xs text-neutral-200 italic leading-relaxed border-l-2 border-white/50 pl-3">
               {era.quote}
             </p>
 
@@ -87,9 +87,9 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
               {era.summary}
             </p>
 
-            {/* 3 Interactive Spec Buttons (Full-Width Key/Value — Zero Truncation) */}
-            <div className="pt-2 border-t border-white/12">
-              <div className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest mb-2 flex items-center justify-between">
+            {/* 3 Interactive Glassmorphic Spec Blocks */}
+            <div className="pt-2 border-t border-white/15">
+              <div className="font-mono text-[9px] text-neutral-300 uppercase tracking-widest mb-2 flex items-center justify-between">
                 <span>ERA SPECS</span>
                 <span>CLICK TO MORPH</span>
               </div>
@@ -102,25 +102,21 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                       onClick={() =>
                         onSelectOverrideWord(isSelected ? null : spec.particleWord)
                       }
-                      className={`w-full flex items-center justify-between px-2.5 py-1.5 border transition-all cursor-pointer ${
+                      className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-white text-black border-white'
-                          : 'bg-white/[0.03] text-white border-white/15 hover:border-white/50 hover:bg-white/[0.07]'
+                          ? 'bg-white/25 text-white border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_4px_16px_rgba(0,0,0,0.5)]'
+                          : 'glass-subcard text-white'
                       }`}
                       title={`Click to morph particles into "${spec.particleWord}"`}
                     >
                       <span
                         className={`font-mono text-[9px] uppercase tracking-wider ${
-                          isSelected ? 'text-black/75 font-bold' : 'text-neutral-400'
+                          isSelected ? 'text-white font-bold' : 'text-neutral-300'
                         }`}
                       >
                         {spec.label}
                       </span>
-                      <span
-                        className={`font-mono text-[10px] font-bold ${
-                          isSelected ? 'text-black' : 'text-white'
-                        }`}
-                      >
+                      <span className="font-mono text-[10px] font-bold text-white">
                         {spec.value}
                       </span>
                     </button>
@@ -133,14 +129,14 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
           {/* CENTER STAGE: 100% Unobstructed Open Space for Particle Word, 3D Sculpture & Callouts */}
           <div className="hidden lg:block flex-1 h-full pointer-events-none" />
 
-          {/* RIGHT PANEL: High-Contrast Historical Milestones & Sculpture Legend */}
+          {/* RIGHT PANEL: Frosted Glassmorphism Milestones Block */}
           <aside
             key={`right-${era.id}`}
-            className="pointer-events-auto hidden lg:flex w-[272px] xl:w-[292px] flex-col gap-3 bg-[#0a0a0a]/92 backdrop-blur-md p-4 border border-white/18 shadow-2xl"
+            className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3 glass-panel rounded-xl p-4"
           >
-            <div className="flex items-center justify-between font-mono text-[10px] tracking-[0.16em] text-white uppercase border-b border-white/15 pb-2">
+            <div className="flex items-center justify-between font-mono text-[10px] tracking-[0.16em] text-white uppercase border-b border-white/15 pb-2.5">
               <span className="font-bold">KEY MILESTONES</span>
-              <span className="text-[9px] text-neutral-400">CLICK TO MORPH</span>
+              <span className="text-[9px] text-neutral-300">CLICK TO MORPH</span>
             </div>
 
             <div className="flex flex-col gap-2.5">
@@ -152,42 +148,28 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                     onClick={() =>
                       onSelectOverrideWord(isSelected ? null : m.particleWord)
                     }
-                    className={`text-left group p-2.5 border transition-all cursor-pointer ${
+                    className={`text-left group p-3 rounded-lg transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-white text-black border-white'
-                        : 'bg-white/[0.03] border-white/15 hover:border-white/55 hover:bg-white/[0.07]'
+                        ? 'bg-white/25 text-white border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_6px_20px_rgba(0,0,0,0.6)]'
+                        : 'glass-subcard'
                     }`}
                   >
                     <div className="flex items-center justify-between font-mono text-[10px]">
+                      <span className="font-bold text-white">{m.year}</span>
                       <span
-                        className={`font-bold ${
-                          isSelected ? 'text-black' : 'text-white'
-                        }`}
-                      >
-                        {m.year}
-                      </span>
-                      <span
-                        className={`text-[9px] px-1.5 py-0.5 border ${
+                        className={`text-[9px] px-1.5 py-0.5 rounded border ${
                           isSelected
-                            ? 'border-black/30 bg-black/10 text-black font-bold'
-                            : 'border-white/20 text-neutral-300 group-hover:text-white'
+                            ? 'border-white/60 bg-white/20 text-white font-bold'
+                            : 'border-white/20 bg-white/[0.05] text-neutral-200 group-hover:text-white group-hover:border-white/40'
                         }`}
                       >
                         {m.particleWord}
                       </span>
                     </div>
-                    <div
-                      className={`font-dm text-xs font-bold mt-1 ${
-                        isSelected ? 'text-black' : 'text-white'
-                      }`}
-                    >
+                    <div className="font-dm text-xs font-bold text-white mt-1">
                       {m.title}
                     </div>
-                    <div
-                      className={`font-dm text-[11px] leading-snug mt-0.5 ${
-                        isSelected ? 'text-black/80' : 'text-neutral-300'
-                      }`}
-                    >
+                    <div className="font-dm text-[11px] leading-snug text-neutral-300 mt-0.5">
                       {m.desc}
                     </div>
                   </button>
@@ -199,7 +181,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
             {overrideWord && (
               <button
                 onClick={() => onSelectOverrideWord(null)}
-                className="mt-1 w-full py-1.5 px-3 bg-white/10 hover:bg-white/20 border border-white/30 font-mono text-[10px] text-white uppercase tracking-wider cursor-pointer transition-colors"
+                className="mt-1 w-full py-1.5 px-3 rounded-lg glass-subcard font-mono text-[10px] text-white uppercase tracking-wider cursor-pointer"
               >
                 ↺ Reset to Phase Word ({activePhase.word})
               </button>
@@ -207,13 +189,13 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
           </aside>
         </div>
 
-        {/* BOTTOM-CENTER LOCKED CONTROL BAR: 3 Sequential Particle Phases + Prev/Next Era */}
-        <div className="pointer-events-auto w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-3 py-2 bg-[#0a0a0a]/95 border border-white/25 rounded-full shadow-2xl">
+        {/* BOTTOM-CENTER LOCKED GLASSMORPHIC CONTROL BAR */}
+        <div className="pointer-events-auto w-full max-w-xl mx-auto flex items-center justify-between gap-2 px-3 py-2 glass-pill rounded-full">
           {/* Prev Era Button */}
           <button
             onClick={() => onSelectEra(Math.max(0, activeEraIndex - 1))}
             disabled={activeEraIndex === 0}
-            className="w-8 h-8 rounded-full flex items-center justify-center border border-white/20 text-white hover:bg-white hover:text-black disabled:opacity-25 disabled:pointer-events-none cursor-pointer transition-colors shrink-0"
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-white/[0.06] border border-white/20 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:bg-white/20 hover:border-white/50 disabled:opacity-25 disabled:pointer-events-none cursor-pointer transition-all shrink-0"
             title="Previous Era"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -223,7 +205,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
           {activeEraIndex === 8 ? (
             <div className="flex items-center gap-2 flex-1 justify-center px-2">
               <Sparkles className="w-3.5 h-3.5 text-white shrink-0 hidden sm:inline" />
-              <span className="font-mono text-[10px] text-neutral-300 uppercase hidden sm:inline">
+              <span className="font-mono text-[10px] text-neutral-200 uppercase hidden sm:inline">
                 SYNTHESIZE WORD:
               </span>
               <input
@@ -235,7 +217,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                   onChangeCustomWord(e.target.value);
                 }}
                 placeholder="TYPE WORD..."
-                className="w-36 sm:w-44 bg-black border border-white/35 rounded-full px-3 py-1 font-mono text-xs text-white text-center uppercase tracking-widest focus:outline-none focus:border-white"
+                className="w-36 sm:w-44 bg-white/[0.07] border border-white/30 rounded-full px-3 py-1 font-mono text-xs text-white text-center uppercase tracking-widest focus:outline-none focus:border-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
               />
             </div>
           ) : (
@@ -251,13 +233,13 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                       onSelectOverrideWord(null);
                       onSelectPhase(activeEraIndex, pIdx);
                     }}
-                    className={`px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
+                    className={`px-3.5 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
                       isPhaseActive
-                        ? 'bg-white text-black font-bold shadow-sm'
-                        : 'text-neutral-300 hover:text-white hover:bg-white/10'
+                        ? 'bg-white/25 text-white border border-white/55 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_2px_10px_rgba(0,0,0,0.4)]'
+                        : 'text-neutral-300 border border-transparent hover:text-white hover:bg-white/10 hover:border-white/20'
                     }`}
                   >
-                    <span className="opacity-60 mr-1">{phaseLetter}.</span>
+                    <span className="opacity-65 mr-1">{phaseLetter}.</span>
                     {phase.word}
                   </button>
                 );
@@ -269,7 +251,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
           {activeEraIndex < totalStations - 1 ? (
             <button
               onClick={() => onSelectEra(activeEraIndex + 1)}
-              className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-black hover:bg-neutral-200 cursor-pointer transition-colors shrink-0"
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-white/25 text-white border border-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] hover:bg-white/35 cursor-pointer transition-all shrink-0"
               title="Next Era"
             >
               <ArrowRight className="w-3.5 h-3.5" />
@@ -277,7 +259,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
           ) : (
             <button
               onClick={() => onSelectEra(0)}
-              className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-black hover:bg-neutral-200 cursor-pointer transition-colors shrink-0"
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-white/25 text-white border border-white/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] hover:bg-white/35 cursor-pointer transition-all shrink-0"
               title="Restart Journey"
             >
               <RotateCcw className="w-3.5 h-3.5" />
