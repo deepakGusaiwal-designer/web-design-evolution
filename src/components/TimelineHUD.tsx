@@ -26,86 +26,109 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = ({
     .padStart(3, '0');
 
   return (
-    <>
-      {/* TOP MINIMAL HEADER */}
-      <header className="fixed top-0 left-0 right-0 h-12 z-30 px-6 sm:px-10 lg:px-14 flex items-center justify-between border-b border-white/[0.06] bg-[#050505]/70 backdrop-blur-md">
+    <header className="fixed top-0 left-0 right-0 z-30 bg-[#050505]/90 backdrop-blur-md border-b border-white/15">
+      {/* ROW 1: Top Identity & Mode Controls (44px) */}
+      <div className="h-11 px-4 sm:px-7 flex items-center justify-between border-b border-white/10">
         <div className="flex items-center gap-3">
           <span className="w-2 h-2 bg-white rounded-full" />
-          <span className="font-dm font-bold text-xs tracking-[0.2em] text-white uppercase">
+          <span className="font-dm font-bold text-xs tracking-[0.2em] text-white uppercase whitespace-nowrap">
             THE EVOLUTION OF THE WEB
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
-          <span className="hidden sm:inline font-mono text-[10px] text-neutral-500 tracking-widest">
-            SCROLL HORIZONTALLY // {percent}%
+        <div className="flex items-center gap-3 sm:gap-4">
+          <span className="hidden md:inline font-mono text-[10px] text-neutral-400 tracking-widest whitespace-nowrap">
+            TIMELINE PROGRESS // {percent}%
           </span>
 
           <button
             onClick={onTogglePureParticleMode}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] uppercase tracking-wider border transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
               pureParticleMode
                 ? 'bg-white text-black border-white font-bold'
-                : 'text-neutral-400 border-white/15 hover:text-white hover:border-white/40'
+                : 'text-neutral-300 border-white/20 hover:text-white hover:border-white/50'
             }`}
           >
             {pureParticleMode ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-            <span>{pureParticleMode ? 'SHOW TEXT' : 'PARTICLES ONLY'}</span>
+            <span>{pureParticleMode ? 'SHOW UI' : 'PARTICLES ONLY'}</span>
           </button>
 
           <button
             onClick={onToggleSound}
-            className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all cursor-pointer ${
+            className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
               soundEnabled
                 ? 'bg-white text-black border-white'
-                : 'text-neutral-400 border-white/15 hover:text-white hover:border-white/40'
+                : 'text-neutral-300 border-white/20 hover:text-white hover:border-white/50'
             }`}
             title="Toggle Audio"
           >
             {soundEnabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
           </button>
         </div>
-      </header>
+      </div>
 
-      {/* BOTTOM MINIMAL HORIZONTAL TIMELINE */}
-      <footer className="fixed bottom-0 left-0 right-0 h-11 z-30 px-6 sm:px-10 lg:px-14 flex items-center justify-between border-t border-white/[0.06] bg-[#050505]/70 backdrop-blur-md">
-        {/* Hairline Progress Fill */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/10">
+      {/* ROW 2: Precision Interactive Horizontal Timeline Ruler (36px, Never Wraps or Clips) */}
+      <nav
+        aria-label="Historical Era Timeline"
+        className="relative h-9 px-2 sm:px-6 flex items-center overflow-x-auto no-scrollbar"
+      >
+        {/* Continuous Hairline Progress Fill at Bottom of Timeline Bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/10 pointer-events-none">
           <div
             className="h-full bg-white transition-all duration-75"
             style={{ width: `${scrollProgress * 100}%` }}
           />
         </div>
 
-        <div className="w-full flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+        <div className="w-full min-w-[760px] h-full grid grid-cols-9">
           {ERAS.map((era, idx) => {
             const isActive = idx === activeEraIndex;
+            const isPast = idx < activeEraIndex;
+            const startYear = era.year.split(' ')[0];
 
             return (
               <button
                 key={era.id}
                 onClick={() => onSelectEra(idx)}
-                className={`flex items-center gap-1.5 px-2 py-1 rounded font-mono text-[10px] tracking-wider uppercase transition-all cursor-pointer shrink-0 ${
+                className={`relative h-full px-2.5 flex items-center justify-between border-l border-white/12 last:border-r transition-colors cursor-pointer group whitespace-nowrap ${
                   isActive
                     ? 'bg-white text-black font-bold'
-                    : 'text-neutral-400 hover:text-white hover:bg-white/10'
+                    : isPast
+                      ? 'bg-white/[0.03] text-neutral-300 hover:bg-white/10 hover:text-white'
+                      : 'text-neutral-400 hover:bg-white/10 hover:text-white'
                 }`}
               >
+                {/* Left: Chapter + ID */}
+                <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-wider uppercase whitespace-nowrap">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      isActive
+                        ? 'bg-black'
+                        : isPast
+                          ? 'bg-white/60'
+                          : 'bg-white/20 group-hover:bg-white/60'
+                    }`}
+                  />
+                  <span className="font-bold">/{era.chapter}</span>
+                  <span className={isActive ? 'text-black' : 'text-white/90'}>
+                    {era.id}
+                  </span>
+                </div>
+
+                {/* Right: Compact Start Year + Ruler Tick */}
                 <span
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
-                    isActive ? 'bg-black' : 'bg-white/40'
+                  className={`font-mono text-[9px] tracking-normal whitespace-nowrap hidden xl:inline ${
+                    isActive ? 'text-black/80 font-semibold' : 'text-neutral-500 group-hover:text-neutral-300'
                   }`}
-                />
-                <span>{era.chapter}</span>
-                <span className="hidden md:inline text-[9px] opacity-90">
-                  {era.id}
+                >
+                  {startYear}
                 </span>
               </button>
             );
           })}
         </div>
-      </footer>
-    </>
+      </nav>
+    </header>
   );
 };
 

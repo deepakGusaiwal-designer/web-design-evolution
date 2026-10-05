@@ -616,7 +616,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       }
 
       // 5. Crisp Vector Phase Header Badge Above the Particle Word (100% Legible!)
-      const headerY = Math.max(76, centerY - 0.64 * scaleY);
+      const headerY = Math.max(104, centerY - 0.64 * scaleY);
       const badgeText = ovWord
         ? `INSPECTING ARCHIVE NODE // ${ovWord} // ${era.year}`
         : `${phase.tag} — ${phase.caption}`;

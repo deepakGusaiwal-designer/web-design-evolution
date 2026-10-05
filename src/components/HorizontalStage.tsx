@@ -16,7 +16,6 @@ interface HorizontalStageProps {
 }
 
 export const HorizontalStage: React.FC<HorizontalStageProps> = ({
-  scrollProgress,
   activeEraIndex,
   activePhaseIndex,
   onSelectPhase,
@@ -31,50 +30,14 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
   const era = ERAS[activeEraIndex] || ERAS[0];
   const activePhase = era.phases[activePhaseIndex] || era.phases[0];
 
-  // Continuous horizontal ruler offset so horizontal scroll motion is always tactile
-  const rulerOffsetPx = -scrollProgress * 2400;
-
   return (
     <div
       className={`fixed inset-0 pointer-events-none z-10 transition-opacity duration-500 ${
         pureParticleMode ? 'opacity-0' : 'opacity-100'
       }`}
     >
-      {/* Continuous Horizontal Coordinate Ruler Strip (Top & Bottom Sub-Grid) */}
-      <div className="fixed top-12 left-0 right-0 h-6 overflow-hidden border-b border-white/[0.06] bg-black/40">
-        <div
-          className="flex items-center h-full will-change-transform"
-          style={{
-            width: '3600px',
-            transform: `translate3d(${rulerOffsetPx}px, 0, 0)`,
-          }}
-        >
-          {Array.from({ length: 36 }).map((_, i) => {
-            const stationIdx = Math.floor(i / 4);
-            const isMajor = i % 4 === 0 && stationIdx < ERAS.length;
-            const st = ERAS[stationIdx];
-            return (
-              <div
-                key={i}
-                className="w-[100px] shrink-0 flex items-center gap-2 border-l border-white/15 pl-2 h-full"
-              >
-                {isMajor && st ? (
-                  <span className="font-mono text-[9px] tracking-[0.18em] text-white/80 font-semibold uppercase">
-                    /{st.chapter} {st.id} — {st.year}
-                  </span>
-                ) : (
-                  <span className="font-mono text-[8px] tracking-widest text-neutral-600">
-                    +{i * 25}MM
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Main Viewport-Locked Split Stage: Left Panel + Open Center Particle Stage + Right Panel */}
-      <div className="relative w-full h-full flex flex-col justify-between pt-20 pb-14 px-4 sm:px-6 lg:px-7">
+      <div className="relative w-full h-full flex flex-col justify-between pt-24 pb-6 px-4 sm:px-6 lg:px-7">
         <div className="flex-1 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           {/* LEFT PANEL: High-Contrast Era & Active Particle Phase Information */}
           <aside
