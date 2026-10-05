@@ -424,12 +424,44 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       }
     }
 
+    const mouse = {
+      x: -9999,
+      y: -9999,
+      vx: 0,
+      vy: 0,
+      normX: 0,
+      normY: 0,
+      smoothNormX: 0,
+      smoothNormY: 0,
+      active: false,
+    };
+
     const shockwave = {
       x: 0,
       y: 0,
       radius: 0,
       alpha: 0,
       active: false,
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      const dx = e.clientX - mouse.x;
+      const dy = e.clientY - mouse.y;
+      if (mouse.active) {
+        mouse.vx = Math.max(-28, Math.min(28, dx));
+        mouse.vy = Math.max(-28, Math.min(28, dy));
+      }
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.normX = (e.clientX / width) * 2 - 1;
+      mouse.normY = (e.clientY / height) * 2 - 1;
+      mouse.active = true;
+    };
+
+    const onPointerLeave = () => {
+      mouse.active = false;
+      mouse.x = -9999;
+      mouse.y = -9999;
     };
 
     const onPointerDown = (e: PointerEvent) => {
@@ -447,7 +479,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       shockwave.x = e.clientX;
       shockwave.y = e.clientY;
       shockwave.radius = 6;
-      shockwave.alpha = 0.8;
+      shockwave.alpha = 0.85;
       shockwave.active = true;
 
       const clickNormX = (e.clientX / width) * 2 - 1;
@@ -458,17 +490,20 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
         const dx = current[i * 3] - clickNormX;
         const dy = current[i * 3 + 1] - clickNormY;
         const distSq = dx * dx + dy * dy + 0.01;
-        if (distSq < 0.3) {
-          const force = (0.04 / Math.sqrt(distSq)) * (1 - distSq / 0.3);
-          vel[i * 3] += (dx / Math.sqrt(distSq)) * force;
-          vel[i * 3 + 1] += (dy / Math.sqrt(distSq)) * force;
-          vel[i * 3 + 2] += (Math.random() - 0.5) * 0.03;
+        if (distSq < 0.35) {
+          const dist = Math.sqrt(distSq);
+          const force = (0.048 / dist) * (1 - distSq / 0.35);
+          vel[i * 3] += (dx / dist) * force;
+          vel[i * 3 + 1] += (dy / dist) * force;
+          vel[i * 3 + 2] += (Math.random() - 0.5) * 0.04;
         }
       }
 
       stateRef.current.onCanvasClick?.();
     };
 
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerleave', onPointerLeave, { passive: true });
     window.addEventListener('pointerdown', onPointerDown, { passive: true });
 
     let rafId: number;
@@ -479,6 +514,11 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
 
     const render = () => {
       time += 0.013;
+      mouse.vx *= 0.88;
+      mouse.vy *= 0.88;
+      mouse.smoothNormX += ((mouse.active ? mouse.normX : 0) - mouse.smoothNormX) * 0.08;
+      mouse.smoothNormY += ((mouse.active ? mouse.normY : 0) - mouse.smoothNormY) * 0.08;
+
       const {
         activeEraIndex: eraIdx,
         activePhaseIndex: phaseIdx,
@@ -499,20 +539,20 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       ctx.lineTo(width, height * 0.53);
       ctx.stroke();
 
-      // 3. Autonomous 3D Rotation for Central Sculpture (Does not follow cursor)
+      // 3. Smooth Interactive 3D Rotation for Central Sculpture
       const isFlatPlane = era.shapeType === 'flat' && phase.sculptVariant !== 1;
       const rotY =
         era.shapeType === 'terminal' ||
         era.shapeType === 'table' ||
         era.shapeType === 'responsive' ||
         isFlatPlane
-          ? Math.sin(time * 0.5) * 0.14
-          : time * 0.26;
+          ? Math.sin(time * 0.5) * 0.14 + mouse.smoothNormX * 0.18
+          : time * 0.26 + mouse.smoothNormX * 0.34;
 
       const rotX =
         era.shapeType === 'wave3d'
-          ? 0.38
-          : Math.cos(time * 0.38) * 0.07;
+          ? 0.38 + mouse.smoothNormY * 0.15
+          : Math.cos(time * 0.38) * 0.07 + mouse.smoothNormY * 0.14;
 
       const cosY = Math.cos(rotY);
       const sinY = Math.sin(rotY);
@@ -527,7 +567,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
 
       const horizontalWind = Math.max(-0.07, Math.min(0.07, sVel * -0.0015));
 
-      // 4. Update & Project All Particles
+      // 4. Update & Project All Particles with Interactive Mouse Physics
       for (let i = 0; i < TOTAL_PARTICLES; i++) {
         const i3 = i * 3;
         let tx = targets[i3];
@@ -570,16 +610,48 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
         current[i3 + 2] += vel[i3 + 2];
 
         const perspective = 1.85 / (1.85 - current[i3 + 2]);
-        const sx = centerX + current[i3] * scaleX * perspective;
-        const sy = centerY + current[i3 + 1] * scaleY * perspective;
+        let sx = centerX + current[i3] * scaleX * perspective;
+        let sy = centerY + current[i3 + 1] * scaleY * perspective;
+        let hoverBoost = 0;
+
+        // Interactive Mouse Repulsion + Swirl Impulse on Particles
+        if (mouse.active) {
+          const dx = sx - mouse.x;
+          const dy = sy - mouse.y;
+          const distSq = dx * dx + dy * dy;
+          const maxR = i < TEXT_PARTICLES ? 95 : 135;
+          if (distSq < maxR * maxR && distSq > 1) {
+            const dist = Math.sqrt(distSq);
+            const factor = 1 - dist / maxR;
+            const smoothFactor = factor * factor;
+            hoverBoost = smoothFactor;
+
+            // Elastic screen-space parting + physical 3D spring velocity impulse
+            const push = i < TEXT_PARTICLES ? 22 : 30;
+            sx += (dx / dist) * smoothFactor * push;
+            sy += (dy / dist) * smoothFactor * push;
+
+            const velImpulse = i < TEXT_PARTICLES ? 0.0022 : 0.0032;
+            vel[i3] += ((dx / dist) * velImpulse + mouse.vx * 0.00012) * smoothFactor;
+            vel[i3 + 1] += ((dy / dist) * velImpulse + mouse.vy * 0.00012) * smoothFactor;
+            vel[i3 + 2] += (Math.sin(i) * 0.0018) * smoothFactor;
+          }
+        }
 
         screenX[i] = sx;
         screenY[i] = sy;
 
         const depthBoost = Math.max(0.3, Math.min(1.25, perspective));
-        const brightness = i < TEXT_PARTICLES ? 255 : Math.min(255, Math.floor(shades[i] * depthBoost * 255));
-        const alpha = i < TEXT_PARTICLES ? 0.98 : Math.min(0.92, shades[i] * depthBoost);
-        const size = i < TEXT_PARTICLES ? sizes[i] : sizes[i] * perspective * 0.92;
+        const brightness =
+          i < TEXT_PARTICLES
+            ? 255
+            : Math.min(255, Math.floor((shades[i] * depthBoost + hoverBoost * 0.45) * 255));
+        const alpha =
+          i < TEXT_PARTICLES
+            ? 0.98
+            : Math.min(0.96, shades[i] * depthBoost + hoverBoost * 0.35);
+        const baseSize = i < TEXT_PARTICLES ? sizes[i] : sizes[i] * perspective * 0.92;
+        const size = baseSize * (1 + hoverBoost * 0.55);
         const streak = Math.min(12, Math.abs(sVel) * 0.25);
 
         ctx.fillStyle = `rgba(${brightness}, ${brightness}, ${brightness}, ${alpha.toFixed(2)})`;
@@ -754,6 +826,8 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
 
     return () => {
       window.removeEventListener('resize', updateSize);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerleave', onPointerLeave);
       window.removeEventListener('pointerdown', onPointerDown);
       cancelAnimationFrame(rafId);
     };
