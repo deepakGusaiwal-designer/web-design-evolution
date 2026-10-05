@@ -1,178 +1,192 @@
-import React, { useEffect, useState, useRef } from 'react';
-import Lenis from 'lenis';
-import LiquidEther, { type LiquidColorScheme } from './components/reactbits/LiquidEther';
-import { Navigation } from './components/Navigation';
-import { SoundSystem } from './components/SoundSystem';
-import { HeroSection } from './components/HeroSection';
-import { Web1990 } from './components/Web1990';
-import { Web2000 } from './components/Web2000';
-import { Web2010 } from './components/Web2010';
-import { Web2020 } from './components/Web2020';
-import { WebGLSection } from './components/WebGLSection';
-import { WebAI } from './components/WebAI';
-import { SpatialWeb } from './components/SpatialWeb';
-import { FutureWeb } from './components/FutureWeb';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { ERAS } from './data/eras';
+import ParticleEngine from './components/ParticleEngine';
+import HorizontalStage from './components/HorizontalStage';
+import TimelineHUD from './components/TimelineHUD';
+import { playArchitecturalPulse } from './utils/sound';
 
 export const App: React.FC = () => {
-  const [currentEraIndex, setCurrentEraIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [heroPalette, setHeroPalette] = useState<LiquidColorScheme>('nebula');
-  const [etherViscosity, setEtherViscosity] = useState(0.85);
-  const lenisRef = useRef<Lenis | null>(null);
+  const [scrollVelocity, setScrollVelocity] = useState(0);
+  const [activeEraIndex, setActiveEraIndex] = useState(0);
+  const [altModes, setAltModes] = useState<Record<number, boolean>>({});
+  const [customWord, setCustomWord] = useState('IMAGINE');
+  const [pureParticleMode, setPureParticleMode] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
 
-  // Section element references for programmatic scrolling
-  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+  // Smooth horizontal scroll physics refs
+  const targetProgressRef = useRef(0);
+  const currentProgressRef = useRef(0);
+  const prevEraRef = useRef(0);
+  const soundEnabledRef = useRef(soundEnabled);
 
-  // Initialize Lenis Smooth Scroll
   useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      touchMultiplier: 1.8,
-    });
-    lenisRef.current = lenis;
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
 
-    const raf = (time: number) => {
-      lenis.raf(time);
-
-      const currentScroll = window.scrollY;
-      const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = totalScrollable > 0 ? currentScroll / totalScrollable : 0;
-      setScrollProgress(progress);
-
-      // Track active section based on scroll offset
-      const triggerOffset = window.scrollY + window.innerHeight * 0.4;
-      let activeIdx = 0;
-
-      sectionRefs.current.forEach((el, index) => {
-        if (el && el.offsetTop <= triggerOffset) {
-          activeIdx = index;
-        }
-      });
-
-      setCurrentEraIndex(activeIdx);
-      requestAnimationFrame(raf);
-    };
-
-    const rafId = requestAnimationFrame(raf);
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      lenis.destroy();
-    };
+  const selectEra = useCallback((index: number) => {
+    const clamped = Math.max(0, Math.min(ERAS.length - 1, index));
+    targetProgressRef.current = clamped / (ERAS.length - 1);
+    if (soundEnabledRef.current) {
+      playArchitecturalPulse(180 + clamped * 45, 0.16);
+    }
   }, []);
 
-  const scrollToEra = (index: number) => {
-    const targetElement = sectionRefs.current[index];
-    if (targetElement && lenisRef.current) {
-      lenisRef.current.scrollTo(targetElement, { offset: 0, duration: 1.4 });
-    } else if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
+  const toggleAltMode = useCallback(() => {
+    setAltModes((prev) => {
+      const nextVal = !prev[activeEraIndex];
+      if (soundEnabledRef.current) {
+        playArchitecturalPulse(nextVal ? 420 : 280, 0.18);
+      }
+      return { ...prev, [activeEraIndex]: nextVal };
+    });
+  }, [activeEraIndex]);
 
-  const handleRestart = () => {
-    scrollToEra(0);
-  };
+  useEffect(() => {
+    // 1. Wheel listener (maps both vertical wheel and horizontal trackpad to horizontal X progress)
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      // Normalized sensitivity across 9 chapters
+      const step = delta * 0.00022;
+      targetProgressRef.current = Math.max(0, Math.min(1, targetProgressRef.current + step));
+    };
 
-  const handleExplode = () => {
-    // Climax mode transition
-    setCurrentEraIndex(8);
-  };
+    // 2. Keyboard navigation (Left/Right arrows)
+    const onKeyDown = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName;
+      if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        e.preventDefault();
+        const currentIdx = Math.round(targetProgressRef.current * (ERAS.length - 1));
+        selectEra(currentIdx + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        const currentIdx = Math.round(targetProgressRef.current * (ERAS.length - 1));
+        selectEra(currentIdx - 1);
+      }
+    };
+
+    // 3. Touch & Mouse Drag horizontal panning
+    let isDragging = false;
+    let startX = 0;
+    let startProgress = 0;
+
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target &&
+        (target.tagName === 'BUTTON' ||
+          target.tagName === 'INPUT' ||
+          target.closest('button') ||
+          target.closest('input'))
+      ) {
+        return;
+      }
+      isDragging = true;
+      startX = e.clientX;
+      startProgress = targetProgressRef.current;
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging) return;
+      const dx = startX - e.clientX;
+      const sensitivity = dx / (window.innerWidth * 3.2);
+      targetProgressRef.current = Math.max(0, Math.min(1, startProgress + sensitivity));
+    };
+
+    const onPointerUp = () => {
+      isDragging = false;
+    };
+
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('pointerdown', onPointerDown, { passive: true });
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerup', onPointerUp, { passive: true });
+
+    // 4. Smooth 60fps horizontal interpolation loop
+    let rafId: number;
+    const tick = () => {
+      const target = targetProgressRef.current;
+      const current = currentProgressRef.current;
+      const diff = target - current;
+
+      // Smooth damping
+      const next = Math.abs(diff) < 0.00005 ? target : current + diff * 0.085;
+      const velocity = (next - current) * 1000;
+
+      currentProgressRef.current = next;
+      setScrollProgress(next);
+      setScrollVelocity(velocity);
+
+      const eraIdx = Math.round(next * (ERAS.length - 1));
+      if (eraIdx !== prevEraRef.current) {
+        prevEraRef.current = eraIdx;
+        setActiveEraIndex(eraIdx);
+        if (soundEnabledRef.current) {
+          playArchitecturalPulse(200 + eraIdx * 40, 0.14);
+        }
+      }
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp);
+      cancelAnimationFrame(rafId);
+    };
+  }, [selectEra]);
+
+  const currentAltMode = !!altModes[activeEraIndex];
 
   return (
-    <div className="relative min-h-screen bg-[#050508] text-[#f1f5f9] overflow-x-hidden selection:bg-cyan-500/30 selection:text-cyan-200 font-dm">
-      {/* 1. Ultra-Smooth Full-Screen Liquid Fluid Animation (Replaces heavy particles) */}
-      <LiquidEther
-        colorScheme={currentEraIndex === 0 ? heroPalette : undefined}
-        currentEraIndex={currentEraIndex}
-        viscosity={etherViscosity}
-        turbulence={1.0}
-        vorticity={1.2}
-      />
-
-      {/* 2. Top Navigation & Editorial HUD */}
-      <Navigation
-        currentEraIndex={currentEraIndex}
-        onSelectEra={scrollToEra}
+    <div className="relative w-screen h-screen bg-[#050505] text-white overflow-hidden select-none font-dm">
+      {/* 1. Monochrome 3D Particle Engine (Forms Era Words, Sculptures & Callouts) */}
+      <ParticleEngine
+        activeEraIndex={activeEraIndex}
         scrollProgress={scrollProgress}
+        scrollVelocity={scrollVelocity}
+        isAltMode={currentAltMode}
+        customWord={customWord}
+        onCanvasClick={() => {
+          if (soundEnabled) playArchitecturalPulse(310, 0.12);
+        }}
       />
 
-      {/* 3. Procedural Web Audio Sound Engine */}
-      <SoundSystem />
+      {/* 2. Top & Bottom Monochrome Architectural Timeline HUD */}
+      <TimelineHUD
+        activeEraIndex={activeEraIndex}
+        scrollProgress={scrollProgress}
+        onSelectEra={selectEra}
+        pureParticleMode={pureParticleMode}
+        onTogglePureParticleMode={() => setPureParticleMode((p) => !p)}
+        soundEnabled={soundEnabled}
+        onToggleSound={() => {
+          const next = !soundEnabled;
+          setSoundEnabled(next);
+          if (next) playArchitecturalPulse(360, 0.15);
+        }}
+      />
 
-      {/* 4. Main Interactive Experience Sections */}
-      <main className="relative z-10 flex flex-col">
-        {/* HERO: The Genesis */}
-        <div ref={(el) => { sectionRefs.current[0] = el; }}>
-          <HeroSection
-            etherPalette={heroPalette}
-            onChangePalette={setHeroPalette}
-            viscosity={etherViscosity}
-            onChangeViscosity={setEtherViscosity}
-            onExploreClick={() => scrollToEra(1)}
-            onSelectEra={(idx) => scrollToEra(idx)}
-          />
-        </div>
-
-        {/* SECTION 01: The Static Web (1989 - 1993) */}
-        <div ref={(el) => { sectionRefs.current[1] = el; }}>
-          <Web1990 onShatter={() => setCurrentEraIndex(3)} />
-        </div>
-
-        {/* SECTION 02: The Web Becomes Visual (1996 - CSS & 1999 Flash) */}
-        <div ref={(el) => { sectionRefs.current[2] = el; }}>
-          <Web2000 />
-        </div>
-
-        {/* SECTION 03: The Web Learns to Move (2006 - Motion & Responsive) */}
-        <div ref={(el) => { sectionRefs.current[3] = el; }}>
-          <Web2010 />
-        </div>
-
-        {/* SECTION 04: The Third Dimension (2007 Skeuomorphism to 2013 Flat) */}
-        <div ref={(el) => { sectionRefs.current[4] = el; }}>
-          <Web2020 />
-        </div>
-
-        {/* SECTION 05: The Browser Became a GPU (2019 - GLSL Shaders) */}
-        <div ref={(el) => { sectionRefs.current[5] = el; }}>
-          <WebGLSection />
-        </div>
-
-        {/* SECTION 06: Human + Machine (2023 - AI & Generative) */}
-        <div ref={(el) => { sectionRefs.current[6] = el; }}>
-          <WebAI />
-        </div>
-
-        {/* SECTION 07: Imagination Becomes the Interface (2026 - Spatial Horizon) */}
-        <div ref={(el) => { sectionRefs.current[7] = el; }}>
-          <SpatialWeb />
-        </div>
-
-        {/* CLIMAX: Singularity & Climax Interactive Future Canvas */}
-        <div ref={(el) => { sectionRefs.current[8] = el; }}>
-          <FutureWeb
-            onRestart={handleRestart}
-            onExplodeParticles={handleExplode}
-          />
-        </div>
-      </main>
-
-      {/* Footer Info */}
-      <footer className="relative z-20 py-12 px-6 border-t border-white/5 text-center font-mono text-xs text-slate-500">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <span>THE EVOLUTION OF THE WEB // 1989 — 2026 — ∞</span>
-          </div>
-          <div className="flex items-center gap-4 text-[11px] text-slate-400">
-            <span>React + Liquid Ether GLSL + Web Audio</span>
-            <span>•</span>
-            <span className="text-cyan-400">Experience Live</span>
-          </div>
-        </div>
-      </footer>
+      {/* 3. Horizontal Scrolling Information Stations */}
+      <HorizontalStage
+        scrollProgress={scrollProgress}
+        activeEraIndex={activeEraIndex}
+        isAltMode={currentAltMode}
+        onToggleAltMode={toggleAltMode}
+        customWord={customWord}
+        onChangeCustomWord={setCustomWord}
+        onSelectEra={selectEra}
+        pureParticleMode={pureParticleMode}
+      />
     </div>
   );
 };
