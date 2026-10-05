@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ERAS } from './data/eras';
+import WaterShader from './components/WaterShader';
 import ParticleEngine from './components/ParticleEngine';
 import HorizontalStage from './components/HorizontalStage';
 import TimelineHUD from './components/TimelineHUD';
@@ -172,6 +173,13 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative w-screen h-screen bg-[#050505] text-white overflow-hidden select-none font-dm">
+      {/* 0. WebGL GLSL Water & Caustics Shader Background */}
+      <WaterShader
+        scrollProgress={scrollProgress}
+        scrollVelocity={scrollVelocity}
+        activeEraIndex={activeEraIndex}
+      />
+
       {/* 1. Clean Monochrome 3D Particle Engine */}
       <ParticleEngine
         activeEraIndex={activeEraIndex}

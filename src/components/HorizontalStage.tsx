@@ -87,13 +87,13 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
               {era.summary}
             </p>
 
-            {/* 3 Interactive Spec Buttons */}
+            {/* 3 Interactive Spec Buttons (Full-Width Key/Value — Zero Truncation) */}
             <div className="pt-2 border-t border-white/12">
               <div className="font-mono text-[9px] text-neutral-400 uppercase tracking-widest mb-2 flex items-center justify-between">
                 <span>ERA SPECS</span>
                 <span>CLICK TO MORPH</span>
               </div>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="flex flex-col gap-1.5">
                 {era.specs.map((spec) => {
                   const isSelected = overrideWord === spec.particleWord;
                   return (
@@ -102,27 +102,27 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = ({
                       onClick={() =>
                         onSelectOverrideWord(isSelected ? null : spec.particleWord)
                       }
-                      className={`text-left p-2 border transition-all cursor-pointer ${
+                      className={`w-full flex items-center justify-between px-2.5 py-1.5 border transition-all cursor-pointer ${
                         isSelected
                           ? 'bg-white text-black border-white'
                           : 'bg-white/[0.03] text-white border-white/15 hover:border-white/50 hover:bg-white/[0.07]'
                       }`}
                       title={`Click to morph particles into "${spec.particleWord}"`}
                     >
-                      <div
-                        className={`font-mono text-[8px] uppercase tracking-wider truncate ${
-                          isSelected ? 'text-black/70 font-bold' : 'text-neutral-400'
+                      <span
+                        className={`font-mono text-[9px] uppercase tracking-wider ${
+                          isSelected ? 'text-black/75 font-bold' : 'text-neutral-400'
                         }`}
                       >
                         {spec.label}
-                      </div>
-                      <div
-                        className={`font-mono text-[10px] font-bold mt-0.5 truncate ${
+                      </span>
+                      <span
+                        className={`font-mono text-[10px] font-bold ${
                           isSelected ? 'text-black' : 'text-white'
                         }`}
                       >
                         {spec.value}
-                      </div>
+                      </span>
                     </button>
                   );
                 })}

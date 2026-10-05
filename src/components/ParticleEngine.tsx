@@ -383,7 +383,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: false });
+    const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
     let width = window.innerWidth;
@@ -505,12 +505,11 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       const era = ERAS[eraIdx] || ERAS[0];
       const phase = era.phases[phaseIdx] || era.phases[0];
 
-      // 1. Pure Deep Obsidian Black Background
-      ctx.fillStyle = '#050505';
-      ctx.fillRect(0, 0, width, height);
+      // 1. Transparent Clear so WebGL Water Shader Shines Through
+      ctx.clearRect(0, 0, width, height);
 
       // 2. Subtle Architectural Center Equator Hairline
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, height * 0.53);
@@ -570,10 +569,12 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
           ty = ry + 0.08;
           tz = rz2;
         } else if (i >= streamStart) {
-          targets[i3] -= 0.0012 + horizontalWind * 0.35;
+          targets[i3] -= 0.0014 + horizontalWind * 0.35;
           if (targets[i3] < -1.25) targets[i3] = 1.25;
           if (targets[i3] > 1.25) targets[i3] = -1.25;
           tx = targets[i3];
+          // Buoyant liquid wave undulation for submerged ambient particles
+          ty += Math.sin(tx * 4.5 + time * 1.8 + (i % 17) * 0.3) * 0.04;
         }
 
         const spring = i < TEXT_PARTICLES ? 0.14 : 0.095;
@@ -626,7 +627,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       const pillW = textWidth + 28;
       const pillH = 24;
 
-      ctx.fillStyle = 'rgba(14, 14, 14, 0.94)';
+      ctx.fillStyle = 'rgba(10, 12, 16, 0.92)';
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
       ctx.lineWidth = 1;
       ctx.fillRect(centerX - pillW / 2, headerY - pillH / 2, pillW, pillH);
@@ -639,7 +640,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
 
       // 6. Subtle Structural Filaments inside the 3D Sculpture
       ctx.lineWidth = 0.6;
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.beginPath();
       const step = era.shapeType === 'neural' ? 5 : 11;
       for (let i = TEXT_PARTICLES; i < streamStart - step; i += step) {
@@ -655,13 +656,13 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
       ctx.stroke();
 
       // 7. Render 4 Crystal-Clear 3D Sculpture Callout Badges on Canvas
-      // Safe horizontal radius ensures zero collision with Left/Right editorial panels
+      // Positioned cleanly outside the sculpture and inside the Left/Right panels
       if (width >= 1120) {
         let leftSlot = 0;
         let rightSlot = 0;
         const cardW = 172;
         const cardH = 44;
-        const outerRadius = Math.max(250, Math.min(335, width * 0.5 - 316));
+        const outerRadius = Math.max(270, Math.min(415, width * 0.5 - 318));
 
         era.sculptureCallouts.forEach((callout) => {
           // Rotate anchor point with the 3D sculpture
@@ -703,8 +704,8 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
           ctx.stroke();
 
           // High-Contrast Callout Badge Box
-          ctx.fillStyle = 'rgba(10, 10, 10, 0.92)';
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.24)';
+          ctx.fillStyle = 'rgba(8, 10, 14, 0.90)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.26)';
           ctx.fillRect(cardX, cardY, cardW, cardH);
           ctx.strokeRect(cardX, cardY, cardW, cardH);
 
@@ -726,15 +727,24 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
         });
       }
 
-      // 8. Expanding Click Shockwave Ring
+      // 8. Expanding Triple Concentric Water Ripple Rings on Click
       if (shockwave.active) {
-        shockwave.radius += 13;
-        shockwave.alpha *= 0.91;
-        ctx.strokeStyle = `rgba(255, 255, 255, ${shockwave.alpha.toFixed(3)})`;
+        shockwave.radius += 11;
+        shockwave.alpha *= 0.92;
         ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.arc(shockwave.x, shockwave.y, shockwave.radius, 0, Math.PI * 2);
-        ctx.stroke();
+
+        const rings = [1.0, 0.68, 0.38];
+        rings.forEach((scale, idx) => {
+          const r = shockwave.radius * scale;
+          if (r > 2) {
+            const ringAlpha = shockwave.alpha * (1 - idx * 0.28);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${ringAlpha.toFixed(3)})`;
+            ctx.beginPath();
+            ctx.arc(shockwave.x, shockwave.y, r, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        });
+
         if (shockwave.alpha < 0.02) shockwave.active = false;
       }
 
@@ -754,7 +764,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = ({
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full pointer-events-auto cursor-crosshair z-0"
+      className="fixed inset-0 w-full h-full pointer-events-auto cursor-crosshair z-[5]"
     />
   );
 };
