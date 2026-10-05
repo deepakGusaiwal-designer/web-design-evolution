@@ -32,7 +32,7 @@ export const App: React.FC = () => {
     soundEnabledRef.current = soundEnabled;
   }, [soundEnabled]);
 
-  const scrollToProgress = useCallback((targetProg: number, duration = 1.1) => {
+  const scrollToProgress = useCallback((targetProg: number, duration = 1.8) => {
     const clamped = Math.max(0, Math.min(1, targetProg));
     const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
     if (lenisRef.current) {
@@ -54,7 +54,7 @@ export const App: React.FC = () => {
       setActiveEraIndex(clamped);
       setActivePhaseIndex(0);
       setOverrideWord(null);
-      scrollToProgress(clamped / (ERAS.length - 1), 1.15);
+      scrollToProgress(clamped / (ERAS.length - 1), 1.85);
 
       if (soundEnabledRef.current) {
         playArchitecturalPulse(180 + clamped * 45, 0.16);
@@ -78,7 +78,7 @@ export const App: React.FC = () => {
         0,
         Math.min(1, (eraIdx + phaseOffset) / totalIntervals)
       );
-      scrollToProgress(targetProg, 0.85);
+      scrollToProgress(targetProg, 1.35);
 
       if (soundEnabledRef.current) {
         playArchitecturalPulse(300 + phaseIdx * 80, 0.14);
@@ -95,13 +95,13 @@ export const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Initialize Lenis smooth scroll synced with GSAP ticker
+    // Initialize Lenis smooth scroll synced with GSAP ticker (slow, heavy cinematic damping)
     const lenis = new Lenis({
-      lerp: 0.085,
+      lerp: 0.055,
       smoothWheel: true,
       gestureOrientation: 'both',
-      wheelMultiplier: 1.0,
-      touchMultiplier: 1.5,
+      wheelMultiplier: 0.45,
+      touchMultiplier: 0.75,
     });
     lenisRef.current = lenis;
 
@@ -184,8 +184,8 @@ export const App: React.FC = () => {
 
   return (
     <div className="relative w-full bg-black text-white select-none font-dm">
-      {/* Virtual 900vh Scroll Track Driven by Lenis + GSAP Ticker */}
-      <div className="w-full h-[900vh] pointer-events-none" aria-hidden="true" />
+      {/* Virtual 2400vh Scroll Track Driven by Lenis + GSAP Ticker (~90vh per sub-phase) */}
+      <div className="w-full h-[2400vh] pointer-events-none" aria-hidden="true" />
 
       {/* 0. WebGL GLSL Water Shader Background (Synced to GSAP Ticker) */}
       <WaterShader motionRef={motionRef} />
