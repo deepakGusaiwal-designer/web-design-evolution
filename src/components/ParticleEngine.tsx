@@ -17,12 +17,145 @@ const TEXT_PARTICLES = 7200;   // 0 .. 7199: 4-Line Multi-Tier Particle Story
 const SCULPT_PARTICLES = 2000; // 7200 .. 9199: Central 3D Architectural Sculpture
 // 9200 .. 9599 (400 particles): Subtle Horizontal Parallax Dust
 
-const BUCKET_STYLES = [
-  'rgba(255, 255, 255, 0.99)', // Bucket 0: Pure White Headline & Hovered Particles
-  'rgba(232, 232, 232, 0.94)', // Bucket 1: Crisp Silver-White Story Narrative Lines 1 & 2
-  'rgba(175, 175, 175, 0.85)', // Bucket 2: Architectural Gray Chapter Kicker & Mid Sculpture
-  'rgba(105, 105, 105, 0.34)', // Bucket 3: Deep Sculpture & Ambient Stream Particles
-] as const;
+interface EraParticlePalette {
+  buckets: readonly [string, string, string, string, string, string];
+  filament: string;
+  accentHex: string;
+  accentRgb: string;
+}
+
+/**
+ * Minimal, historically authentic particle color palettes for each Era.
+ * Preserves high-contrast white/silver readability while weaving in subtle era-specific accent particles.
+ */
+const ERA_PARTICLE_PALETTES: readonly EraParticlePalette[] = [
+  // Era 00: Prologue (1989 — ∞) — Pure White + Ice Cyan & Celestial Silver
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)', // 0: Crisp White Core
+      'rgba(228, 240, 250, 0.94)', // 1: Cool Silver-White Story
+      'rgba(125, 211, 252, 0.95)', // 2: Primary Minimal Accent (Ice Cyan)
+      'rgba(196, 181, 253, 0.88)', // 3: Secondary Minimal Accent (Celestial Violet)
+      'rgba(155, 175, 195, 0.78)', // 4: Mid Sculpture Slate
+      'rgba(95, 115, 135, 0.34)',  // 5: Deep Ambient Dust
+    ],
+    filament: 'rgba(125, 211, 252, 0.16)',
+    accentHex: '#7dd3fc',
+    accentRgb: '125, 211, 252',
+  },
+  // Era 01: The Dark Ages (1989 — 1994) — Pure White + CRT Phosphor Emerald
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)',
+      'rgba(220, 245, 232, 0.94)',
+      'rgba(52, 211, 153, 0.95)',  // CRT Phosphor Emerald
+      'rgba(110, 231, 183, 0.88)', // Terminal Mint
+      'rgba(130, 185, 160, 0.78)',
+      'rgba(70, 120, 95, 0.34)',
+    ],
+    filament: 'rgba(52, 211, 153, 0.16)',
+    accentHex: '#34d399',
+    accentRgb: '52, 211, 153',
+  },
+  // Era 02: Tables & GeoCities (1995 — 1999) — Pure White + Web-Safe Amber & Hyperlink Blue
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)',
+      'rgba(245, 238, 225, 0.94)',
+      'rgba(251, 191, 36, 0.95)',  // Web-Safe Gold Amber
+      'rgba(96, 165, 250, 0.90)',  // Classic Hyperlink Cobalt
+      'rgba(185, 170, 145, 0.78)',
+      'rgba(115, 105, 90, 0.34)',
+    ],
+    filament: 'rgba(251, 191, 36, 0.16)',
+    accentHex: '#fbbf24',
+    accentRgb: '251, 191, 36',
+  },
+  // Era 03: CSS Zen & Flash Era (2000 — 2006) — Pure White + Flash Coral & Aqua Chrome
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)',
+      'rgba(245, 232, 238, 0.94)',
+      'rgba(251, 113, 133, 0.95)', // Flash MX Crimson Rose
+      'rgba(56, 189, 248, 0.90)',  // Web 2.0 Aqua Chrome
+      'rgba(190, 155, 168, 0.78)',
+      'rgba(115, 90, 105, 0.34)',
+    ],
+    filament: 'rgba(251, 113, 133, 0.16)',
+    accentHex: '#fb7185',
+    accentRgb: '251, 113, 133',
+  },
+  // Era 04: Mobile & Responsive (2007 — 2011) — Pure White + Capacitive Sky & Grid Violet
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)',
+      'rgba(228, 238, 252, 0.94)',
+      'rgba(56, 189, 248, 0.95)',  // Capacitive Sky Blue
+      'rgba(167, 139, 250, 0.88)', // 960 Grid Lavender
+      'rgba(150, 175, 205, 0.78)',
+      'rgba(85, 105, 135, 0.34)',
+    ],
+    filament: 'rgba(56, 189, 248, 0.16)',
+    accentHex: '#38bdf8',
+    accentRgb: '56, 189, 248',
+  },
+  // Era 05: Flat & Design Systems (2012 — 2015) — Pure White + Swiss Coral & Bauhaus Teal
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)',
+      'rgba(242, 238, 238, 0.94)',
+      'rgba(248, 113, 113, 0.95)', // Swiss Vermilion Red
+      'rgba(45, 212, 191, 0.88)',  // Bauhaus Token Teal
+      'rgba(185, 165, 165, 0.78)',
+      'rgba(110, 95, 95, 0.34)',
+    ],
+    filament: 'rgba(45, 212, 191, 0.16)',
+    accentHex: '#2dd4bf',
+    accentRgb: '45, 212, 191',
+  },
+  // Era 06: WebGL & Scrollytelling (2016 — 2022) — Pure White + GLSL Violet & Shader Cyan
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)',
+      'rgba(238, 230, 252, 0.94)',
+      'rgba(192, 132, 252, 0.95)', // GLSL Normal-Map Violet
+      'rgba(34, 211, 238, 0.90)',  // Fragment Shader Cyan
+      'rgba(170, 150, 205, 0.78)',
+      'rgba(100, 85, 130, 0.34)',
+    ],
+    filament: 'rgba(192, 132, 252, 0.17)',
+    accentHex: '#c084fc',
+    accentRgb: '192, 132, 252',
+  },
+  // Era 07: AI-Native & Generative UI (2023 — 2025) — Pure White + Synaptic Gold & Neural Indigo
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)',
+      'rgba(245, 238, 230, 0.94)',
+      'rgba(251, 191, 36, 0.95)',  // Synaptic Attention Gold
+      'rgba(129, 140, 248, 0.90)', // Latent Space Indigo
+      'rgba(185, 175, 160, 0.78)',
+      'rgba(110, 100, 95, 0.34)',
+    ],
+    filament: 'rgba(251, 191, 36, 0.16)',
+    accentHex: '#fbbf24',
+    accentRgb: '251, 191, 36',
+  },
+  // Era 08: The Spatial Horizon (2026+) — Pure White + Biophotonic Rose & Holographic Mint
+  {
+    buckets: [
+      'rgba(255, 255, 255, 0.99)',
+      'rgba(245, 232, 242, 0.94)',
+      'rgba(244, 114, 182, 0.95)', // Biophotonic Rose-Quartz
+      'rgba(94, 234, 212, 0.90)',  // Holographic Spatial Mint
+      'rgba(185, 160, 180, 0.78)',
+      'rgba(110, 90, 110, 0.34)',
+    ],
+    filament: 'rgba(244, 114, 182, 0.17)',
+    accentHex: '#f472b6',
+    accentRgb: '244, 114, 182',
+  },
+];
 
 interface SampledStoryData {
   coords: Float32Array;
@@ -995,21 +1128,39 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           const baseSize = i < TEXT_PARTICLES ? sizes[i] : sizes[i] * perspective * 0.92;
           drawSizes[i] = baseSize * (1 + hoverBoost * 0.55);
 
-          if (hoverBoost > 0.25) {
-            bucketIndices[i] = 0;
+          const vShift = activeStory.sculptVariant;
+          if (hoverBoost > 0.2) {
+            bucketIndices[i] = i % 2 === 0 ? 2 : 3;
           } else if (i < TEXT_PARTICLES) {
-            bucketIndices[i] = textTiers[i]; // 0 = Headline, 1 = Story Lines, 2 = Kicker
+            const tier = textTiers[i]; // 0 = Headline, 1 = Story Lines, 2 = Kicker
+            if (tier === 0) {
+              bucketIndices[i] = (i + vShift) % 6 === 0 ? 2 : 0;
+            } else if (tier === 1) {
+              bucketIndices[i] = (i + vShift) % 6 === 0 ? 3 : 1;
+            } else {
+              bucketIndices[i] = i % 3 === 0 ? 3 : 2;
+            }
           } else {
             const lum = shades[i] * perspective;
-            bucketIndices[i] = lum > 0.78 ? 0 : lum > 0.56 ? 1 : lum > 0.34 ? 2 : 3;
+            if (lum > 0.8) {
+              bucketIndices[i] = (i + vShift) % 3 === 0 ? 2 : 0;
+            } else if (lum > 0.58) {
+              bucketIndices[i] = (i + vShift) % 3 === 0 ? 3 : 1;
+            } else if (lum > 0.35) {
+              bucketIndices[i] = 4;
+            } else {
+              bucketIndices[i] = 5;
+            }
           }
         }
 
-        // 4B. Batched Path Draw (4 fill() calls for all 9,600 particles)
-        for (let b = 0; b < 4; b++) {
-          ctx.fillStyle = BUCKET_STYLES[b];
+        const palette = ERA_PARTICLE_PALETTES[eraIdx] || ERA_PARTICLE_PALETTES[0];
+
+        // 4B. Batched Path Draw (6 fill() calls for all 9,600 particles)
+        for (let b = 0; b < 6; b++) {
+          ctx.fillStyle = palette.buckets[b];
           ctx.beginPath();
-          const startIdx = b === 3 ? TEXT_PARTICLES : 0;
+          const startIdx = b >= 4 ? TEXT_PARTICLES : 0;
           for (let i = startIdx; i < TOTAL_PARTICLES; i++) {
             if (bucketIndices[i] === b) {
               const sz = drawSizes[i];
@@ -1019,9 +1170,9 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           ctx.fill();
         }
 
-        // 5. Subtle Structural Filaments inside the 3D Sculpture
-        ctx.lineWidth = 0.6;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        // 5. Subtle Era-Tinted Structural Filaments inside the 3D Sculpture
+        ctx.lineWidth = 0.65;
+        ctx.strokeStyle = palette.filament;
         ctx.beginPath();
         const step = era.shapeType === 'neural' ? 5 : 11;
         for (let i = TEXT_PARTICLES; i < streamStart - step; i += step) {
@@ -1087,14 +1238,14 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             const cardY = cardCenterY - cardH / 2;
             const elbowX = cardEdgeX - dir * 18;
 
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = palette.accentHex;
             ctx.fillRect(ax - 2.5, ay - 2.5, 5, 5);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+            ctx.strokeStyle = `rgba(${palette.accentRgb}, 0.65)`;
             ctx.lineWidth = 1;
             ctx.strokeRect(ax - 5.5, ay - 5.5, 11, 11);
 
             ctx.beginPath();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
+            ctx.strokeStyle = `rgba(${palette.accentRgb}, 0.38)`;
             ctx.lineWidth = 1;
             ctx.moveTo(ax, ay);
             ctx.lineTo(elbowX, cardCenterY);
@@ -1120,7 +1271,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
             ctx.stroke();
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillStyle = palette.accentHex;
             ctx.fillRect(isLeft ? cardEdgeX - 2.5 : cardEdgeX + 0.5, cardY + 8, 2, cardH - 16);
 
             const textX = isLeft ? cardEdgeX - 13 : cardEdgeX + 13;
@@ -1147,7 +1298,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           // 7A. Dynamic Neural Constellation Web linking click origin to swirling particles
           if (vortex.nodeCount > 0) {
             ctx.lineWidth = 0.85;
-            ctx.strokeStyle = `rgba(255, 255, 255, ${(s * 0.42).toFixed(3)})`;
+            ctx.strokeStyle = `rgba(${palette.accentRgb}, ${(s * 0.48).toFixed(3)})`;
             ctx.beginPath();
             for (let n = 0; n < vortex.nodeCount; n++) {
               const pIdx = vortexNodes[n];
@@ -1164,8 +1315,8 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             }
             ctx.stroke();
 
-            // Crisp monochrome square vertex anchors on linked constellation particles
-            ctx.fillStyle = `rgba(255, 255, 255, ${(s * 0.95).toFixed(3)})`;
+            // Crisp Era-accented square vertex anchors on linked constellation particles
+            ctx.fillStyle = `rgba(${palette.accentRgb}, ${(s * 0.95).toFixed(3)})`;
             for (let n = 0; n < vortex.nodeCount; n++) {
               const pIdx = vortexNodes[n];
               ctx.fillRect(screenX[pIdx] - 2, screenY[pIdx] - 2, 4, 4);
@@ -1175,7 +1326,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           // 7B. Precision Architectural Lock-On Crosshair & Contracting Corner Brackets
           const bracketSpread = 14 + (1 - s) * 26;
           const bracketLen = 7;
-          ctx.strokeStyle = `rgba(255, 255, 255, ${(s * 0.85).toFixed(3)})`;
+          ctx.strokeStyle = `rgba(${palette.accentRgb}, ${(s * 0.88).toFixed(3)})`;
           ctx.lineWidth = 1.2;
           ctx.beginPath();
 
@@ -1226,10 +1377,10 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           ctx.textAlign = tagSide === 1 ? 'left' : 'right';
           ctx.textBaseline = 'middle';
           ctx.font = '700 9px "JetBrains Mono", monospace';
-          ctx.fillStyle = `rgba(255, 255, 255, ${(s * 0.9).toFixed(3)})`;
+          ctx.fillStyle = `rgba(255, 255, 255, ${(s * 0.95).toFixed(3)})`;
           const coordStr = `VORTEX LOCK // ${vortex.normX >= 0 ? '+' : ''}${vortex.normX.toFixed(2)}X ${vortex.normY >= 0 ? '+' : ''}${vortex.normY.toFixed(2)}Y`;
           ctx.fillText(coordStr, tagX, vy - 7);
-          ctx.fillStyle = `rgba(210, 210, 210, ${(s * 0.72).toFixed(3)})`;
+          ctx.fillStyle = `rgba(${palette.accentRgb}, ${(s * 0.85).toFixed(3)})`;
           ctx.fillText(`CONSTELLATION // ${vortex.nodeCount} NODES LINKED`, tagX, vy + 6);
 
           if (vortex.strength < 0.02) {
