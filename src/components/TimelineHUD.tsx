@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ERAS } from '../data/eras';
 import { Eye, EyeOff, Volume2, VolumeX } from 'lucide-react';
 import type { ScrollMotionState } from './WaterShader';
+import { BrandLogo } from './BrandLogo';
 
 interface TimelineHUDProps {
   activeEraIndex: number;
@@ -50,14 +51,9 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
 
     return (
       <header className="fixed top-0 left-0 right-0 z-30 glass-timeline">
-        {/* ROW 1: Top Frosted Glass Identity & Mode Controls (44px) */}
-        <div className="h-11 px-4 sm:px-7 flex items-center justify-between border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <span className="w-2 h-2 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-            <span className="font-dm font-bold text-xs tracking-[0.2em] text-white uppercase whitespace-nowrap">
-              THE EVOLUTION OF THE WEB
-            </span>
-          </div>
+        {/* ROW 1: Top Frosted Glass Identity & Mode Controls (48px) */}
+        <div className="h-12 px-4 sm:px-7 flex items-center justify-between border-b border-white/10">
+          <BrandLogo onClick={() => onSelectEra(0)} />
 
           <div className="flex items-center gap-3 sm:gap-4">
             <span
