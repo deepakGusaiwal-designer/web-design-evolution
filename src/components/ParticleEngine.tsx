@@ -686,13 +686,6 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         sizes[i] = tier === 0 ? 1.55 : tier === 1 ? 1.22 : 1.12;
       }
 
-      const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
-      for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
-        targets[i * 3] = (Math.random() - 0.5) * 2.4;
-        targets[i * 3 + 1] = (Math.random() - 0.5) * 1.9;
-        targets[i * 3 + 2] = (Math.random() - 0.5) * 0.8;
-      }
-
       gsap.fromTo(
         morphBoostRef.current,
         { value: 0.085 },
@@ -728,9 +721,13 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
 
       for (let i = 0; i < TOTAL_PARTICLES; i++) {
-        current[i * 3] = (Math.random() - 0.5) * 2.2;
-        current[i * 3 + 1] = (Math.random() - 0.5) * 1.8;
-        current[i * 3 + 2] = (Math.random() - 0.5) * 1.0;
+        const initX = (Math.random() - 0.5) * 2.6;
+        const initY = (Math.random() - 0.5) * 1.9;
+        const initZ = (Math.random() - 0.5) * 0.9;
+
+        current[i * 3] = initX;
+        current[i * 3 + 1] = initY;
+        current[i * 3 + 2] = initZ;
 
         if (i < TEXT_PARTICLES) {
           shades[i] = 1.0;
@@ -739,10 +736,18 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           shades[i] = 0.55 + Math.random() * 0.45;
           sizes[i] = 1.45 + Math.random() * 0.75;
         } else {
-          shades[i] = 0.14 + Math.random() * 0.22;
-          sizes[i] = 1.0 + Math.random() * 0.5;
+          // Persistent 3D Star-Track coordinates across depth layers
+          targets[i * 3] = initX;
+          targets[i * 3 + 1] = initY;
+          targets[i * 3 + 2] = initZ;
+          shades[i] = 0.28 + Math.random() * 0.58;
+          sizes[i] = 1.05 + Math.random() * 0.8;
         }
       }
+
+      let lastScrollProgress = motionRef.current.progress;
+      let starTrackDir = 1; // +1 = scrolling right/forward (stars track left), -1 = scrolling left/backward (stars track right)
+      let starTrackVel = 0;
 
       const mouse = {
         x: -9999,
@@ -874,6 +879,17 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           activePhaseIndex: phaseIdx,
         } = stateRef.current;
         const sVel = motionRef.current.velocity;
+        const prog = motionRef.current.progress;
+        const deltaProg = prog - lastScrollProgress;
+        lastScrollProgress = prog;
+
+        // Compute signed horizontal Star-Track velocity (positive = scrolling right, negative = scrolling left)
+        const rawScrollDrive = deltaProg * 44 + sVel * 0.0055;
+        if (Math.abs(rawScrollDrive) > 0.0002) {
+          starTrackDir = rawScrollDrive > 0 ? 1 : -1;
+        }
+        starTrackVel += (Math.max(-0.14, Math.min(0.14, rawScrollDrive)) - starTrackVel) * 0.18;
+
         const era = ERAS[eraIdx] || ERAS[0];
         const phase = era.phases[phaseIdx] || era.phases[0];
 
@@ -891,7 +907,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         const activeStory = activeStoryRef.current;
         const baseVariant = activeStory.sculptVariant % 3;
 
-        // 3. Smooth Interactive 3D Rotation for Central Sculpture (with Click Spin Impulse)
+        // 3. Smooth Interactive 3D Rotation for Central Sculpture (with Click Spin Impulse & Scroll Yaw)
         const isFlatPlane = era.shapeType === 'flat' && baseVariant === 0;
         const rotY =
           (era.shapeType === 'terminal' ||
@@ -899,7 +915,9 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           era.shapeType === 'responsive' ||
           isFlatPlane
             ? Math.sin(time * 0.5) * 0.14 + mouse.smoothNormX * 0.18
-            : time * 0.26 + mouse.smoothNormX * 0.34) + vortex.sculptSpinAngle;
+            : time * 0.26 + mouse.smoothNormX * 0.34) +
+          vortex.sculptSpinAngle +
+          starTrackVel * 1.4;
 
         const rotX =
           era.shapeType === 'wave3d'
@@ -917,8 +935,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         const centerX = width * 0.5;
         const centerY = height * 0.5;
 
-        const horizontalWind = Math.max(-0.07, Math.min(0.07, sVel * -0.0015));
-        const streak = Math.min(10, Math.abs(sVel) * 0.22);
+        const horizontalWind = Math.max(-0.07, Math.min(0.07, -starTrackVel * 0.45));
         const morphBoost = morphBoostRef.current.value;
 
         // 4. Update & Project All 9,600 Particles
@@ -946,15 +963,27 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ty = ry + 0.24;
             tz = rz2;
           } else if (i >= streamStart) {
-            targets[i3] -= 0.0014 + horizontalWind * 0.35;
-            if (targets[i3] < -1.25) targets[i3] = 1.25;
-            if (targets[i3] > 1.25) targets[i3] = -1.25;
+            // 3D Parallax Star-Track: tracks left when scrolling right/forward, and tracks right when scrolling left/backward
+            const depthSpeed = 0.55 + (targets[i3 + 2] + 0.5) * 1.3;
+            const starStepX = (0.0014 * starTrackDir + starTrackVel * 0.95) * depthSpeed;
+            targets[i3] -= starStepX;
+
+            // Seamless wrap-around on both left and right edges without spring slingshot
+            if (targets[i3] < -1.35) {
+              targets[i3] += 2.7;
+              current[i3] += 2.7;
+              vel[i3] = 0;
+            } else if (targets[i3] > 1.35) {
+              targets[i3] -= 2.7;
+              current[i3] -= 2.7;
+              vel[i3] = 0;
+            }
             tx = targets[i3];
-            ty += Math.sin(tx * 4.5 + time * 1.8 + (i % 17) * 0.3) * 0.04;
+            ty += Math.sin(tx * 3.6 + time * 1.4 + (i % 17) * 0.3) * 0.024;
           }
 
-          const spring = (i < TEXT_PARTICLES ? 0.16 : 0.11) + morphBoost;
-          vel[i3] = (vel[i3] + (tx - current[i3]) * spring + horizontalWind * 0.08) * 0.74;
+          const spring = (i < TEXT_PARTICLES ? 0.16 : i < streamStart ? 0.11 : 0.22) + morphBoost;
+          vel[i3] = (vel[i3] + (tx - current[i3]) * spring + horizontalWind * 0.06) * 0.74;
           vel[i3 + 1] = (vel[i3 + 1] + (ty - current[i3 + 1]) * spring) * 0.74;
           vel[i3 + 2] = (vel[i3 + 2] + (tz - current[i3 + 2]) * spring) * 0.74;
 
@@ -1005,19 +1034,45 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           }
         }
 
-        // 4B. Batched Path Draw (4 fill() calls for all 9,600 particles)
+        // 4B. Batched Path Draw for Story & Sculpture Particles (Crisp Nodes)
         for (let b = 0; b < 4; b++) {
           ctx.fillStyle = BUCKET_STYLES[b];
           ctx.beginPath();
           const startIdx = b === 3 ? TEXT_PARTICLES : 0;
-          for (let i = startIdx; i < TOTAL_PARTICLES; i++) {
+          for (let i = startIdx; i < streamStart; i++) {
             if (bucketIndices[i] === b) {
               const sz = drawSizes[i];
-              ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz + streak, sz);
+              ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz, sz);
             }
           }
           ctx.fill();
         }
+
+        // 4C. Directional Star-Track Warp Trails & Starfield Nodes (Tracking Left or Right on Scroll)
+        const signedStreakBase = starTrackDir * 2.2 + starTrackVel * 480;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
+        ctx.beginPath();
+        for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
+          const sz = drawSizes[i];
+          const trail = signedStreakBase * (sz * 0.55);
+          if (trail >= 0) {
+            // Moving left (scrolling right): tail trails to the right of the star head
+            ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.35, sz + trail, sz * 0.7);
+          } else {
+            // Moving right (scrolling left): tail trails to the left of the star head
+            ctx.rect(screenX[i] - sz * 0.5 + trail, screenY[i] - sz * 0.35, sz - trail, sz * 0.7);
+          }
+        }
+        ctx.fill();
+
+        // Crisp Star-Track Heads
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+        ctx.beginPath();
+        for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
+          const sz = drawSizes[i];
+          ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz, sz);
+        }
+        ctx.fill();
 
         // 5. Subtle Structural Filaments inside the 3D Sculpture
         ctx.lineWidth = 0.6;
