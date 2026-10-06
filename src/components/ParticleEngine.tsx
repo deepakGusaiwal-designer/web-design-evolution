@@ -540,13 +540,147 @@ function generateSculptureCoordinates(
           y = iy * 0.30;
           z = iz * 0.30;
         } else {
-          // Variant 2: Isometric Z-Elevation Material Paper Stack (4 Stacked Horizontal Decks)
-          const deck = i % 4;
-          const gx = ((i * 13) % 28) / 28 - 0.5;
-          const gz = (Math.floor(i / 28) % 20) / 20 - 0.5;
-          x = gx * 0.44 + (deck - 1.5) * 0.03;
-          y = (deck - 1.5) * 0.075;
-          z = gz * 0.32;
+          // Variant 2: 3D Retina Display Monitor & Optic Eye Icon
+          const ribbon = ((i % 3) - 1) * 0.0042;
+          const zLayer = (i % 2 === 0 ? 1 : -1) * 0.012;
+
+          if (t < 0.28) {
+            // 1. Rounded Monitor Outer Bezel (with signature right-edge architectural gap)
+            const localT = t / 0.28;
+            const cr = 0.028;
+            if (localT < 0.26) {
+              // Top horizontal edge
+              const u = localT / 0.26;
+              x = -0.272 + u * 0.544;
+              y = -0.185 + ribbon;
+            } else if (localT < 0.52) {
+              // Bottom horizontal edge
+              const u = (localT - 0.26) / 0.26;
+              x = -0.272 + u * 0.544;
+              y = 0.095 + ribbon;
+            } else if (localT < 0.68) {
+              // Left vertical edge
+              const u = (localT - 0.52) / 0.16;
+              x = -0.30 + ribbon;
+              y = -0.157 + u * 0.224;
+            } else if (localT < 0.76) {
+              // Right vertical edge (upper segment above break)
+              const u = (localT - 0.68) / 0.08;
+              x = 0.30 + ribbon;
+              y = -0.157 + u * 0.089;
+            } else if (localT < 0.84) {
+              // Right vertical edge (lower segment below break)
+              const u = (localT - 0.76) / 0.08;
+              x = 0.30 + ribbon;
+              y = -0.018 + u * 0.085;
+            } else {
+              // 4 Rounded quarter-circle corners
+              const cT = (localT - 0.84) / 0.16;
+              const cornerIdx = Math.min(3, Math.floor(cT * 4));
+              const u = cT * 4 - cornerIdx;
+              const baseAngles = [Math.PI, Math.PI * 1.5, 0, Math.PI * 0.5];
+              const cxArr = [-0.272, 0.272, 0.272, -0.272];
+              const cyArr = [-0.157, -0.157, 0.067, 0.067];
+              const ang = baseAngles[cornerIdx] + u * (Math.PI * 0.5);
+              x = cxArr[cornerIdx] + Math.cos(ang) * (cr + ribbon);
+              y = cyArr[cornerIdx] + Math.sin(ang) * (cr + ribbon);
+            }
+            z = zLayer;
+          } else if (t < 0.48) {
+            // 2. Top & Bottom Bezel Divider Lines + Centered Inner Bars
+            const localT = (t - 0.28) / 0.20;
+            if (localT < 0.30) {
+              // Top full-width divider line
+              const u = localT / 0.30;
+              x = -0.30 + u * 0.60;
+              y = -0.130 + ribbon * 0.8;
+            } else if (localT < 0.50) {
+              // Top centered accent bar
+              const u = (localT - 0.30) / 0.20;
+              x = -0.185 + u * 0.370;
+              y = -0.158 + ribbon;
+            } else if (localT < 0.80) {
+              // Bottom full-width chin divider line
+              const u = (localT - 0.50) / 0.30;
+              x = -0.30 + u * 0.60;
+              y = 0.040 + ribbon * 0.8;
+            } else {
+              // Bottom centered accent bar
+              const u = (localT - 0.80) / 0.20;
+              x = -0.185 + u * 0.370;
+              y = 0.068 + ribbon;
+            }
+            z = zLayer;
+          } else if (t < 0.66) {
+            // 3. Central Retina Almond Eye Outline (Upper & Lower Arches)
+            const localT = (t - 0.48) / 0.18;
+            const isUpper = localT < 0.5;
+            const u = isUpper ? localT * 2 : (localT - 0.5) * 2;
+            const archSign = isUpper ? -1 : 1;
+            x = (u - 0.5) * 0.360;
+            y = -0.045 + archSign * Math.sin(u * Math.PI) * 0.066 + ribbon;
+            z = 0.024 + zLayer * 0.5;
+          } else if (t < 0.84) {
+            // 4. Retina Iris Ring with Dual Opposing Crescent Glint Cutouts
+            const localT = (t - 0.66) / 0.18;
+            const eyeCy = -0.045;
+            const irisR = 0.046;
+            if (localT < 0.56) {
+              // Outer Iris Ring arcs (between top-right and bottom-left crescent notches)
+              const subT = localT / 0.56;
+              const arcHalf = subT < 0.5 ? 0 : 1;
+              const u = arcHalf === 0 ? subT * 2 : (subT - 0.5) * 2;
+              const startAngle = arcHalf === 0 ? 0.05 : 3.19;
+              const ang = startAngle + u * 1.90;
+              x = Math.cos(ang) * (irisR + ribbon * 0.85);
+              y = eyeCy + Math.sin(ang) * (irisR + ribbon * 0.85);
+            } else {
+              // Dual inward-curving crescent glint cutouts (top-right & bottom-left)
+              const subT = (localT - 0.56) / 0.44;
+              const notchIdx = subT < 0.5 ? 0 : 1;
+              const u = notchIdx === 0 ? subT * 2 : (subT - 0.5) * 2;
+              const notchCenterAngle = notchIdx === 0 ? -0.55 : 2.59;
+              const ncx = Math.cos(notchCenterAngle) * irisR;
+              const ncy = eyeCy + Math.sin(notchCenterAngle) * irisR;
+              const inwardBase = notchCenterAngle + Math.PI - 0.95;
+              const ang = inwardBase + u * 1.90;
+              const notchR = 0.025 + ribbon * 0.7;
+              x = ncx + Math.cos(ang) * notchR;
+              y = ncy + Math.sin(ang) * notchR;
+            }
+            z = 0.032 + zLayer * 0.5;
+          } else {
+            // 5. Angled Monitor Neck Struts & Rounded Pill Stand Base
+            const localT = (t - 0.84) / 0.16;
+            if (localT < 0.34) {
+              // Left & Right sloped neck struts
+              const subT = localT / 0.34;
+              const sideSign = subT < 0.5 ? -1 : 1;
+              const u = subT < 0.5 ? subT * 2 : (subT - 0.5) * 2;
+              x = sideSign * (0.068 + u * 0.024) + ribbon;
+              y = 0.095 + u * 0.067;
+            } else if (localT < 0.62) {
+              // Pill Base top horizontal edge
+              const u = (localT - 0.34) / 0.28;
+              x = -0.132 + u * 0.264;
+              y = 0.162 + ribbon * 0.85;
+            } else if (localT < 0.90) {
+              // Pill Base bottom horizontal edge
+              const u = (localT - 0.62) / 0.28;
+              x = -0.132 + u * 0.264;
+              y = 0.198 + ribbon * 0.85;
+            } else {
+              // Pill Base left & right semicircular caps
+              const subT = (localT - 0.90) / 0.10;
+              const isLeftCap = subT < 0.5;
+              const u = isLeftCap ? subT * 2 : (subT - 0.5) * 2;
+              const ang = (isLeftCap ? Math.PI * 0.5 : -Math.PI * 0.5) + u * Math.PI;
+              const capCx = isLeftCap ? -0.132 : 0.132;
+              x = capCx + Math.cos(ang) * (0.018 + ribbon * 0.7);
+              y = 0.180 + Math.sin(ang) * (0.018 + ribbon * 0.7);
+            }
+            z = zLayer;
+          }
         }
         break;
       }
@@ -1096,7 +1230,8 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         const baseVariant = activeStory.sculptVariant % 3;
 
         // 3. Smooth Interactive 3D Rotation for Central Sculpture (with Click Spin Impulse & Scroll Yaw)
-        const isFlatPlane = era.shapeType === 'flat' && baseVariant === 0;
+        const isFlatPlane =
+          era.shapeType === 'flat' && (baseVariant === 0 || baseVariant === 2);
         const rotY =
           (era.shapeType === 'terminal' ||
           era.shapeType === 'table' ||
@@ -1193,6 +1328,23 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
                 }
               } else {
                 ty += Math.sin(tx * 12.0 + time * 3.6) * 0.035;
+              }
+            } else if (era.shapeType === 'flat' && baseVariant === 2) {
+              // Live Retina Display Eye & Iris Optical Tracking Animation
+              const relT = (i - TEXT_PARTICLES) / SCULPT_PARTICLES;
+              if (relT >= 0.48 && relT < 0.66) {
+                // Eyelid arches: subtle vertical breathing & Z-depth pulse
+                const eyeCenterY = 0.24 - 0.045;
+                const blinkScale = 1.0 + Math.sin(time * 2.4) * 0.07;
+                ty = eyeCenterY + (ty - eyeCenterY) * blinkScale;
+                tz += Math.sin(time * 2.4) * 0.016;
+              } else if (relT >= 0.66 && relT < 0.84) {
+                // Retina Iris & Crescent Glint: interactive optical gaze + harmonic focus pulse
+                const gazeX = Math.sin(time * 1.9) * 0.016 + mouse.smoothNormX * 0.024;
+                const gazeY = Math.cos(time * 1.4) * 0.008 + mouse.smoothNormY * 0.012;
+                tx += gazeX;
+                ty += gazeY;
+                tz += 0.018 + Math.cos(time * 2.8) * 0.018;
               }
             } else if (
               era.shapeType === 'table' &&
