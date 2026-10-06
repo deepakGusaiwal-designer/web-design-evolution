@@ -27,6 +27,7 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
   }) => {
     const percentRef = useRef<HTMLSpanElement>(null);
     const progressBarRef = useRef<HTMLDivElement>(null);
+    const progressTipRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       let lastPct = -1;
@@ -35,6 +36,10 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
         const prog = motionRef.current.progress;
         if (progressBarRef.current) {
           progressBarRef.current.style.transform = `scaleX(${prog})`;
+        }
+        if (progressTipRef.current) {
+          progressTipRef.current.style.left = `${prog * 100}%`;
+          progressTipRef.current.style.opacity = prog > 0.002 ? '1' : '0';
         }
         const pct = Math.round(prog * 100);
         if (pct !== lastPct && percentRef.current) {
@@ -51,6 +56,25 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
 
     return (
       <header className="fixed top-0 left-0 right-0 z-30 glass-timeline">
+        {/* TOP-OF-APP LUMINOUS SHINING TIMELINE PROGRESS BAR */}
+        <div className="
+          absolute top-0 left-0 right-0 h-[3px] bg-white/[0.08] z-50 pointer-events-none
+        ">
+          <div
+            ref={progressBarRef}
+            className="h-full w-full progress-shine-bar origin-left will-change-transform"
+            style={{ transform: 'scaleX(0)' }}
+          />
+          <div
+            ref={progressTipRef}
+            className="
+              absolute top-1/2 -translate-y-1/2 -translate-x-1/2
+              w-6 h-[4px] rounded-full progress-shine-tip
+            "
+            style={{ left: '0%', opacity: 0 }}
+          />
+        </div>
+
         {/* ROW 1: Top Frosted Glass Identity & Mode Controls (48px) */}
         <div className="h-12 px-4 sm:px-7 flex items-center justify-between border-b border-white/10">
           <BrandLogo onClick={() => onSelectEra(0)} />
@@ -58,7 +82,7 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
           <div className="flex items-center gap-3 sm:gap-4">
             <span
               ref={percentRef}
-              className="hidden md:inline font-mono text-[10px] text-neutral-300 tracking-widest whitespace-nowrap"
+              className="hidden md:inline font-mono text-[10px] text-white/90 drop-shadow-[0_0_8px_rgba(255,255,255,0.65)] tracking-widest whitespace-nowrap"
             >
               TIMELINE PROGRESS // 000%
             </span>
@@ -94,15 +118,6 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
           aria-label="Historical Era Timeline"
           className="relative h-10 px-2 sm:px-6 py-1 flex items-center overflow-x-auto no-scrollbar"
         >
-          {/* GPU-Accelerated ScaleX Progress Fill at Bottom of Timeline Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-white/10 pointer-events-none">
-            <div
-              ref={progressBarRef}
-              className="h-full w-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)] origin-left will-change-transform"
-              style={{ transform: 'scaleX(0)' }}
-            />
-          </div>
-
           <div className="w-full min-w-[780px] h-full grid grid-cols-9 gap-1">
             {ERAS.map((era, idx) => {
               const isActive = idx === activeEraIndex;
