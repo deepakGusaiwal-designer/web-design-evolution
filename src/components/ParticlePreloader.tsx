@@ -23,7 +23,6 @@ export const ParticlePreloader: React.FC<ParticlePreloaderProps> = React.memo(
   ({ preloaderProgressRef, onStartMelt, onComplete }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const consoleRef = useRef<HTMLDivElement>(null);
-    const topBarRef = useRef<HTMLDivElement>(null);
     const progressTextRef = useRef<HTMLSpanElement>(null);
     const yearTextRef = useRef<HTMLSpanElement>(null);
     const logTextRef = useRef<HTMLDivElement>(null);
@@ -54,15 +53,6 @@ export const ParticlePreloader: React.FC<ParticlePreloaderProps> = React.memo(
           y: 18,
           scale: 0.94,
           duration: 1.0,
-          ease: 'power3.inOut',
-        });
-      }
-
-      if (topBarRef.current) {
-        gsap.to(topBarRef.current, {
-          opacity: 0,
-          y: -12,
-          duration: 0.8,
           ease: 'power3.inOut',
         });
       }
@@ -135,27 +125,8 @@ export const ParticlePreloader: React.FC<ParticlePreloaderProps> = React.memo(
     return (
       <div
         ref={containerRef}
-        className={`fixed inset-0 z-50 flex flex-col items-center justify-between py-6 sm:py-9 px-4 select-none pointer-events-none`}
+        className="fixed inset-0 z-50 flex flex-col items-center justify-end py-6 sm:py-9 px-4 select-none pointer-events-none"
       >
-        {/* Top Minimalist Archival Boot Bar */}
-        <div
-          ref={topBarRef}
-          className={`w-full max-w-2xl flex items-center justify-between font-mono text-[10px] tracking-[0.2em] text-neutral-300 uppercase ${
-            isMelting ? 'pointer-events-none' : 'pointer-events-auto'
-          }`}
-        >
-          <div className="flex items-center gap-2 glass-pill px-3.5 py-1.5 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_#ffffff] animate-pulse" />
-            <span className="text-white font-semibold">HYPERTEXT ODYSSEY // PARTICLE SYNTHESIS</span>
-          </div>
-          <button
-            onClick={triggerMelt}
-            className="px-3.5 py-1.5 rounded-full glass-pill text-white hover:bg-white/18 hover:border-white/35 transition-all cursor-pointer font-mono text-[9.5px] font-semibold tracking-widest uppercase"
-          >
-            SKIP INTRO →
-          </button>
-        </div>
-
         {/* Bottom Liquid Glass Telemetry Console (Melts directly into the bottom stage controls) */}
         <div
           ref={consoleRef}
