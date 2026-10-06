@@ -91,10 +91,10 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
 
             <button
               onClick={onTogglePureParticleMode}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full font-mono text-[9px] sm:text-[10px] uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap backdrop-blur-md ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full font-mono text-[9px] sm:text-[10px] uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
                 pureParticleMode
-                  ? 'bg-white/90 text-black border-white font-bold shadow-[0_0_16px_rgba(255,255,255,0.25)]'
-                  : 'bg-white/[0.06] text-neutral-200 border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:bg-white/[0.14] hover:text-white hover:border-white/45'
+                  ? 'bg-white text-black border-white font-bold [text-shadow:none] shadow-[0_0_16px_rgba(255,255,255,0.25)]'
+                  : 'bg-black/40 text-neutral-100 font-medium border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] hover:bg-white/[0.16] hover:text-white hover:border-white/50'
               }`}
             >
               {pureParticleMode ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
@@ -103,10 +103,10 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
 
             <button
               onClick={onToggleSound}
-              className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all cursor-pointer shrink-0 backdrop-blur-md ${
+              className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
                 soundEnabled
-                  ? 'bg-white/90 text-black border-white shadow-[0_0_14px_rgba(255,255,255,0.25)]'
-                  : 'bg-white/[0.06] text-neutral-200 border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:bg-white/[0.14] hover:text-white hover:border-white/45'
+                  ? 'bg-white text-black border-white [text-shadow:none] shadow-[0_0_14px_rgba(255,255,255,0.25)]'
+                  : 'bg-black/40 text-neutral-100 border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] hover:bg-white/[0.16] hover:text-white hover:border-white/50'
               }`}
               title="Toggle Audio"
             >
@@ -132,12 +132,12 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
                   key={era.id}
                   data-era-idx={idx}
                   onClick={() => onSelectEra(idx)}
-                  className={`relative shrink-0 h-full px-2.5 rounded-md flex items-center justify-between gap-2 border transition-all cursor-pointer group whitespace-nowrap backdrop-blur-md ${
+                  className={`relative shrink-0 h-full px-2.5 rounded-md flex items-center justify-between gap-2 border transition-all cursor-pointer group whitespace-nowrap ${
                     isActive
-                      ? 'bg-white/20 text-white border-white/50 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_4px_16px_rgba(0,0,0,0.5)]'
+                      ? 'bg-white/22 text-white border-white/65 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.55),0_4px_16px_rgba(0,0,0,0.6)]'
                       : isPast
-                        ? 'bg-white/[0.04] text-neutral-300 border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] hover:bg-white/[0.10] hover:border-white/25 hover:text-white'
-                        : 'bg-white/[0.02] text-neutral-400 border-white/[0.07] hover:bg-white/[0.09] hover:border-white/25 hover:text-white'
+                        ? 'bg-black/35 text-neutral-200 border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/[0.12] hover:border-white/35 hover:text-white'
+                        : 'bg-black/25 text-neutral-300 border-white/10 hover:bg-white/[0.12] hover:border-white/35 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-wider uppercase whitespace-nowrap">
@@ -146,12 +146,12 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
                         isActive
                           ? 'bg-white shadow-[0_0_6px_#ffffff]'
                           : isPast
-                            ? 'bg-white/60'
-                            : 'bg-white/20 group-hover:bg-white/60'
+                            ? 'bg-white/70'
+                            : 'bg-white/35 group-hover:bg-white/75'
                       }`}
                     />
                     <span className="font-bold">/{era.chapter}</span>
-                    <span className={isActive ? 'text-white' : 'text-white/85'}>
+                    <span className={isActive ? 'text-white font-bold' : 'text-neutral-100 font-medium'}>
                       {era.id}
                     </span>
                   </div>
@@ -159,8 +159,8 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
                   <span
                     className={`font-mono text-[9px] tracking-normal whitespace-nowrap hidden xl:inline ${
                       isActive
-                        ? 'text-white font-semibold'
-                        : 'text-neutral-500 group-hover:text-neutral-300'
+                        ? 'text-white font-bold'
+                        : 'text-neutral-300 group-hover:text-white'
                     }`}
                   >
                     {startYear}

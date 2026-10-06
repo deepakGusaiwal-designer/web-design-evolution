@@ -1465,36 +1465,35 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.lineTo(cardEdgeX, cardCenterY);
             ctx.stroke();
 
-            // Tinted Liquid Glass Diagonal + Upper Dome Gloss Surface
+            // Tinted Smoked-Crystal Liquid Glass Diagonal + Upper Dome Gloss Surface
             const boxGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
-            boxGrad.addColorStop(0, 'rgba(255, 255, 255, 0.24)');
-            boxGrad.addColorStop(0.28, 'rgba(218, 232, 248, 0.12)');
-            boxGrad.addColorStop(0.55, 'rgba(24, 28, 36, 0.56)');
-            boxGrad.addColorStop(0.82, 'rgba(215, 230, 248, 0.15)');
-            boxGrad.addColorStop(1, 'rgba(255, 255, 255, 0.20)');
+            boxGrad.addColorStop(0, 'rgba(26, 36, 52, 0.88)');
+            boxGrad.addColorStop(0.32, 'rgba(14, 20, 30, 0.90)');
+            boxGrad.addColorStop(0.68, 'rgba(10, 14, 22, 0.92)');
+            boxGrad.addColorStop(1, 'rgba(22, 32, 46, 0.88)');
 
             ctx.beginPath();
             ctx.roundRect(cardX, cardY, cardW, cardH, 12);
             ctx.fillStyle = boxGrad;
             ctx.fill();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
+            ctx.strokeStyle = 'rgba(225, 238, 255, 0.42)';
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Upper curved liquid dome gloss reflection
-            const domeGrad = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardH * 0.48);
-            domeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.26)');
-            domeGrad.addColorStop(0.65, 'rgba(225, 236, 252, 0.08)');
+            // Upper curved liquid dome gloss reflection (subtle so text is 100% crisp)
+            const domeGrad = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardH * 0.46);
+            domeGrad.addColorStop(0, 'rgba(225, 238, 255, 0.14)');
+            domeGrad.addColorStop(0.6, 'rgba(215, 232, 255, 0.04)');
             domeGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.beginPath();
-            ctx.roundRect(cardX + 1.5, cardY + 1.5, cardW - 3, cardH * 0.46, [10, 10, 24, 24]);
+            ctx.roundRect(cardX + 1.5, cardY + 1.5, cardW - 3, cardH * 0.44, [10, 10, 24, 24]);
             ctx.fillStyle = domeGrad;
             ctx.fill();
 
             // Top curved liquid meniscus specular highlight arc
             const topSpec = ctx.createLinearGradient(cardX + 10, cardY, cardX + cardW - 10, cardY);
             topSpec.addColorStop(0, 'rgba(255, 255, 255, 0)');
-            topSpec.addColorStop(0.5, 'rgba(255, 255, 255, 0.85)');
+            topSpec.addColorStop(0.5, 'rgba(255, 255, 255, 0.90)');
             topSpec.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.beginPath();
             ctx.moveTo(cardX + 10, cardY + 0.75);
@@ -1506,7 +1505,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             // Bottom internal caustic counter-reflection
             const botSpec = ctx.createLinearGradient(cardX + 18, cardY + cardH, cardX + cardW - 18, cardY + cardH);
             botSpec.addColorStop(0, 'rgba(255, 255, 255, 0)');
-            botSpec.addColorStop(0.5, 'rgba(255, 255, 255, 0.40)');
+            botSpec.addColorStop(0.5, 'rgba(215, 232, 255, 0.45)');
             botSpec.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.beginPath();
             ctx.moveTo(cardX + 18, cardY + cardH - 0.75);
@@ -1515,7 +1514,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
             ctx.beginPath();
             ctx.roundRect(
               isLeft ? cardEdgeX - 2.5 : cardEdgeX + 0.5,
@@ -1530,13 +1529,19 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.textAlign = isLeft ? 'right' : 'left';
             ctx.textBaseline = 'middle';
 
-            ctx.font = '700 10px "JetBrains Mono", monospace';
+            ctx.save();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetY = 1;
+
+            ctx.font = '700 10.5px "JetBrains Mono", monospace';
             ctx.fillStyle = '#ffffff';
             ctx.fillText(line1, textX, cardY + 16);
 
-            ctx.font = '500 11px "DM Sans", sans-serif';
-            ctx.fillStyle = '#e5e5e5';
+            ctx.font = '600 11.5px "DM Sans", sans-serif';
+            ctx.fillStyle = '#f3f4f6';
             ctx.fillText(line2, textX, cardY + 33);
+            ctx.restore();
           });
         }
 
