@@ -46,14 +46,22 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
 
     useEffect(() => {
       let lastPct = -1;
+      let smoothProg = motionRef.current.progress;
 
       const onTick = () => {
-        const prog = motionRef.current.progress;
-        if (progressBarRef.current) {
-          progressBarRef.current.style.width = `${prog * 100}%`;
-          progressBarRef.current.style.opacity = prog > 0.001 ? '1' : '0';
+        const targetProg = motionRef.current.progress;
+        const diff = targetProg - smoothProg;
+        if (Math.abs(diff) > 0.0001) {
+          smoothProg += diff * 0.11;
+        } else {
+          smoothProg = targetProg;
         }
-        const pct = Math.round(prog * 100);
+
+        if (progressBarRef.current) {
+          progressBarRef.current.style.width = `${smoothProg * 100}%`;
+          progressBarRef.current.style.opacity = smoothProg > 0.001 ? '1' : '0';
+        }
+        const pct = Math.round(smoothProg * 100);
         if (pct !== lastPct && percentRef.current) {
           lastPct = pct;
           percentRef.current.textContent = `TIMELINE PROGRESS // ${pct.toString().padStart(3, '0')}%`;
