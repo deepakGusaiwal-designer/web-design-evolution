@@ -25,67 +25,97 @@ export const App: React.FC = () => {
   const lenisRef = useRef<Lenis | null>(null);
   const prevEraRef = useRef(0);
   const prevPhaseRef = useRef(0);
-  const manualPhaseOverrideRef = useRef(false);
+  const programmaticLockUntilRef = useRef(0);
   const soundEnabledRef = useRef(soundEnabled);
 
   useEffect(() => {
     soundEnabledRef.current = soundEnabled;
   }, [soundEnabled]);
 
-  const scrollToProgress = useCallback((targetProg: number, duration = 1.8) => {
-    const clamped = Math.max(0, Math.min(1, targetProg));
+  const jumpToStepProgress = useCallback((eraIdx: number, phaseIdx: number) => {
+    const totalSteps = ERAS.length * 3 - 1;
+    const stepIndex = Math.max(0, Math.min(totalSteps, eraIdx * 3 + phaseIdx));
+    const targetProg = stepIndex / totalSteps;
+    const prevProg = motionRef.current.progress;
+    const dir = targetProg >= prevProg ? 1 : -1;
+
+    // Lock out scroll-derived phase cycling so we land directly on the target step
+    programmaticLockUntilRef.current = performance.now() + 180;
+    motionRef.current.progress = targetProg;
+    motionRef.current.velocity = dir * 4.5;
+
     const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    const targetScrollY = targetProg * maxScroll;
+
     if (lenisRef.current) {
-      lenisRef.current.scrollTo(clamped * maxScroll, {
-        duration,
-        easing: (t: number) => 1 - Math.pow(1 - t, 4),
-      });
+      lenisRef.current.scrollTo(targetScrollY, { immediate: true, force: true });
     } else {
-      window.scrollTo({ top: clamped * maxScroll, behavior: 'smooth' });
+      window.scrollTo({ top: targetScrollY, behavior: 'auto' });
     }
   }, []);
 
-  const selectEra = useCallback(
-    (index: number) => {
-      const clamped = Math.max(0, Math.min(ERAS.length - 1, index));
-      manualPhaseOverrideRef.current = false;
-      prevEraRef.current = clamped;
-      prevPhaseRef.current = 0;
-      setActiveEraIndex(clamped);
-      setActivePhaseIndex(0);
+  const goToStep = useCallback(
+    (eraIdx: number, phaseIdx: number) => {
+      const clampedEra = Math.max(0, Math.min(ERAS.length - 1, eraIdx));
+      const maxPhase = (ERAS[clampedEra]?.phases.length ?? 3) - 1;
+      const clampedPhase = Math.max(0, Math.min(maxPhase, phaseIdx));
+
+      prevEraRef.current = clampedEra;
+      prevPhaseRef.current = clampedPhase;
+      setActiveEraIndex(clampedEra);
+      setActivePhaseIndex(clampedPhase);
       setOverrideWord(null);
-      scrollToProgress(clamped / (ERAS.length - 1), 1.85);
+      setCustomWord('');
+
+      jumpToStepProgress(clampedEra, clampedPhase);
 
       if (soundEnabledRef.current) {
-        playArchitecturalPulse(180 + clamped * 45, 0.16);
+        playArchitecturalPulse(200 + clampedEra * 38 + clampedPhase * 55, 0.15);
       }
     },
-    [scrollToProgress]
+    [jumpToStepProgress]
+  );
+
+  const selectEra = useCallback(
+    (index: number) => {
+      goToStep(index, 0);
+    },
+    [goToStep]
   );
 
   const handleSelectPhase = useCallback(
     (eraIdx: number, phaseIdx: number) => {
-      manualPhaseOverrideRef.current = true;
-      prevPhaseRef.current = phaseIdx;
-      setActivePhaseIndex(phaseIdx);
-      setOverrideWord(null);
-      setCustomWord('');
-
-      // Compute exact sub-phase progress along the station window
-      const totalIntervals = ERAS.length - 1;
-      const phaseOffset = phaseIdx === 0 ? -0.22 : phaseIdx === 1 ? 0 : 0.22;
-      const targetProg = Math.max(
-        0,
-        Math.min(1, (eraIdx + phaseOffset) / totalIntervals)
-      );
-      scrollToProgress(targetProg, 1.35);
-
-      if (soundEnabledRef.current) {
-        playArchitecturalPulse(300 + phaseIdx * 80, 0.14);
-      }
+      goToStep(eraIdx, phaseIdx);
     },
-    [scrollToProgress]
+    [goToStep]
   );
+
+  const handleNextStep = useCallback(() => {
+    const curEra = prevEraRef.current;
+    const curPhase = prevPhaseRef.current;
+    const maxPhase = (ERAS[curEra]?.phases.length ?? 3) - 1;
+
+    if (curPhase < maxPhase) {
+      goToStep(curEra, curPhase + 1);
+    } else if (curEra < ERAS.length - 1) {
+      goToStep(curEra + 1, 0);
+    } else {
+      goToStep(0, 0);
+    }
+  }, [goToStep]);
+
+  const handlePrevStep = useCallback(() => {
+    const curEra = prevEraRef.current;
+    const curPhase = prevPhaseRef.current;
+
+    if (curPhase > 0) {
+      goToStep(curEra, curPhase - 1);
+    } else if (curEra > 0) {
+      const prevEra = curEra - 1;
+      const prevMaxPhase = (ERAS[prevEra]?.phases.length ?? 3) - 1;
+      goToStep(prevEra, prevMaxPhase);
+    }
+  }, [goToStep]);
 
   const handleSelectOverrideWord = useCallback((word: string | null) => {
     setOverrideWord(word);
@@ -106,19 +136,23 @@ export const App: React.FC = () => {
     lenisRef.current = lenis;
 
     lenis.on('scroll', ({ progress, velocity }: { progress: number; velocity: number }) => {
+      if (performance.now() < programmaticLockUntilRef.current) {
+        return;
+      }
+
       const safeProgress = Number.isFinite(progress) ? Math.max(0, Math.min(1, progress)) : 0;
       const safeVelocity = Number.isFinite(velocity) ? velocity : 0;
 
       motionRef.current.progress = safeProgress;
       motionRef.current.velocity = safeVelocity;
 
-      const totalIntervals = ERAS.length - 1;
-      const eraFloat = safeProgress * totalIntervals;
-      const eraIdx = Math.round(eraFloat);
+      const totalSteps = ERAS.length * 3 - 1;
+      const stepIndex = Math.round(safeProgress * totalSteps);
+      const eraIdx = Math.min(ERAS.length - 1, Math.floor(stepIndex / 3));
+      const derivedPhase = stepIndex % 3;
 
       if (eraIdx !== prevEraRef.current) {
         prevEraRef.current = eraIdx;
-        manualPhaseOverrideRef.current = false;
         setActiveEraIndex(eraIdx);
         setOverrideWord(null);
         if (soundEnabledRef.current) {
@@ -126,13 +160,9 @@ export const App: React.FC = () => {
         }
       }
 
-      if (!manualPhaseOverrideRef.current) {
-        const localOffset = eraFloat - eraIdx + 0.5;
-        const derivedPhase = localOffset < 0.36 ? 0 : localOffset < 0.68 ? 1 : 2;
-        if (derivedPhase !== prevPhaseRef.current) {
-          prevPhaseRef.current = derivedPhase;
-          setActivePhaseIndex(derivedPhase);
-        }
+      if (derivedPhase !== prevPhaseRef.current) {
+        prevPhaseRef.current = derivedPhase;
+        setActivePhaseIndex(derivedPhase);
       }
     });
 
@@ -149,10 +179,10 @@ export const App: React.FC = () => {
 
       if (e.key === 'ArrowRight' || e.key === 'PageDown') {
         e.preventDefault();
-        selectEra(prevEraRef.current + 1);
+        handleNextStep();
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         e.preventDefault();
-        selectEra(prevEraRef.current - 1);
+        handlePrevStep();
       }
     };
 
@@ -164,7 +194,7 @@ export const App: React.FC = () => {
       lenis.destroy();
       lenisRef.current = null;
     };
-  }, [selectEra]);
+  }, [handleNextStep, handlePrevStep]);
 
   const handleCanvasClick = useCallback(() => {
     if (soundEnabledRef.current) playArchitecturalPulse(310, 0.12);
@@ -216,6 +246,8 @@ export const App: React.FC = () => {
         activeEraIndex={activeEraIndex}
         activePhaseIndex={activePhaseIndex}
         onSelectPhase={handleSelectPhase}
+        onNextStep={handleNextStep}
+        onPrevStep={handlePrevStep}
         overrideWord={overrideWord}
         onSelectOverrideWord={handleSelectOverrideWord}
         customWord={customWord}

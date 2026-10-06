@@ -7,6 +7,8 @@ interface HorizontalStageProps {
   activeEraIndex: number;
   activePhaseIndex: number;
   onSelectPhase: (eraIdx: number, phaseIdx: number) => void;
+  onNextStep: () => void;
+  onPrevStep: () => void;
   overrideWord: string | null;
   onSelectOverrideWord: (word: string | null) => void;
   customWord: string;
@@ -20,6 +22,8 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
     activeEraIndex,
     activePhaseIndex,
     onSelectPhase,
+    onNextStep,
+    onPrevStep,
     overrideWord,
     onSelectOverrideWord,
     customWord,
@@ -439,12 +443,12 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
 
           {/* BOTTOM-CENTER LOCKED GLASSMORPHIC CONTROL BAR */}
           <div className="pointer-events-auto w-full max-w-2xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 glass-pill rounded-full">
-            {/* Prev Era Button */}
+            {/* Prev Step Button (C -> B -> A -> Previous Era C) */}
             <button
-              onClick={() => onSelectEra(Math.max(0, activeEraIndex - 1))}
-              disabled={activeEraIndex === 0}
+              onClick={onPrevStep}
+              disabled={activeEraIndex === 0 && activePhaseIndex === 0}
               className="w-8 h-8 rounded-full flex items-center justify-center bg-black/40 border border-white/12 text-white hover:bg-white/15 hover:border-white/30 disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition-all shrink-0"
-              title="Previous Era"
+              title="Previous Step"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
@@ -500,12 +504,12 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               )}
             </div>
 
-            {/* Next / Restart Era Button */}
-            {activeEraIndex < totalStations - 1 ? (
+            {/* Next Step / Restart Button (A -> B -> C -> Next Era A) */}
+            {activeEraIndex < totalStations - 1 || activePhaseIndex < era.phases.length - 1 ? (
               <button
-                onClick={() => onSelectEra(activeEraIndex + 1)}
+                onClick={onNextStep}
                 className="w-8 h-8 rounded-full flex items-center justify-center bg-white/18 text-white border border-white/25 hover:bg-white/28 cursor-pointer transition-all shrink-0"
-                title="Next Era"
+                title="Next Step"
               >
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
