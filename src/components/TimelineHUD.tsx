@@ -15,6 +15,31 @@ interface TimelineHUDProps {
   onToggleSound: () => void;
 }
 
+const MONTHS = [
+  'jan',
+  'feb',
+  'mar',
+  'apr',
+  'may',
+  'jun',
+  'jul',
+  'aug',
+  'sep',
+  'oct',
+  'nov',
+  'dec',
+] as const;
+
+function formatLocalTime(now: Date): string {
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = MONTHS[now.getMonth()];
+  const year = now.getFullYear();
+  const hours = now.getHours() % 12 || 12;
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${day} ${month}-${year}, ${hours}:${minutes}:${seconds}`;
+}
+
 export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
   ({
     activeEraIndex,
@@ -25,7 +50,7 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
     soundEnabled,
     onToggleSound,
   }) => {
-    const percentRef = useRef<HTMLSpanElement>(null);
+    const clockRef = useRef<HTMLSpanElement>(null);
     const progressBarRef = useRef<HTMLDivElement>(null);
     const navRef = useRef<HTMLElement>(null);
 
@@ -45,7 +70,7 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
     }, [activeEraIndex]);
 
     useEffect(() => {
-      let lastPct = -1;
+      let lastSec = -1;
       let smoothProg = motionRef.current.progress;
 
       const onTick = () => {
@@ -61,13 +86,16 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
           progressBarRef.current.style.width = `${smoothProg * 100}%`;
           progressBarRef.current.style.opacity = smoothProg > 0.001 ? '1' : '0';
         }
-        const pct = Math.round(smoothProg * 100);
-        if (pct !== lastPct && percentRef.current) {
-          lastPct = pct;
-          percentRef.current.textContent = `TIMELINE PROGRESS // ${pct.toString().padStart(3, '0')}%`;
+
+        const nowMs = Date.now();
+        const curSec = Math.floor(nowMs / 1000);
+        if (curSec !== lastSec && clockRef.current) {
+          lastSec = curSec;
+          clockRef.current.textContent = formatLocalTime(new Date(nowMs));
         }
       };
 
+      onTick();
       gsap.ticker.add(onTick);
       return () => {
         gsap.ticker.remove(onTick);
@@ -91,11 +119,9 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
 
           <div className="flex items-center gap-2 sm:gap-4">
             <span
-              ref={percentRef}
-              className="hidden md:inline font-mono text-[10px] text-white/90 drop-shadow-[0_0_8px_rgba(255,255,255,0.65)] tracking-widest whitespace-nowrap"
-            >
-              TIMELINE PROGRESS // 000%
-            </span>
+              ref={clockRef}
+              className="hidden md:inline font-mono text-[10px] text-white/90 drop-shadow-[0_0_8px_rgba(255,255,255,0.65)] tracking-widest whitespace-nowrap uppercase"
+            />
 
             <button
               onClick={onTogglePureParticleMode}
