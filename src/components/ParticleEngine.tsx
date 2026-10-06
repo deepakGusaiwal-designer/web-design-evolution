@@ -918,10 +918,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         vortex.sculptSpinAngle += vortex.sculptSpinVel;
         vortex.sculptSpinVel *= 0.93;
 
-        const {
-          activeEraIndex: eraIdx,
-          activePhaseIndex: phaseIdx,
-        } = stateRef.current;
+        const { activeEraIndex: eraIdx } = stateRef.current;
         const sVel = motionRef.current.velocity;
         const prog = motionRef.current.progress;
         const deltaProg = prog - lastScrollProgress;
@@ -935,7 +932,6 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         starTrackVel += (Math.max(-0.14, Math.min(0.14, rawScrollDrive)) - starTrackVel) * 0.18;
 
         const era = ERAS[eraIdx] || ERAS[0];
-        const phase = era.phases[phaseIdx] || era.phases[0];
 
         // 1. Transparent Clear so WebGL Water Shader Shines Through
         ctx.clearRect(0, 0, width, height);
@@ -977,20 +973,37 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         const sinX = Math.sin(rotX);
 
         const vel = velocityRef.current;
+        const sideReservedPx = isMobile
+          ? 12
+          : width < 1280
+            ? 258
+            : width < 1536
+              ? 294
+              : 332;
+        const availCenterW = Math.max(260, width - sideReservedPx * 2);
+
         const scaleX = Math.min(width * 0.46, 720);
         const scaleY = Math.min(height * 0.46, 490);
         const centerX = width * 0.5;
         const centerY = height * 0.5;
 
-        // Mobile-optimized un-distorted typography scales & 1:1 isotropic 3D sculpture scale
-        const textScaleX = isMobile ? Math.min(width * 1.12, 680) : scaleX;
-        const textScaleY = isMobile ? textScaleX * 0.68 : scaleY;
-        const textCenterY = isMobile ? Math.max(154, height * 0.205) : centerY;
+        // Locked aspect-ratio typography & isotropic 1:1 3D sculpture scales across ALL resolutions
+        const textScaleX = isMobile
+          ? Math.min(width * 1.12, height * 0.64, 680)
+          : Math.min(availCenterW * 1.04, height * 0.72, 720);
+        const textScaleY = textScaleX * 0.68;
+        const textCenterY = isMobile
+          ? Math.max(154, height * 0.205)
+          : centerY - 0.31 * Math.min(height * 0.45, 480);
 
-        const sculptScaleX = isMobile ? Math.min(width * 0.64, height * 0.27, 420) : scaleX;
-        const sculptScaleY = isMobile ? sculptScaleX : scaleY;
-        const sculptCenterY = isMobile ? height * 0.455 : centerY;
-        const mobileDotScale = width < 640 ? 0.74 : isMobile ? 0.86 : 1.0;
+        const sculptScaleX = isMobile
+          ? Math.min(width * 0.64, height * 0.27, 420)
+          : Math.min(availCenterW * 0.62, height * 0.44, 520);
+        const sculptScaleY = isMobile ? sculptScaleX : sculptScaleX * 0.92;
+        const sculptCenterY = isMobile
+          ? height * 0.455
+          : centerY + 0.24 * Math.min(height * 0.45, 480);
+        const mobileDotScale = width < 640 ? 0.74 : width < 1280 ? 0.88 : 1.0;
 
         const horizontalWind = Math.max(-0.07, Math.min(0.07, -starTrackVel * 0.45));
         const morphBoost = morphBoostRef.current.value;
@@ -1054,14 +1067,10 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
 
           if (i < TEXT_PARTICLES) {
             sx = centerX + current[i3] * textScaleX * perspective;
-            sy = isMobile
-              ? textCenterY + (current[i3 + 1] + 0.31) * textScaleY * perspective
-              : centerY + current[i3 + 1] * scaleY * perspective;
+            sy = textCenterY + (current[i3 + 1] + 0.31) * textScaleY * perspective;
           } else if (i < streamStart) {
             sx = centerX + current[i3] * sculptScaleX * perspective;
-            sy = isMobile
-              ? sculptCenterY + (current[i3 + 1] - 0.24) * sculptScaleY * perspective
-              : centerY + current[i3 + 1] * scaleY * perspective;
+            sy = sculptCenterY + (current[i3 + 1] - 0.24) * sculptScaleY * perspective;
           } else {
             // 3D Stereoscopic Pointer Parallax for Deep-Space Starfield
             const depthParallax = (current[i3 + 2] + 1.25) * 0.65;
@@ -1401,34 +1410,47 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         ctx.stroke();
 
         // 6. Render 4 Frosted Glassmorphic 3D Sculpture Callout Blocks on Canvas
-        if (width >= 1180) {
+        if (width >= 1024) {
           let leftSlot = 0;
           let rightSlot = 0;
-          const cardH = 48;
+          const isCompactDesktop = width < 1380;
+          const cardH = isCompactDesktop ? 42 : 46;
+          const font1 = isCompactDesktop
+            ? '700 9.5px "JetBrains Mono", monospace'
+            : '700 10px "JetBrains Mono", monospace';
+          const font2 = isCompactDesktop
+            ? '600 10.5px "DM Sans", sans-serif'
+            : '600 11px "DM Sans", sans-serif';
+          const safeMaxOuterOffset = Math.max(180, centerX - sideReservedPx - 12);
 
           era.sculptureCallouts.forEach((callout, cIdx) => {
             const line1 =
               cIdx === 0
-                ? `${callout.code}.V${activeStory.sculptVariant + 1} // ${activeStory.word}`
-                : cIdx === 2
-                  ? `${callout.code} // ${phase.word}`
-                  : `${callout.code} // ${callout.title}`;
-            const line2 =
-              cIdx === 0
-                ? activeStory.kicker
-                : cIdx === 2
-                  ? phase.caption
-                  : callout.value;
+                ? `${callout.code}.V${activeStory.sculptVariant + 1} // ${callout.title}`
+                : `${callout.code} // ${callout.title}`;
+            const line2 = callout.value;
 
-            // Measure exact text widths so the glass box always wraps the text with generous padding
-            ctx.font = '700 10px "JetBrains Mono", monospace';
+            // Measure exact text widths using the exact fonts used for rendering
+            ctx.font = font1;
             const w1 = ctx.measureText(line1).width;
-            ctx.font = '500 11px "DM Sans", sans-serif';
+            ctx.font = font2;
             const w2 = ctx.measureText(line2).width;
 
-            const cardW = Math.max(188, Math.ceil(Math.max(w1, w2)) + 28);
-            const maxOuterRadius = Math.max(300, Math.min(430, width * 0.5 - 312));
-            const innerOffset = Math.max(105, maxOuterRadius - cardW);
+            const desiredW = Math.max(
+              isCompactDesktop ? 156 : 176,
+              Math.ceil(Math.max(w1, w2)) + 24
+            );
+            const minInnerOffset = isCompactDesktop
+              ? Math.max(68, sculptScaleX * 0.19)
+              : Math.max(118, sculptScaleX * 0.29);
+            const maxCardW = Math.max(138, safeMaxOuterOffset - minInnerOffset);
+            const cardW = Math.min(desiredW, maxCardW);
+            const innerOffset = isCompactDesktop
+              ? Math.max(minInnerOffset, safeMaxOuterOffset - cardW - 4)
+              : Math.max(
+                  minInnerOffset,
+                  Math.min(sculptScaleX * 0.35, safeMaxOuterOffset - cardW)
+                );
 
             const rx = callout.x * cosY - callout.z * sinY;
             const rz1 = callout.x * sinY + callout.z * cosY;
@@ -1436,30 +1458,39 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             const rz2 = callout.y * sinX + rz1 * cosX;
 
             const perspective = 1.85 / (1.85 - rz2);
-            const ax = centerX + rx * scaleX * perspective;
-            const ay = centerY + (ry + 0.24) * scaleY * perspective;
+            const ax = centerX + rx * sculptScaleX * perspective;
+            const ay = sculptCenterY + ry * sculptScaleY * perspective;
 
             const isLeft = callout.side === 'left';
             const slotIdx = isLeft ? leftSlot++ : rightSlot++;
             const dir = isLeft ? -1 : 1;
 
-            // Stationary lower-stage vertical slots aligned with the 3D sculpture
-            const slotOffsetY = slotIdx === 0 ? 0.12 * scaleY : 0.34 * scaleY;
-            const cardCenterY = centerY + slotOffsetY;
+            // Stationary lower-stage vertical slots aligned cleanly around the 3D sculpture
+            const slotOffsetY = isCompactDesktop
+              ? slotIdx === 0
+                ? -0.20 * sculptScaleY
+                : 0.22 * sculptScaleY
+              : slotIdx === 0
+                ? -0.12 * sculptScaleY
+                : 0.16 * sculptScaleY;
+            const cardCenterY = Math.min(
+              height - 82,
+              Math.max(equatorY + 26, sculptCenterY + slotOffsetY)
+            );
             const cardEdgeX = centerX + dir * innerOffset;
             const cardX = isLeft ? cardEdgeX - cardW : cardEdgeX;
             const cardY = cardCenterY - cardH / 2;
-            const elbowX = cardEdgeX - dir * 18;
+            const elbowX = cardEdgeX - dir * 14;
 
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(ax - 2.5, ay - 2.5, 5, 5);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(ax - 5.5, ay - 5.5, 11, 11);
+            ctx.fillRect(ax - 2, ay - 2, 4, 4);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.lineWidth = 0.85;
+            ctx.strokeRect(ax - 5, ay - 5, 10, 10);
 
             ctx.beginPath();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.34)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+            ctx.lineWidth = 0.85;
             ctx.moveTo(ax, ay);
             ctx.lineTo(elbowX, cardCenterY);
             ctx.lineTo(cardEdgeX, cardCenterY);
@@ -1473,7 +1504,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             boxGrad.addColorStop(1, 'rgba(22, 32, 46, 0.88)');
 
             ctx.beginPath();
-            ctx.roundRect(cardX, cardY, cardW, cardH, 12);
+            ctx.roundRect(cardX, cardY, cardW, cardH, 11);
             ctx.fillStyle = boxGrad;
             ctx.fill();
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
@@ -1486,7 +1517,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             domeGrad.addColorStop(0.6, 'rgba(215, 232, 255, 0.03)');
             domeGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.beginPath();
-            ctx.roundRect(cardX + 1.5, cardY + 1.5, cardW - 3, cardH * 0.44, [10, 10, 24, 24]);
+            ctx.roundRect(cardX + 1.5, cardY + 1.5, cardW - 3, cardH * 0.44, [9, 9, 22, 22]);
             ctx.fillStyle = domeGrad;
             ctx.fill();
 
@@ -1518,29 +1549,34 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.beginPath();
             ctx.roundRect(
               isLeft ? cardEdgeX - 2 : cardEdgeX + 0.5,
-              cardY + 11,
+              cardY + 9,
               1.25,
-              cardH - 22,
+              cardH - 18,
               2
             );
             ctx.fill();
 
-            const textX = isLeft ? cardEdgeX - 13 : cardEdgeX + 13;
+            const textX = isLeft ? cardEdgeX - 11 : cardEdgeX + 11;
+            const maxTextW = Math.max(80, cardW - 20);
             ctx.textAlign = isLeft ? 'right' : 'left';
             ctx.textBaseline = 'middle';
 
             ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(cardX + 2, cardY + 2, cardW - 4, cardH - 4, 9);
+            ctx.clip();
+
             ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
             ctx.shadowBlur = 4;
             ctx.shadowOffsetY = 1;
 
-            ctx.font = '700 10.5px "JetBrains Mono", monospace';
+            ctx.font = font1;
             ctx.fillStyle = '#ffffff';
-            ctx.fillText(line1, textX, cardY + 16);
+            ctx.fillText(line1, textX, cardY + cardH * 0.34, maxTextW);
 
-            ctx.font = '600 11.5px "DM Sans", sans-serif';
+            ctx.font = font2;
             ctx.fillStyle = '#f3f4f6';
-            ctx.fillText(line2, textX, cardY + 33);
+            ctx.fillText(line2, textX, cardY + cardH * 0.70, maxTextW);
             ctx.restore();
           });
         }

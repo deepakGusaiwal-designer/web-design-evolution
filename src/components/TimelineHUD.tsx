@@ -119,9 +119,9 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
         <nav
           ref={navRef}
           aria-label="Historical Era Timeline"
-          className="relative h-9 sm:h-10 px-2.5 sm:px-6 py-1 flex items-center overflow-x-auto no-scrollbar"
+          className="relative h-9 sm:h-10 px-2.5 sm:px-4 xl:px-6 py-1 flex items-center overflow-x-auto no-scrollbar"
         >
-          <div className="flex items-center gap-1.5 w-max lg:w-full h-full lg:grid lg:grid-cols-9 lg:gap-1">
+          <div className="flex items-center justify-between gap-1 w-max min-w-full h-full 2xl:w-full 2xl:grid 2xl:grid-cols-9 2xl:gap-1.5">
             {ERAS.map((era, idx) => {
               const isActive = idx === activeEraIndex;
               const isPast = idx < activeEraIndex;
@@ -132,7 +132,7 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
                   key={era.id}
                   data-era-idx={idx}
                   onClick={() => onSelectEra(idx)}
-                  className={`relative shrink-0 h-full px-2.5 rounded-md flex items-center justify-between gap-2 border transition-all cursor-pointer group whitespace-nowrap ${
+                  className={`relative shrink-0 h-full px-2 xl:px-2.5 rounded-md flex items-center justify-between gap-1.5 border transition-all cursor-pointer group whitespace-nowrap ${
                     isActive
                       ? 'bg-white/18 text-white border-white/28 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]'
                       : isPast
@@ -140,7 +140,7 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
                         : 'bg-black/25 text-neutral-300 border-white/[0.05] hover:bg-white/[0.10] hover:border-white/20 hover:text-white'
                   }`}
                 >
-                  <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-wider uppercase whitespace-nowrap">
+                  <div className="flex items-center gap-1 font-mono text-[9px] xl:text-[10px] tracking-wider uppercase whitespace-nowrap">
                     <span
                       className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                         isActive
@@ -157,7 +157,7 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
                   </div>
 
                   <span
-                    className={`font-mono text-[9px] tracking-normal whitespace-nowrap hidden xl:inline ${
+                    className={`font-mono text-[8.5px] tracking-normal whitespace-nowrap hidden 2xl:inline ${
                       isActive
                         ? 'text-white font-bold'
                         : 'text-neutral-300 group-hover:text-white'
