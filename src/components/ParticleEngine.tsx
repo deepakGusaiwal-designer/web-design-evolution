@@ -1465,27 +1465,55 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.lineTo(cardEdgeX, cardCenterY);
             ctx.stroke();
 
+            // Liquid Glass Diagonal + Radial Droplet Surface
             const boxGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
-            boxGrad.addColorStop(0, 'rgba(255, 255, 255, 0.11)');
-            boxGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.04)');
-            boxGrad.addColorStop(1, 'rgba(8, 8, 8, 0.62)');
+            boxGrad.addColorStop(0, 'rgba(255, 255, 255, 0.16)');
+            boxGrad.addColorStop(0.45, 'rgba(255, 255, 255, 0.035)');
+            boxGrad.addColorStop(0.85, 'rgba(12, 12, 12, 0.48)');
+            boxGrad.addColorStop(1, 'rgba(255, 255, 255, 0.09)');
 
             ctx.beginPath();
-            ctx.roundRect(cardX, cardY, cardW, cardH, 8);
+            ctx.roundRect(cardX, cardY, cardW, cardH, 12);
             ctx.fillStyle = boxGrad;
             ctx.fill();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.26)';
             ctx.lineWidth = 1;
             ctx.stroke();
 
+            // Top curved liquid meniscus specular highlight arc
+            const topSpec = ctx.createLinearGradient(cardX + 12, cardY, cardX + cardW - 12, cardY);
+            topSpec.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            topSpec.addColorStop(0.5, 'rgba(255, 255, 255, 0.72)');
+            topSpec.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.beginPath();
-            ctx.moveTo(cardX + 8, cardY + 0.5);
-            ctx.lineTo(cardX + cardW - 8, cardY + 0.5);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.38)';
+            ctx.moveTo(cardX + 12, cardY + 0.75);
+            ctx.lineTo(cardX + cardW - 12, cardY + 0.75);
+            ctx.strokeStyle = topSpec;
+            ctx.lineWidth = 1.25;
             ctx.stroke();
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.fillRect(isLeft ? cardEdgeX - 2.5 : cardEdgeX + 0.5, cardY + 8, 2, cardH - 16);
+            // Bottom internal caustic counter-reflection
+            const botSpec = ctx.createLinearGradient(cardX + 20, cardY + cardH, cardX + cardW - 20, cardY + cardH);
+            botSpec.addColorStop(0, 'rgba(255, 255, 255, 0)');
+            botSpec.addColorStop(0.5, 'rgba(255, 255, 255, 0.32)');
+            botSpec.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.beginPath();
+            ctx.moveTo(cardX + 20, cardY + cardH - 0.75);
+            ctx.lineTo(cardX + cardW - 20, cardY + cardH - 0.75);
+            ctx.strokeStyle = botSpec;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+            ctx.beginPath();
+            ctx.roundRect(
+              isLeft ? cardEdgeX - 2.5 : cardEdgeX + 0.5,
+              cardY + 10,
+              2,
+              cardH - 20,
+              2
+            );
+            ctx.fill();
 
             const textX = isLeft ? cardEdgeX - 13 : cardEdgeX + 13;
             ctx.textAlign = isLeft ? 'right' : 'left';

@@ -127,15 +127,15 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
         {/* Main Viewport-Locked Split Stage */}
         <div className="relative w-full h-full flex flex-col justify-between pt-20 sm:pt-24 pb-3 sm:pb-6 px-3 sm:px-6 lg:px-7 gap-2.5">
           <div className="flex-1 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-            {/* DESKTOP LEFT PANEL: Frosted Glassmorphism Era & Active Particle Phase Block */}
+            {/* DESKTOP LEFT PANEL: Liquid Glass Era & Active Particle Phase Block */}
             <aside
               ref={leftPanelRef}
-              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3.5 glass-panel rounded-xl p-4 will-change-transform"
+              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3.5 glass-panel p-4.5 will-change-transform"
             >
               {/* Chapter & Year Header */}
               <div className="flex items-center justify-between border-b border-white/15 pb-2.5">
                 <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.18em]">
-                  <span className="bg-white/20 text-white border border-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] font-bold px-2 py-0.5 rounded text-[10px]">
+                  <span className="bg-white/20 text-white border border-white/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.55)] font-bold px-2 py-0.5 rounded-md text-[10px]">
                     /{era.chapter}
                   </span>
                   <span className="text-white font-semibold">{era.year}</span>
@@ -146,14 +146,14 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               </div>
 
               {/* Era Title */}
-              <h2 className="font-dm text-xl sm:text-2xl font-bold tracking-tight text-white leading-[1.12]">
+              <h2 className="font-dm text-xl sm:text-2xl font-bold tracking-tight text-white leading-[1.12] drop-shadow-[0_2px_10px_rgba(255,255,255,0.18)]">
                 {era.title}
               </h2>
 
-              {/* Active Particle Phase Glass Sub-Block */}
+              {/* Active Particle Phase Liquid Glass Sub-Block */}
               <div
                 ref={phaseBoxRef}
-                className="glass-subcard rounded-lg p-2.5 flex flex-col gap-1"
+                className="glass-subcard p-3 flex flex-col gap-1"
               >
                 <div className="flex items-center justify-between font-mono text-[9px] text-neutral-300 uppercase tracking-widest">
                   <span>{kickerText}</span>
@@ -164,17 +164,19 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                 </div>
               </div>
 
-              {/* Era Quote */}
-              <p className="font-dm text-xs text-neutral-200 italic leading-relaxed border-l-2 border-white/50 pl-3">
-                {era.quote}
-              </p>
+              {/* Era Quote in Liquid Glass Capsule */}
+              <div className="glass-subcard px-3 py-2.5 border-l-2 border-l-white/70">
+                <p className="font-dm text-xs text-neutral-100 italic leading-relaxed">
+                  {era.quote}
+                </p>
+              </div>
 
               {/* Era Summary */}
-              <p className="font-dm text-xs text-neutral-300 leading-relaxed">
+              <p className="font-dm text-xs text-neutral-200/90 leading-relaxed">
                 {era.summary}
               </p>
 
-              {/* 3 Interactive Glassmorphic Spec Blocks */}
+              {/* 3 Interactive Liquid Glass Spec Blocks */}
               <div className="pt-2 border-t border-white/15">
                 <div className="font-mono text-[9px] text-neutral-300 uppercase tracking-widest mb-2 flex items-center justify-between">
                   <span>ERA SPECS</span>
@@ -189,9 +191,9 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                         onClick={() =>
                           onSelectOverrideWord(isSelected ? null : spec.particleWord)
                         }
-                        className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                        className={`w-full flex items-center justify-between px-3 py-1.5 transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-white/25 text-white border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_4px_16px_rgba(0,0,0,0.5)]'
+                            ? 'glass-subcard-active text-white'
                             : 'glass-subcard text-white'
                         }`}
                         title={`Click to morph particles into "${spec.particleWord}"`}
@@ -216,10 +218,10 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
             {/* CENTER STAGE: 100% Unobstructed Open Space for Particle Word & 3D Sculpture */}
             <div className="flex-1 h-full pointer-events-none" />
 
-            {/* DESKTOP RIGHT PANEL: Frosted Glassmorphism Milestones Block */}
+            {/* DESKTOP RIGHT PANEL: Liquid Glass Milestones Block */}
             <aside
               ref={rightPanelRef}
-              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3 glass-panel rounded-xl p-4 will-change-transform"
+              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3 glass-panel p-4.5 will-change-transform"
             >
               <div className="flex items-center justify-between font-mono text-[10px] tracking-[0.16em] text-white uppercase border-b border-white/15 pb-2.5">
                 <span className="font-bold">KEY MILESTONES</span>
@@ -235,19 +237,19 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                       onClick={() =>
                         onSelectOverrideWord(isSelected ? null : m.particleWord)
                       }
-                      className={`text-left group p-3 rounded-lg transition-all cursor-pointer ${
+                      className={`text-left group p-3 transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-white/25 text-white border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_6px_20px_rgba(0,0,0,0.6)]'
+                          ? 'glass-subcard-active text-white'
                           : 'glass-subcard'
                       }`}
                     >
                       <div className="flex items-center justify-between font-mono text-[10px]">
                         <span className="font-bold text-white">{m.year}</span>
                         <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded border ${
+                          className={`text-[9px] px-1.5 py-0.5 rounded-md border ${
                             isSelected
-                              ? 'border-white/60 bg-white/20 text-white font-bold'
-                              : 'border-white/20 bg-white/[0.05] text-neutral-200 group-hover:text-white group-hover:border-white/40'
+                              ? 'border-white/70 bg-white/25 text-white font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]'
+                              : 'border-white/20 bg-white/[0.06] text-neutral-200 group-hover:text-white group-hover:border-white/45'
                           }`}
                         >
                           {m.particleWord}
@@ -268,7 +270,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               {overrideWord && (
                 <button
                   onClick={() => onSelectOverrideWord(null)}
-                  className="mt-1 w-full py-1.5 px-3 rounded-lg glass-subcard font-mono text-[10px] text-white uppercase tracking-wider cursor-pointer"
+                  className="mt-1 w-full py-1.5 px-3 glass-subcard font-mono text-[10px] text-white uppercase tracking-wider cursor-pointer"
                 >
                   ↺ Reset to Phase Word ({activePhase.word})
                 </button>
@@ -276,15 +278,15 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
             </aside>
           </div>
 
-          {/* MOBILE & TABLET COMPACT BOTTOM DOCK (< 1024px): Leaves Upper Story & Middle 3D Sculpture 100% Unobstructed */}
+          {/* MOBILE & TABLET COMPACT LIQUID GLASS BOTTOM DOCK (< 1024px) */}
           <div
             ref={mobilePanelRef}
-            className="pointer-events-auto lg:hidden w-full max-w-xl mx-auto glass-panel rounded-xl p-3 flex flex-col gap-2 will-change-transform"
+            className="pointer-events-auto lg:hidden w-full max-w-xl mx-auto glass-panel p-3 flex flex-col gap-2 will-change-transform"
           >
             {/* Compact Era Title & 3-Tab Switcher Header */}
             <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-2">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="bg-white/20 text-white border border-white/35 font-mono font-bold px-1.5 py-0.5 rounded text-[9px] shrink-0">
+                <span className="bg-white/20 text-white border border-white/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)] font-mono font-bold px-1.5 py-0.5 rounded-md text-[9px] shrink-0">
                   /{era.chapter}
                 </span>
                 <div className="min-w-0">
@@ -298,7 +300,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               </div>
 
               {/* Mobile Tab Switcher: STORY | SPECS | NODES */}
-              <div className="flex items-center gap-1 bg-white/[0.05] p-0.5 rounded-lg border border-white/15 shrink-0">
+              <div className="flex items-center gap-1 bg-white/[0.06] p-0.5 rounded-xl border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] shrink-0">
                 {(
                   [
                     { id: 'story', label: 'STORY' },
@@ -309,9 +311,9 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                   <button
                     key={t.id}
                     onClick={() => setMobileTab(t.id)}
-                    className={`px-2 py-1 rounded-md font-mono text-[9px] tracking-wider uppercase transition-all cursor-pointer ${
+                    className={`px-2 py-1 rounded-lg font-mono text-[9px] tracking-wider uppercase transition-all cursor-pointer ${
                       mobileTab === t.id
-                        ? 'bg-white text-black font-bold shadow-[0_0_10px_rgba(255,255,255,0.4)]'
+                        ? 'bg-white text-black font-bold shadow-[0_0_12px_rgba(255,255,255,0.45)]'
                         : 'text-neutral-300 hover:text-white'
                     }`}
                   >
@@ -324,7 +326,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
             {/* Mobile Tab 1: Active Story Narrative & Quote */}
             {mobileTab === 'story' && (
               <div className="flex flex-col gap-1.5">
-                <div className="glass-subcard rounded-lg px-2.5 py-2 flex flex-col gap-0.5">
+                <div className="glass-subcard px-2.5 py-2 flex flex-col gap-0.5">
                   <div className="flex items-center justify-between font-mono text-[8.5px] text-neutral-300 uppercase tracking-widest gap-2">
                     <span className="truncate">{kickerText}</span>
                     <span className="text-white font-bold shrink-0">[{wordText}]</span>
@@ -333,7 +335,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                     {narrativeText}
                   </div>
                 </div>
-                <p className="font-dm text-[11px] text-neutral-300 italic leading-snug border-l-2 border-white/45 pl-2.5 line-clamp-1">
+                <p className="font-dm text-[11px] text-neutral-200 italic leading-snug border-l-2 border-white/55 pl-2.5 line-clamp-1">
                   {era.quote}
                 </p>
               </div>
@@ -350,9 +352,9 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                       onClick={() =>
                         onSelectOverrideWord(isSelected ? null : spec.particleWord)
                       }
-                      className={`flex flex-col items-start justify-between p-2 rounded-lg text-left transition-all cursor-pointer ${
+                      className={`flex flex-col items-start justify-between p-2 text-left transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-white/25 text-white border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]'
+                          ? 'glass-subcard-active text-white'
                           : 'glass-subcard text-white'
                       }`}
                     >
@@ -382,9 +384,9 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                       onClick={() =>
                         onSelectOverrideWord(isSelected ? null : m.particleWord)
                       }
-                      className={`flex flex-col items-start justify-between p-2 rounded-lg text-left transition-all cursor-pointer ${
+                      className={`flex flex-col items-start justify-between p-2 text-left transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-white/25 text-white border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]'
+                          ? 'glass-subcard-active text-white'
                           : 'glass-subcard text-white'
                       }`}
                     >
