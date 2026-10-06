@@ -908,12 +908,15 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         // 1. Transparent Clear so WebGL Water Shader Shines Through
         ctx.clearRect(0, 0, width, height);
 
+        const isMobile = width < 1024;
+        const equatorY = isMobile ? height * 0.315 : height * 0.52;
+
         // 2. Subtle Architectural Equator Hairline Separating Story & Sculpture
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(0, height * 0.52);
-        ctx.lineTo(width, height * 0.52);
+        ctx.moveTo(0, equatorY);
+        ctx.lineTo(width, equatorY);
         ctx.stroke();
 
         const activeStory = activeStoryRef.current;
@@ -946,6 +949,16 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         const scaleY = Math.min(height * 0.46, 490);
         const centerX = width * 0.5;
         const centerY = height * 0.5;
+
+        // Mobile-optimized un-distorted typography scales & 1:1 isotropic 3D sculpture scale
+        const textScaleX = isMobile ? Math.min(width * 1.12, 680) : scaleX;
+        const textScaleY = isMobile ? textScaleX * 0.68 : scaleY;
+        const textCenterY = isMobile ? Math.max(154, height * 0.205) : centerY;
+
+        const sculptScaleX = isMobile ? Math.min(width * 0.64, height * 0.27, 420) : scaleX;
+        const sculptScaleY = isMobile ? sculptScaleX : scaleY;
+        const sculptCenterY = isMobile ? height * 0.455 : centerY;
+        const mobileDotScale = width < 640 ? 0.74 : isMobile ? 0.86 : 1.0;
 
         const horizontalWind = Math.max(-0.07, Math.min(0.07, -starTrackVel * 0.45));
         const morphBoost = morphBoostRef.current.value;
@@ -1004,8 +1017,24 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           current[i3 + 2] += vel[i3 + 2];
 
           const perspective = 1.85 / (1.85 - current[i3 + 2]);
-          let sx = centerX + current[i3] * scaleX * perspective;
-          let sy = centerY + current[i3 + 1] * scaleY * perspective;
+          let sx: number;
+          let sy: number;
+
+          if (i < TEXT_PARTICLES) {
+            sx = centerX + current[i3] * textScaleX * perspective;
+            sy = isMobile
+              ? textCenterY + (current[i3 + 1] + 0.31) * textScaleY * perspective
+              : centerY + current[i3 + 1] * scaleY * perspective;
+          } else if (i < streamStart) {
+            sx = centerX + current[i3] * sculptScaleX * perspective;
+            sy = isMobile
+              ? sculptCenterY + (current[i3 + 1] - 0.24) * sculptScaleY * perspective
+              : centerY + current[i3 + 1] * scaleY * perspective;
+          } else {
+            sx = centerX + current[i3] * scaleX * perspective;
+            sy = centerY + current[i3 + 1] * scaleY * perspective;
+          }
+
           let hoverBoost = 0;
 
           if (mouse.active) {
@@ -1033,7 +1062,10 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           screenX[i] = sx;
           screenY[i] = sy;
 
-          const baseSize = i < TEXT_PARTICLES ? sizes[i] : sizes[i] * perspective * 0.92;
+          const baseSize =
+            i < TEXT_PARTICLES
+              ? sizes[i] * mobileDotScale
+              : sizes[i] * perspective * 0.92;
           drawSizes[i] = baseSize * (1 + hoverBoost * 0.45);
 
           if (hoverBoost > 0.25) {

@@ -27,6 +27,22 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
   }) => {
     const percentRef = useRef<HTMLSpanElement>(null);
     const progressBarRef = useRef<HTMLDivElement>(null);
+    const navRef = useRef<HTMLElement>(null);
+
+    // Auto-scroll active era button into horizontal center on mobile/tablet
+    useEffect(() => {
+      if (!navRef.current) return;
+      const activeBtn = navRef.current.querySelector<HTMLButtonElement>(
+        `[data-era-idx="${activeEraIndex}"]`
+      );
+      if (activeBtn) {
+        activeBtn.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'center',
+          block: 'nearest',
+        });
+      }
+    }, [activeEraIndex]);
 
     useEffect(() => {
       let lastPct = -1;
@@ -61,11 +77,11 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
           />
         </div>
 
-        {/* ROW 1: Top Frosted Glass Identity & Mode Controls (48px) */}
-        <div className="h-12 px-4 sm:px-7 flex items-center justify-between border-b border-white/10">
+        {/* ROW 1: Top Frosted Glass Identity & Mode Controls */}
+        <div className="h-11 sm:h-12 px-3 sm:px-7 flex items-center justify-between border-b border-white/10">
           <BrandLogo onClick={() => onSelectEra(0)} />
 
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <span
               ref={percentRef}
               className="hidden md:inline font-mono text-[10px] text-white/90 drop-shadow-[0_0_8px_rgba(255,255,255,0.65)] tracking-widest whitespace-nowrap"
@@ -75,7 +91,7 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
 
             <button
               onClick={onTogglePureParticleMode}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-[10px] uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap backdrop-blur-md ${
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full font-mono text-[9px] sm:text-[10px] uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap backdrop-blur-md ${
                 pureParticleMode
                   ? 'bg-white/90 text-black border-white font-bold shadow-[0_0_16px_rgba(255,255,255,0.25)]'
                   : 'bg-white/[0.06] text-neutral-200 border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:bg-white/[0.14] hover:text-white hover:border-white/45'
@@ -99,12 +115,13 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
           </div>
         </div>
 
-        {/* ROW 2: Frosted Glassmorphic 9-Column Interactive Horizontal Timeline Bar */}
+        {/* ROW 2: Frosted Glassmorphic Interactive Horizontal Timeline Bar */}
         <nav
+          ref={navRef}
           aria-label="Historical Era Timeline"
-          className="relative h-10 px-2 sm:px-6 py-1 flex items-center overflow-x-auto no-scrollbar"
+          className="relative h-9 sm:h-10 px-2.5 sm:px-6 py-1 flex items-center overflow-x-auto no-scrollbar"
         >
-          <div className="w-full min-w-[780px] h-full grid grid-cols-9 gap-1">
+          <div className="flex items-center gap-1.5 w-max lg:w-full h-full lg:grid lg:grid-cols-9 lg:gap-1">
             {ERAS.map((era, idx) => {
               const isActive = idx === activeEraIndex;
               const isPast = idx < activeEraIndex;
@@ -113,8 +130,9 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
               return (
                 <button
                   key={era.id}
+                  data-era-idx={idx}
                   onClick={() => onSelectEra(idx)}
-                  className={`relative h-full px-2.5 rounded-md flex items-center justify-between border transition-all cursor-pointer group whitespace-nowrap backdrop-blur-md ${
+                  className={`relative shrink-0 h-full px-2.5 rounded-md flex items-center justify-between gap-2 border transition-all cursor-pointer group whitespace-nowrap backdrop-blur-md ${
                     isActive
                       ? 'bg-white/20 text-white border-white/50 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_4px_16px_rgba(0,0,0,0.5)]'
                       : isPast

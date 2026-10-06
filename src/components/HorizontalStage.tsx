@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ERAS } from '../data/eras';
 import { ArrowRight, ArrowLeft, RotateCcw, Sparkles } from 'lucide-react';
@@ -31,9 +31,13 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
     const era = ERAS[activeEraIndex] || ERAS[0];
     const activePhase = era.phases[activePhaseIndex] || era.phases[0];
 
+    const [mobileTab, setMobileTab] = useState<'story' | 'specs' | 'milestones'>('story');
+
     const leftPanelRef = useRef<HTMLElement>(null);
     const rightPanelRef = useRef<HTMLElement>(null);
+    const mobilePanelRef = useRef<HTMLDivElement>(null);
     const phaseBoxRef = useRef<HTMLDivElement>(null);
+    const phaseScrollRef = useRef<HTMLDivElement>(null);
 
     // Smooth GSAP entrance transition when switching eras
     useEffect(() => {
@@ -51,6 +55,13 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
           { opacity: 1, x: 0, duration: 0.48, ease: 'power3.out', overwrite: true }
         );
       }
+      if (mobilePanelRef.current) {
+        gsap.fromTo(
+          mobilePanelRef.current,
+          { opacity: 0.45, y: 10 },
+          { opacity: 1, y: 0, duration: 0.42, ease: 'power3.out', overwrite: true }
+        );
+      }
     }, [activeEraIndex]);
 
     // Subtle GSAP pulse when active phase or override word changes
@@ -64,19 +75,62 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
       }
     }, [activePhaseIndex, overrideWord]);
 
+    // Auto-scroll active phase pill into horizontal center on mobile
+    useEffect(() => {
+      if (!phaseScrollRef.current) return;
+      const activePill = phaseScrollRef.current.querySelector<HTMLButtonElement>(
+        `[data-phase-idx="${activePhaseIndex}"]`
+      );
+      if (activePill) {
+        activePill.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'center',
+          block: 'nearest',
+        });
+      }
+    }, [activePhaseIndex, activeEraIndex]);
+
+    const matchedSpec = overrideWord
+      ? era.specs.find((s) => s.particleWord === overrideWord)
+      : undefined;
+    const matchedMilestone = overrideWord
+      ? era.milestones.find((m) => m.particleWord === overrideWord)
+      : undefined;
+    const trimmedCustom =
+      activeEraIndex === 8 ? customWord.trim().toUpperCase() : '';
+
+    const kickerText = matchedSpec
+      ? matchedSpec.story.kicker
+      : matchedMilestone
+        ? matchedMilestone.story.kicker
+        : trimmedCustom
+          ? 'CHAPTER 08 · LIVE PARTICLE SYNTHESIZER'
+          : activePhase.tag;
+
+    const wordText =
+      overrideWord || (trimmedCustom ? trimmedCustom : activePhase.word);
+
+    const narrativeText = matchedSpec
+      ? `${matchedSpec.story.line1} — ${matchedSpec.story.line2}`
+      : matchedMilestone
+        ? `${matchedMilestone.story.line1} — ${matchedMilestone.story.line2}`
+        : trimmedCustom
+          ? `CUSTOM INTENT "${trimmedCustom}" SCULPTED LIVE IN 7,200 MONOCHROME PARTICLES`
+          : `${activePhase.line1} — ${activePhase.line2}`;
+
     return (
       <div
         className={`fixed inset-0 pointer-events-none z-10 transition-opacity duration-500 ${
           pureParticleMode ? 'opacity-0' : 'opacity-100'
         }`}
       >
-        {/* Main Viewport-Locked Split Stage: Left Glass Panel + Open Center Particle Stage + Right Glass Panel */}
-        <div className="relative w-full h-full flex flex-col justify-between pt-24 pb-6 px-4 sm:px-6 lg:px-7">
-          <div className="flex-1 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-            {/* LEFT PANEL: Frosted Glassmorphism Era & Active Particle Phase Block */}
+        {/* Main Viewport-Locked Split Stage */}
+        <div className="relative w-full h-full flex flex-col justify-between pt-20 sm:pt-24 pb-3 sm:pb-6 px-3 sm:px-6 lg:px-7 gap-2.5">
+          <div className="flex-1 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+            {/* DESKTOP LEFT PANEL: Frosted Glassmorphism Era & Active Particle Phase Block */}
             <aside
               ref={leftPanelRef}
-              className="pointer-events-auto w-full lg:w-[276px] xl:w-[296px] flex flex-col gap-3.5 glass-panel rounded-xl p-4 will-change-transform"
+              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3.5 glass-panel rounded-xl p-4 will-change-transform"
             >
               {/* Chapter & Year Header */}
               <div className="flex items-center justify-between border-b border-white/15 pb-2.5">
@@ -97,50 +151,18 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               </h2>
 
               {/* Active Particle Phase Glass Sub-Block */}
-              {(() => {
-                const matchedSpec = overrideWord
-                  ? era.specs.find((s) => s.particleWord === overrideWord)
-                  : undefined;
-                const matchedMilestone = overrideWord
-                  ? era.milestones.find((m) => m.particleWord === overrideWord)
-                  : undefined;
-                const trimmedCustom =
-                  activeEraIndex === 8 ? customWord.trim().toUpperCase() : '';
-
-                const kickerText = matchedSpec
-                  ? matchedSpec.story.kicker
-                  : matchedMilestone
-                    ? matchedMilestone.story.kicker
-                    : trimmedCustom
-                      ? 'CHAPTER 08 · LIVE PARTICLE SYNTHESIZER'
-                      : activePhase.tag;
-
-                const wordText =
-                  overrideWord || (trimmedCustom ? trimmedCustom : activePhase.word);
-
-                const narrativeText = matchedSpec
-                  ? `${matchedSpec.story.line1} — ${matchedSpec.story.line2}`
-                  : matchedMilestone
-                    ? `${matchedMilestone.story.line1} — ${matchedMilestone.story.line2}`
-                    : trimmedCustom
-                      ? `CUSTOM INTENT "${trimmedCustom}" SCULPTED LIVE IN 7,200 MONOCHROME PARTICLES`
-                      : `${activePhase.line1} — ${activePhase.line2}`;
-
-                return (
-                  <div
-                    ref={phaseBoxRef}
-                    className="glass-subcard rounded-lg p-2.5 flex flex-col gap-1"
-                  >
-                    <div className="flex items-center justify-between font-mono text-[9px] text-neutral-300 uppercase tracking-widest">
-                      <span>{kickerText}</span>
-                      <span className="text-white font-bold">[{wordText}]</span>
-                    </div>
-                    <div className="font-dm text-xs text-white font-medium leading-snug">
-                      {narrativeText}
-                    </div>
-                  </div>
-                );
-              })()}
+              <div
+                ref={phaseBoxRef}
+                className="glass-subcard rounded-lg p-2.5 flex flex-col gap-1"
+              >
+                <div className="flex items-center justify-between font-mono text-[9px] text-neutral-300 uppercase tracking-widest">
+                  <span>{kickerText}</span>
+                  <span className="text-white font-bold">[{wordText}]</span>
+                </div>
+                <div className="font-dm text-xs text-white font-medium leading-snug">
+                  {narrativeText}
+                </div>
+              </div>
 
               {/* Era Quote */}
               <p className="font-dm text-xs text-neutral-200 italic leading-relaxed border-l-2 border-white/50 pl-3">
@@ -148,7 +170,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               </p>
 
               {/* Era Summary */}
-              <p className="font-dm text-xs text-neutral-300 leading-relaxed hidden sm:block">
+              <p className="font-dm text-xs text-neutral-300 leading-relaxed">
                 {era.summary}
               </p>
 
@@ -191,10 +213,10 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
               </div>
             </aside>
 
-            {/* CENTER STAGE: 100% Unobstructed Open Space for Particle Word, 3D Sculpture & Callouts */}
-            <div className="hidden lg:block flex-1 h-full pointer-events-none" />
+            {/* CENTER STAGE: 100% Unobstructed Open Space for Particle Word & 3D Sculpture */}
+            <div className="flex-1 h-full pointer-events-none" />
 
-            {/* RIGHT PANEL: Frosted Glassmorphism Milestones Block */}
+            {/* DESKTOP RIGHT PANEL: Frosted Glassmorphism Milestones Block */}
             <aside
               ref={rightPanelRef}
               className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3 glass-panel rounded-xl p-4 will-change-transform"
@@ -254,8 +276,139 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
             </aside>
           </div>
 
+          {/* MOBILE & TABLET COMPACT BOTTOM DOCK (< 1024px): Leaves Upper Story & Middle 3D Sculpture 100% Unobstructed */}
+          <div
+            ref={mobilePanelRef}
+            className="pointer-events-auto lg:hidden w-full max-w-xl mx-auto glass-panel rounded-xl p-3 flex flex-col gap-2 will-change-transform"
+          >
+            {/* Compact Era Title & 3-Tab Switcher Header */}
+            <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="bg-white/20 text-white border border-white/35 font-mono font-bold px-1.5 py-0.5 rounded text-[9px] shrink-0">
+                  /{era.chapter}
+                </span>
+                <div className="min-w-0">
+                  <div className="font-dm text-sm font-bold text-white truncate leading-tight">
+                    {era.title}
+                  </div>
+                  <div className="font-mono text-[9px] text-neutral-400 tracking-wider">
+                    {era.year} · {era.id}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Tab Switcher: STORY | SPECS | NODES */}
+              <div className="flex items-center gap-1 bg-white/[0.05] p-0.5 rounded-lg border border-white/15 shrink-0">
+                {(
+                  [
+                    { id: 'story', label: 'STORY' },
+                    { id: 'specs', label: 'SPECS' },
+                    { id: 'milestones', label: 'NODES' },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setMobileTab(t.id)}
+                    className={`px-2 py-1 rounded-md font-mono text-[9px] tracking-wider uppercase transition-all cursor-pointer ${
+                      mobileTab === t.id
+                        ? 'bg-white text-black font-bold shadow-[0_0_10px_rgba(255,255,255,0.4)]'
+                        : 'text-neutral-300 hover:text-white'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Tab 1: Active Story Narrative & Quote */}
+            {mobileTab === 'story' && (
+              <div className="flex flex-col gap-1.5">
+                <div className="glass-subcard rounded-lg px-2.5 py-2 flex flex-col gap-0.5">
+                  <div className="flex items-center justify-between font-mono text-[8.5px] text-neutral-300 uppercase tracking-widest gap-2">
+                    <span className="truncate">{kickerText}</span>
+                    <span className="text-white font-bold shrink-0">[{wordText}]</span>
+                  </div>
+                  <div className="font-dm text-[11px] text-white font-medium leading-snug line-clamp-2">
+                    {narrativeText}
+                  </div>
+                </div>
+                <p className="font-dm text-[11px] text-neutral-300 italic leading-snug border-l-2 border-white/45 pl-2.5 line-clamp-1">
+                  {era.quote}
+                </p>
+              </div>
+            )}
+
+            {/* Mobile Tab 2: 3 Interactive Era Specs */}
+            {mobileTab === 'specs' && (
+              <div className="grid grid-cols-3 gap-1.5">
+                {era.specs.map((spec) => {
+                  const isSelected = overrideWord === spec.particleWord;
+                  return (
+                    <button
+                      key={spec.label}
+                      onClick={() =>
+                        onSelectOverrideWord(isSelected ? null : spec.particleWord)
+                      }
+                      className={`flex flex-col items-start justify-between p-2 rounded-lg text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-white/25 text-white border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]'
+                          : 'glass-subcard text-white'
+                      }`}
+                    >
+                      <span className="font-mono text-[8px] text-neutral-300 uppercase tracking-wider truncate w-full">
+                        {spec.label}
+                      </span>
+                      <span className="font-mono text-[10px] font-bold text-white truncate w-full mt-0.5">
+                        {spec.value}
+                      </span>
+                      <span className="font-mono text-[8px] text-white/75 mt-1 truncate w-full">
+                        [{spec.particleWord}]
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Mobile Tab 3: 3 Interactive Key Milestones */}
+            {mobileTab === 'milestones' && (
+              <div className="grid grid-cols-3 gap-1.5">
+                {era.milestones.map((m) => {
+                  const isSelected = overrideWord === m.particleWord;
+                  return (
+                    <button
+                      key={m.year + m.title}
+                      onClick={() =>
+                        onSelectOverrideWord(isSelected ? null : m.particleWord)
+                      }
+                      className={`flex flex-col items-start justify-between p-2 rounded-lg text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-white/25 text-white border border-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]'
+                          : 'glass-subcard text-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full font-mono text-[8.5px]">
+                        <span className="font-bold text-white">{m.year}</span>
+                        <span className="text-neutral-300 truncate ml-1">
+                          {m.particleWord}
+                        </span>
+                      </div>
+                      <div className="font-dm text-[10px] font-bold text-white truncate w-full mt-0.5">
+                        {m.title}
+                      </div>
+                      <div className="font-dm text-[9px] text-neutral-300 line-clamp-1 w-full mt-0.5">
+                        {m.desc}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* BOTTOM-CENTER LOCKED GLASSMORPHIC CONTROL BAR */}
-          <div className="pointer-events-auto w-full max-w-2xl mx-auto flex items-center justify-between gap-2 px-3 py-2 glass-pill rounded-full">
+          <div className="pointer-events-auto w-full max-w-2xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 glass-pill rounded-full">
             {/* Prev Era Button */}
             <button
               onClick={() => onSelectEra(Math.max(0, activeEraIndex - 1))}
@@ -267,7 +420,10 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
             </button>
 
             {/* Center: 3 Sequential Particle Phases + Optional Live Word Input on Final Era */}
-            <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar">
+            <div
+              ref={phaseScrollRef}
+              className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar"
+            >
               {era.phases.map((phase, pIdx) => {
                 const isCustomActive =
                   activeEraIndex === 8 && customWord.trim().length > 0;
@@ -279,11 +435,12 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                 return (
                   <button
                     key={phase.tag}
+                    data-phase-idx={pIdx}
                     onClick={() => {
                       onSelectOverrideWord(null);
                       onSelectPhase(activeEraIndex, pIdx);
                     }}
-                    className={`px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
+                    className={`px-2.5 sm:px-3 py-1.5 rounded-full font-mono text-[9.5px] sm:text-[10px] uppercase tracking-wider transition-all cursor-pointer shrink-0 ${
                       isPhaseActive
                         ? 'bg-white/25 text-white border border-white/55 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.5),0_2px_10px_rgba(0,0,0,0.4)]'
                         : 'text-neutral-300 border border-transparent hover:text-white hover:bg-white/10 hover:border-white/20'
@@ -307,7 +464,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
                       onChangeCustomWord(e.target.value);
                     }}
                     placeholder="TYPE WORD..."
-                    className="w-28 sm:w-32 bg-white/[0.08] border border-white/30 rounded-full px-2.5 py-1 font-mono text-[10px] text-white text-center uppercase tracking-widest placeholder:text-neutral-400 focus:outline-none focus:border-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
+                    className="w-24 sm:w-32 bg-white/[0.08] border border-white/30 rounded-full px-2.5 py-1 font-mono text-[10px] text-white text-center uppercase tracking-widest placeholder:text-neutral-400 focus:outline-none focus:border-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
                   />
                 </div>
               )}

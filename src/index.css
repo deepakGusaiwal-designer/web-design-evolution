@@ -42,6 +42,16 @@
   font-family: var(--font-mono);
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+
 /* Pure Monochrome Frosted Glassmorphism System */
 .glass-timeline {
   background: linear-gradient(
