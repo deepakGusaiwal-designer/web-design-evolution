@@ -52,16 +52,16 @@
 }
 
 
-/* Tinted Smoked-Crystal Liquid Glass Design System (High-Contrast Readability) */
+/* Tinted Smoked-Crystal Liquid Glass Design System (Delicate Hairline Borders & High-Contrast Readability) */
 .glass-timeline {
   background:
-    radial-gradient(85% 140% at 50% 0%, rgba(215, 232, 255, 0.16) 0%, rgba(190, 215, 248, 0.05) 55%, rgba(0, 0, 0, 0) 80%),
-    linear-gradient(180deg, rgba(16, 22, 32, 0.82) 0%, rgba(8, 11, 18, 0.88) 100%);
+    radial-gradient(85% 140% at 50% 0%, rgba(215, 232, 255, 0.14) 0%, rgba(190, 215, 248, 0.04) 55%, rgba(0, 0, 0, 0) 80%),
+    linear-gradient(180deg, rgba(16, 22, 32, 0.80) 0%, rgba(8, 11, 18, 0.86) 100%);
   backdrop-filter: blur(26px) saturate(185%) brightness(78%) contrast(106%);
   -webkit-backdrop-filter: blur(26px) saturate(185%) brightness(78%) contrast(106%);
   box-shadow:
-    0 12px 38px rgba(0, 0, 0, 0.88),
-    inset 0 -1px 1.5px rgba(215, 232, 255, 0.22);
+    0 12px 38px rgba(0, 0, 0, 0.85),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
@@ -69,34 +69,31 @@
   position: relative;
   overflow: hidden;
   border-radius: 22px;
-  /* Smoked Obsidian-Crystal Liquid Glass: Deep high-contrast body + Icy peripheral rim refraction */
+  /* Smoked Obsidian-Crystal Liquid Glass: Deep high-contrast body + Whisper-light hairline rim */
   background:
-    radial-gradient(115% 65% at 12% 0%, rgba(220, 235, 255, 0.18) 0%, rgba(195, 218, 250, 0.05) 42%, rgba(0, 0, 0, 0) 70%),
-    radial-gradient(95% 65% at 92% 100%, rgba(200, 222, 252, 0.14) 0%, rgba(0, 0, 0, 0) 60%),
+    radial-gradient(115% 65% at 12% 0%, rgba(220, 235, 255, 0.15) 0%, rgba(195, 218, 250, 0.04) 42%, rgba(0, 0, 0, 0) 70%),
+    radial-gradient(95% 65% at 92% 100%, rgba(200, 222, 252, 0.10) 0%, rgba(0, 0, 0, 0) 60%),
     linear-gradient(
       132deg,
-      rgba(26, 34, 48, 0.78) 0%,
-      rgba(12, 17, 26, 0.82) 38%,
-      rgba(22, 30, 44, 0.76) 50%,
-      rgba(10, 14, 22, 0.85) 82%,
-      rgba(20, 28, 42, 0.80) 100%
+      rgba(26, 34, 48, 0.76) 0%,
+      rgba(12, 17, 26, 0.80) 38%,
+      rgba(22, 30, 44, 0.74) 50%,
+      rgba(10, 14, 22, 0.84) 82%,
+      rgba(20, 28, 42, 0.78) 100%
     );
   backdrop-filter: blur(28px) saturate(190%) brightness(76%) contrast(108%);
   -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(76%) contrast(108%);
-  border: 1px solid rgba(225, 238, 255, 0.36);
+  border: 1px solid rgba(255, 255, 255, 0.11);
   box-shadow:
-    0 24px 56px -10px rgba(0, 0, 0, 0.92),
-    0 8px 24px rgba(0, 0, 0, 0.75),
-    inset 0 2px 1.5px rgba(255, 255, 255, 0.78),
-    inset 1.5px 0 1.5px rgba(225, 238, 255, 0.38),
-    inset 0 -2px 2px rgba(200, 222, 252, 0.28),
-    inset -1.5px 0 1.5px rgba(225, 238, 255, 0.20),
-    inset 0 18px 34px -12px rgba(220, 236, 255, 0.15),
-    inset 0 -18px 32px -12px rgba(195, 220, 252, 0.10);
+    0 24px 56px -10px rgba(0, 0, 0, 0.90),
+    0 8px 24px rgba(0, 0, 0, 0.70),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(200, 222, 252, 0.10),
+    inset 0 18px 34px -14px rgba(220, 236, 255, 0.10);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.92), 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Curved Upper Liquid Dome Gloss Reflection (Subtle so text stays razor-sharp) */
+/* Curved Upper Liquid Dome Gloss Reflection (Borderless & subtle) */
 .glass-panel::before {
   content: '';
   position: absolute;
@@ -107,30 +104,28 @@
   border-radius: 22px 22px 60% 60% / 22px 22px 28% 28%;
   background: linear-gradient(
     180deg,
-    rgba(235, 244, 255, 0.13) 0%,
-    rgba(215, 232, 255, 0.04) 48%,
+    rgba(235, 244, 255, 0.10) 0%,
+    rgba(215, 232, 255, 0.03) 48%,
     rgba(255, 255, 255, 0) 100%
   );
-  border-top: 1.5px solid rgba(255, 255, 255, 0.88);
   pointer-events: none;
   z-index: 0;
 }
 
-/* Bottom internal refractive liquid caustic arc */
+/* Delicate bottom internal caustic shimmer */
 .glass-panel::after {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 8%;
-  right: 8%;
-  height: 1.5px;
+  left: 12%;
+  right: 12%;
+  height: 1px;
   background: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(220, 236, 255, 0.72) 50%,
+    rgba(220, 236, 255, 0.24) 50%,
     rgba(255, 255, 255, 0) 100%
   );
-  box-shadow: 0 -2px 10px rgba(215, 232, 255, 0.35);
   pointer-events: none;
   z-index: 0;
 }
@@ -145,20 +140,17 @@
   overflow: hidden;
   border-radius: 14px;
   background:
-    radial-gradient(120% 90% at 15% 0%, rgba(220, 236, 255, 0.12) 0%, rgba(0, 0, 0, 0) 60%),
+    radial-gradient(120% 90% at 15% 0%, rgba(220, 236, 255, 0.09) 0%, rgba(0, 0, 0, 0) 60%),
     linear-gradient(
       135deg,
-      rgba(22, 30, 44, 0.74) 0%,
-      rgba(10, 14, 22, 0.82) 55%,
-      rgba(16, 22, 34, 0.78) 100%
+      rgba(22, 30, 44, 0.68) 0%,
+      rgba(10, 14, 22, 0.76) 55%,
+      rgba(16, 22, 34, 0.72) 100%
     );
-  border: 1px solid rgba(225, 238, 255, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.09);
   box-shadow:
-    0 6px 18px -4px rgba(0, 0, 0, 0.72),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.52),
-    inset 1px 0 1px rgba(225, 238, 255, 0.22),
-    inset 0 -1.5px 1.5px rgba(200, 222, 252, 0.18),
-    inset 0 10px 18px -8px rgba(225, 238, 255, 0.10);
+    0 6px 16px -4px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   text-shadow: 0 1px 2.5px rgba(0, 0, 0, 0.95);
   transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -173,7 +165,7 @@
   border-radius: 14px 14px 50% 50% / 14px 14px 25% 25%;
   background: linear-gradient(
     180deg,
-    rgba(235, 244, 255, 0.09) 0%,
+    rgba(235, 244, 255, 0.07) 0%,
     rgba(255, 255, 255, 0) 100%
   );
   pointer-events: none;
@@ -189,20 +181,17 @@
 .glass-subcard:hover {
   transform: translateY(-1px);
   background:
-    radial-gradient(120% 90% at 15% 0%, rgba(230, 242, 255, 0.18) 0%, rgba(0, 0, 0, 0) 65%),
+    radial-gradient(120% 90% at 15% 0%, rgba(230, 242, 255, 0.14) 0%, rgba(0, 0, 0, 0) 65%),
     linear-gradient(
       135deg,
-      rgba(30, 40, 58, 0.80) 0%,
-      rgba(14, 20, 32, 0.84) 55%,
-      rgba(24, 34, 50, 0.82) 100%
+      rgba(30, 40, 58, 0.74) 0%,
+      rgba(14, 20, 32, 0.80) 55%,
+      rgba(24, 34, 50, 0.76) 100%
     );
-  border-color: rgba(255, 255, 255, 0.48);
+  border-color: rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 10px 24px -4px rgba(0, 0, 0, 0.82),
-    inset 0 1.5px 1px rgba(255, 255, 255, 0.72),
-    inset 1px 0 1px rgba(225, 238, 255, 0.32),
-    inset 0 -1.5px 1.5px rgba(210, 230, 255, 0.26),
-    inset 0 12px 22px -8px rgba(235, 244, 255, 0.14);
+    0 10px 22px -4px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .glass-subcard-active {
@@ -210,16 +199,12 @@
   overflow: hidden;
   border-radius: 14px;
   background:
-    radial-gradient(120% 95% at 20% 0%, rgba(220, 236, 255, 0.24) 0%, rgba(0, 0, 0, 0) 68%),
-    linear-gradient(135deg, rgba(34, 48, 70, 0.88) 0%, rgba(16, 24, 38, 0.90) 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.82);
+    radial-gradient(120% 95% at 20% 0%, rgba(220, 236, 255, 0.18) 0%, rgba(0, 0, 0, 0) 68%),
+    linear-gradient(135deg, rgba(34, 48, 70, 0.84) 0%, rgba(16, 24, 38, 0.86) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   box-shadow:
-    0 10px 28px -4px rgba(0, 0, 0, 0.85),
-    0 0 18px rgba(215, 232, 255, 0.22),
-    inset 0 2px 1px rgba(255, 255, 255, 0.90),
-    inset 1.5px 0 1px rgba(225, 238, 255, 0.42),
-    inset 0 -1.5px 1.5px rgba(215, 232, 255, 0.32),
-    inset 0 14px 24px -8px rgba(225, 238, 255, 0.18);
+    0 10px 26px -4px rgba(0, 0, 0, 0.80),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
 }
 
@@ -227,19 +212,18 @@
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(90% 130% at 50% 0%, rgba(220, 236, 255, 0.18) 0%, rgba(0, 0, 0, 0) 68%),
+    radial-gradient(90% 130% at 50% 0%, rgba(220, 236, 255, 0.14) 0%, rgba(0, 0, 0, 0) 68%),
     linear-gradient(
       180deg,
-      rgba(22, 30, 44, 0.82) 0%,
-      rgba(10, 14, 22, 0.88) 100%
+      rgba(22, 30, 44, 0.78) 0%,
+      rgba(10, 14, 22, 0.84) 100%
     );
   backdrop-filter: blur(28px) saturate(190%) brightness(76%) contrast(108%);
   -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(76%) contrast(108%);
-  border: 1px solid rgba(225, 238, 255, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.90),
-    inset 0 2px 1px rgba(255, 255, 255, 0.72),
-    inset 0 -1.5px 1.5px rgba(210, 230, 255, 0.26);
+    0 18px 44px rgba(0, 0, 0, 0.88),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   text-shadow: 0 1px 2.5px rgba(0, 0, 0, 0.92);
 }
 

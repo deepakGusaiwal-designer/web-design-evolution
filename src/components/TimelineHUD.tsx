@@ -93,8 +93,8 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
               onClick={onTogglePureParticleMode}
               className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full font-mono text-[9px] sm:text-[10px] uppercase tracking-wider border transition-all cursor-pointer whitespace-nowrap ${
                 pureParticleMode
-                  ? 'bg-white text-black border-white font-bold [text-shadow:none] shadow-[0_0_16px_rgba(255,255,255,0.25)]'
-                  : 'bg-black/40 text-neutral-100 font-medium border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] hover:bg-white/[0.16] hover:text-white hover:border-white/50'
+                  ? 'bg-white text-black border-white font-bold [text-shadow:none]'
+                  : 'bg-black/40 text-neutral-100 font-medium border-white/12 hover:bg-white/[0.14] hover:text-white hover:border-white/25'
               }`}
             >
               {pureParticleMode ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
@@ -105,8 +105,8 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
               onClick={onToggleSound}
               className={`w-7 h-7 rounded-full flex items-center justify-center border transition-all cursor-pointer shrink-0 ${
                 soundEnabled
-                  ? 'bg-white text-black border-white [text-shadow:none] shadow-[0_0_14px_rgba(255,255,255,0.25)]'
-                  : 'bg-black/40 text-neutral-100 border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] hover:bg-white/[0.16] hover:text-white hover:border-white/50'
+                  ? 'bg-white text-black border-white [text-shadow:none]'
+                  : 'bg-black/40 text-neutral-100 border-white/12 hover:bg-white/[0.14] hover:text-white hover:border-white/25'
               }`}
               title="Toggle Audio"
             >
@@ -134,10 +134,10 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
                   onClick={() => onSelectEra(idx)}
                   className={`relative shrink-0 h-full px-2.5 rounded-md flex items-center justify-between gap-2 border transition-all cursor-pointer group whitespace-nowrap ${
                     isActive
-                      ? 'bg-white/22 text-white border-white/65 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.55),0_4px_16px_rgba(0,0,0,0.6)]'
+                      ? 'bg-white/18 text-white border-white/28 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.22)]'
                       : isPast
-                        ? 'bg-black/35 text-neutral-200 border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] hover:bg-white/[0.12] hover:border-white/35 hover:text-white'
-                        : 'bg-black/25 text-neutral-300 border-white/10 hover:bg-white/[0.12] hover:border-white/35 hover:text-white'
+                        ? 'bg-black/35 text-neutral-200 border-white/[0.08] hover:bg-white/[0.10] hover:border-white/20 hover:text-white'
+                        : 'bg-black/25 text-neutral-300 border-white/[0.05] hover:bg-white/[0.10] hover:border-white/20 hover:text-white'
                   }`}
                 >
                   <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-wider uppercase whitespace-nowrap">
