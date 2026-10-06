@@ -12,10 +12,11 @@ interface ParticleEngineProps {
   onCanvasClick?: () => void;
 }
 
-const TOTAL_PARTICLES = 9600;
+const TOTAL_PARTICLES = 9950;
 const TEXT_PARTICLES = 7200;   // 0 .. 7199: 4-Line Multi-Tier Particle Story
 const SCULPT_PARTICLES = 2000; // 7200 .. 9199: Central 3D Architectural Sculpture
-// 9200 .. 9599 (400 particles): Subtle Horizontal Parallax Dust
+// 9200 .. 9949 (750 particles): 3-Plane Deep Space Star-Track (Far Cluster, Mid Field, Near Foreground)
+
 
 const BUCKET_STYLES = [
   'rgba(255, 255, 255, 0.99)', // Bucket 0: Pure White Headline & Hovered Particles
@@ -720,14 +721,13 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       const textTiers = textTiersRef.current;
       const streamStart = TEXT_PARTICLES + SCULPT_PARTICLES;
 
-      for (let i = 0; i < TOTAL_PARTICLES; i++) {
-        const initX = (Math.random() - 0.5) * 2.6;
-        const initY = (Math.random() - 0.5) * 1.9;
-        const initZ = (Math.random() - 0.5) * 0.9;
+      const farEnd = streamStart + 320; // 320 Far-field micro stars
+      const midEnd = farEnd + 280;      // 280 Mid-field stars (remaining 150 = Near-field foreground stars)
 
-        current[i * 3] = initX;
-        current[i * 3 + 1] = initY;
-        current[i * 3 + 2] = initZ;
+      for (let i = 0; i < TOTAL_PARTICLES; i++) {
+        const initX = (Math.random() - 0.5) * 2.7;
+        const initY = (Math.random() - 0.5) * 1.95;
+        let initZ = (Math.random() - 0.5) * 0.9;
 
         if (i < TEXT_PARTICLES) {
           shades[i] = 1.0;
@@ -735,30 +735,62 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         } else if (i < streamStart) {
           shades[i] = 0.55 + Math.random() * 0.45;
           sizes[i] = 1.45 + Math.random() * 0.75;
-        } else {
-          // Persistent 3D Star-Track coordinates across depth layers
+        } else if (i < farEnd) {
+          // Plane 1: Far-Field Deep Space Micro-Stars (z: -1.15 to -0.45)
+          initZ = -1.15 + Math.random() * 0.70;
           targets[i * 3] = initX;
           targets[i * 3 + 1] = initY;
           targets[i * 3 + 2] = initZ;
-          shades[i] = 0.28 + Math.random() * 0.58;
-          sizes[i] = 1.05 + Math.random() * 0.8;
+          shades[i] = 0.16 + Math.random() * 0.22;
+          sizes[i] = 0.75 + Math.random() * 0.45;
+        } else if (i < midEnd) {
+          // Plane 2: Mid-Field Star-Track (z: -0.45 to +0.18)
+          initZ = -0.45 + Math.random() * 0.63;
+          targets[i * 3] = initX;
+          targets[i * 3 + 1] = initY;
+          targets[i * 3 + 2] = initZ;
+          shades[i] = 0.32 + Math.random() * 0.34;
+          sizes[i] = 1.15 + Math.random() * 0.55;
+        } else {
+          // Plane 3: Near-Field High-Parallax Foreground Stars (z: +0.18 to +0.68)
+          initZ = 0.18 + Math.random() * 0.50;
+          targets[i * 3] = initX;
+          targets[i * 3 + 1] = initY;
+          targets[i * 3 + 2] = initZ;
+          shades[i] = 0.55 + Math.random() * 0.42;
+          sizes[i] = 1.55 + Math.random() * 0.75;
         }
+
+        current[i * 3] = initX;
+        current[i * 3 + 1] = initY;
+        current[i * 3 + 2] = initZ;
       }
 
       let lastScrollProgress = motionRef.current.progress;
       let starTrackDir = 1; // +1 = scrolling right/forward (stars track left), -1 = scrolling left/backward (stars track right)
       let starTrackVel = 0;
 
-      // 8 Small Monochrome Celestial Planets (with rings & tiny orbiting moons) tracking left/right in deep space
+      // 4 Distant Deep-Field Spiral Galaxies & Nebulae (z: -0.95 to -0.70, ultra-slow parallax)
+      const galaxies = [
+        { x: -0.88, y: -0.52, z: -0.92, rx: 46, ry: 15, tilt: -0.38, rotSpeed: 0.12 },
+        { x: 0.76, y: -0.58, z: -0.86, rx: 54, ry: 17, tilt: 0.31, rotSpeed: -0.09 },
+        { x: -0.64, y: 0.56, z: -0.88, rx: 40, ry: 13, tilt: 0.44, rotSpeed: 0.14 },
+        { x: 0.84, y: 0.48, z: -0.78, rx: 48, ry: 16, tilt: -0.26, rotSpeed: -0.11 },
+      ];
+
+      // 11 Multi-Depth Monochrome Celestial Planets (from distant exoplanets to foreground ringed worlds)
       const planets = [
-        { x: -1.05, y: -0.68, z: 0.18, r: 6.2, hasRing: true, ringTilt: -0.32, hasMoon: true, moonSpeed: 0.9, phase: 0.4 },
-        { x: -0.52, y: 0.66, z: -0.22, r: 4.0, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.3, phase: 1.8 },
-        { x: -0.14, y: -0.76, z: -0.32, r: 3.4, hasRing: false, ringTilt: 0, hasMoon: false, moonSpeed: 0, phase: 2.5 },
-        { x: 0.34, y: -0.62, z: 0.26, r: 7.4, hasRing: true, ringTilt: 0.28, hasMoon: true, moonSpeed: 0.75, phase: 3.7 },
-        { x: 0.78, y: 0.58, z: 0.12, r: 5.0, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.15, phase: 4.9 },
-        { x: 1.16, y: -0.28, z: -0.18, r: 4.4, hasRing: true, ringTilt: -0.42, hasMoon: false, moonSpeed: 0, phase: 5.4 },
-        { x: -0.82, y: 0.22, z: -0.28, r: 3.6, hasRing: false, ringTilt: 0, hasMoon: false, moonSpeed: 0, phase: 1.1 },
-        { x: 0.92, y: -0.72, z: -0.12, r: 4.6, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.05, phase: 2.9 },
+        { x: -0.42, y: -0.82, z: -0.68, r: 2.3, hasRing: false, ringTilt: 0, hasMoon: false, moonSpeed: 0, phase: 0.8 },
+        { x: 0.58, y: 0.78, z: -0.62, r: 2.6, hasRing: false, ringTilt: 0, hasMoon: false, moonSpeed: 0, phase: 2.1 },
+        { x: -1.18, y: -0.12, z: -0.52, r: 3.0, hasRing: true, ringTilt: 0.36, hasMoon: false, moonSpeed: 0, phase: 4.2 },
+        { x: -0.14, y: -0.76, z: -0.34, r: 3.5, hasRing: false, ringTilt: 0, hasMoon: false, moonSpeed: 0, phase: 2.5 },
+        { x: -0.82, y: 0.22, z: -0.28, r: 3.8, hasRing: false, ringTilt: 0, hasMoon: false, moonSpeed: 0, phase: 1.1 },
+        { x: -0.52, y: 0.66, z: -0.20, r: 4.2, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.3, phase: 1.8 },
+        { x: 1.16, y: -0.28, z: -0.16, r: 4.5, hasRing: true, ringTilt: -0.42, hasMoon: false, moonSpeed: 0, phase: 5.4 },
+        { x: 0.92, y: -0.72, z: -0.08, r: 4.8, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.05, phase: 2.9 },
+        { x: 0.78, y: 0.58, z: 0.14, r: 5.2, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.15, phase: 4.9 },
+        { x: -1.05, y: -0.68, z: 0.20, r: 6.4, hasRing: true, ringTilt: -0.32, hasMoon: true, moonSpeed: 0.9, phase: 0.4 },
+        { x: 0.34, y: -0.62, z: 0.28, r: 7.6, hasRing: true, ringTilt: 0.28, hasMoon: true, moonSpeed: 0.75, phase: 3.7 },
       ];
 
       const mouse = {
@@ -988,23 +1020,23 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ty = ry + 0.24;
             tz = rz2;
           } else if (i >= streamStart) {
-            // 3D Parallax Star-Track: tracks left when scrolling right/forward, and tracks right when scrolling left/backward
-            const depthSpeed = 0.55 + (targets[i3 + 2] + 0.5) * 1.3;
-            const starStepX = (0.0014 * starTrackDir + starTrackVel * 0.95) * depthSpeed;
+            // 3-Plane Parallax Star-Track: Far (0.22x), Mid (0.9x), Near (1.85x) speed
+            const depthSpeed = Math.max(0.18, 0.22 + (targets[i3 + 2] + 1.15) * 0.92);
+            const starStepX = (0.0013 * starTrackDir + starTrackVel * 0.95) * depthSpeed;
             targets[i3] -= starStepX;
 
             // Seamless wrap-around on both left and right edges without spring slingshot
-            if (targets[i3] < -1.35) {
-              targets[i3] += 2.7;
-              current[i3] += 2.7;
+            if (targets[i3] < -1.38) {
+              targets[i3] += 2.76;
+              current[i3] += 2.76;
               vel[i3] = 0;
-            } else if (targets[i3] > 1.35) {
-              targets[i3] -= 2.7;
-              current[i3] -= 2.7;
+            } else if (targets[i3] > 1.38) {
+              targets[i3] -= 2.76;
+              current[i3] -= 2.76;
               vel[i3] = 0;
             }
             tx = targets[i3];
-            ty += Math.sin(tx * 3.6 + time * 1.4 + (i % 17) * 0.3) * 0.024;
+            ty += Math.sin(tx * 3.6 + time * 1.2 + (i % 17) * 0.3) * 0.018 * depthSpeed;
           }
 
           const spring = (i < TEXT_PARTICLES ? 0.16 : i < streamStart ? 0.11 : 0.22) + morphBoost;
@@ -1031,8 +1063,16 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
               ? sculptCenterY + (current[i3 + 1] - 0.24) * sculptScaleY * perspective
               : centerY + current[i3 + 1] * scaleY * perspective;
           } else {
-            sx = centerX + current[i3] * scaleX * perspective;
-            sy = centerY + current[i3 + 1] * scaleY * perspective;
+            // 3D Stereoscopic Pointer Parallax for Deep-Space Starfield
+            const depthParallax = (current[i3 + 2] + 1.25) * 0.65;
+            sx =
+              centerX +
+              current[i3] * scaleX * perspective -
+              mouse.smoothNormX * depthParallax * 28;
+            sy =
+              centerY +
+              current[i3 + 1] * scaleY * perspective -
+              mouse.smoothNormY * depthParallax * 18;
           }
 
           let hoverBoost = 0;
@@ -1078,62 +1118,166 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           }
         }
 
-        // 4B. Semi-Opaque Directional Star-Track Warp Trails & Starfield Nodes (Tracking Left or Right on Scroll)
-        const signedStreakBase = starTrackDir * 2.0 + starTrackVel * 460;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+        // 4A. PLANE 0: Deep-Void Perspective Celestial Rings & Distant Spiral Galaxies
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.032)';
+        ctx.lineWidth = 0.8;
         ctx.beginPath();
-        for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
+        ctx.ellipse(
+          centerX - mouse.smoothNormX * 8,
+          centerY - mouse.smoothNormY * 5,
+          Math.min(width * 0.62, 860),
+          Math.min(height * 0.28, 240),
+          -0.12 + mouse.smoothNormX * 0.03,
+          0,
+          Math.PI * 2
+        );
+        ctx.ellipse(
+          centerX - mouse.smoothNormX * 12,
+          centerY - mouse.smoothNormY * 8,
+          Math.min(width * 0.44, 620),
+          Math.min(height * 0.42, 340),
+          0.18 - mouse.smoothNormY * 0.03,
+          0,
+          Math.PI * 2
+        );
+        ctx.stroke();
+
+        // Distant Tilted Spiral Galaxies & Nebulae (z ≈ -0.9)
+        for (let gIdx = 0; gIdx < galaxies.length; gIdx++) {
+          const g = galaxies[gIdx];
+          const gSpeed = 0.16 + (g.z + 1.0) * 0.35;
+          g.x -= (0.00055 * starTrackDir + starTrackVel * 0.45) * gSpeed;
+          if (g.x < -1.35) g.x += 2.7;
+          else if (g.x > 1.35) g.x -= 2.7;
+
+          const gPersp = 1.85 / (1.85 - g.z);
+          const gx = centerX + g.x * scaleX * gPersp - mouse.smoothNormX * 6;
+          const gy = centerY + g.y * scaleY * gPersp - mouse.smoothNormY * 4;
+          const grx = g.rx * (isMobile ? 0.68 : 1.0);
+          const gry = g.ry * (isMobile ? 0.68 : 1.0);
+
+          // Soft volumetric galactic nebula mist
+          const nebGrad = ctx.createRadialGradient(gx, gy, 1, gx, gy, grx * 1.45);
+          nebGrad.addColorStop(0, 'rgba(255, 255, 255, 0.11)');
+          nebGrad.addColorStop(0.45, 'rgba(200, 200, 200, 0.035)');
+          nebGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = nebGrad;
+          ctx.beginPath();
+          ctx.arc(gx, gy, grx * 1.45, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Concentric tilted galactic arms
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.11)';
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.ellipse(gx, gy, grx, gry, g.tilt + Math.sin(time * g.rotSpeed) * 0.05, 0, Math.PI * 1.65);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.ellipse(gx, gy, grx * 0.56, gry * 0.56, g.tilt - 0.15, Math.PI * 0.4, Math.PI * 2.1);
+          ctx.stroke();
+
+          // Bright galactic core nucleus
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.48)';
+          ctx.beginPath();
+          ctx.arc(gx, gy, 1.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 4B. PLANE 1: Far-Field Deep-Space Micro-Stars & Faint Constellation Filaments
+        const signedStreakBase = starTrackDir * 2.0 + starTrackVel * 460;
+
+        // Faint deep-space constellation web connecting nearby far-field stars
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.042)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        for (let i = streamStart; i < farEnd - 3; i += 3) {
+          const x1 = screenX[i];
+          const y1 = screenY[i];
+          const x2 = screenX[i + 1];
+          const y2 = screenY[i + 1];
+          const dSq = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+          if (dSq < 9500 && dSq > 140) {
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+          }
+        }
+        ctx.stroke();
+
+        // Far-Field Micro-Star Trails & Pinpoint Heads
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
+        ctx.beginPath();
+        for (let i = streamStart; i < farEnd; i++) {
           const sz = drawSizes[i];
-          const trail = signedStreakBase * (sz * 0.52);
+          const trail = signedStreakBase * (sz * 0.28);
           if (trail >= 0) {
-            // Moving left (scrolling right): tail trails to the right of the star head
             ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.35, sz + trail, sz * 0.65);
           } else {
-            // Moving right (scrolling left): tail trails to the left of the star head
             ctx.rect(screenX[i] - sz * 0.5 + trail, screenY[i] - sz * 0.35, sz - trail, sz * 0.65);
           }
         }
         ctx.fill();
 
-        // Semi-Opaque Star-Track Heads (2 depth opacity tiers so they blend softly in space)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.34)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.20)';
         ctx.beginPath();
-        for (let i = streamStart; i < TOTAL_PARTICLES; i += 2) {
+        for (let i = streamStart; i < farEnd; i++) {
           const sz = drawSizes[i];
           ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz, sz);
         }
         ctx.fill();
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.54)';
+        // 4C. PLANE 2: Mid-Field Star-Track & 11 Multi-Depth Monochrome Planets
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.13)';
         ctx.beginPath();
-        for (let i = streamStart + 1; i < TOTAL_PARTICLES; i += 2) {
+        for (let i = farEnd; i < midEnd; i++) {
+          const sz = drawSizes[i];
+          const trail = signedStreakBase * (sz * 0.50);
+          if (trail >= 0) {
+            ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.35, sz + trail, sz * 0.65);
+          } else {
+            ctx.rect(screenX[i] - sz * 0.5 + trail, screenY[i] - sz * 0.35, sz - trail, sz * 0.65);
+          }
+        }
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
+        ctx.beginPath();
+        for (let i = farEnd; i < midEnd; i++) {
           const sz = drawSizes[i];
           ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz, sz);
         }
         ctx.fill();
 
-        // 4C. Small Opaque Monochrome Planets (with Rings & Tiny Moons) Tracking Left or Right on Scroll
+        // 11 Multi-Depth Monochrome Planets (with Stereoscopic Parallax, Rings & Tiny Moons)
         for (let pIdx = 0; pIdx < planets.length; pIdx++) {
           const p = planets[pIdx];
-          const depthSpeed = 0.48 + (p.z + 0.5) * 1.05;
+          const depthSpeed = Math.max(0.22, 0.48 + (p.z + 0.5) * 1.05);
           p.x -= (0.00095 * starTrackDir + starTrackVel * 0.82) * depthSpeed;
           if (p.x < -1.38) p.x += 2.76;
           else if (p.x > 1.38) p.x -= 2.76;
 
           const pPersp = 1.85 / (1.85 - p.z);
-          const px = centerX + p.x * scaleX * pPersp;
+          const pParallax = (p.z + 1.1) * 0.65;
+          const px =
+            centerX +
+            p.x * scaleX * pPersp -
+            mouse.smoothNormX * pParallax * 26;
           const py =
             centerY +
-            (p.y + Math.sin(time * 0.65 + p.phase) * 0.015) * scaleY * pPersp;
-          const pr = p.r * pPersp;
+            (p.y + Math.sin(time * 0.65 + p.phase) * 0.015) * scaleY * pPersp -
+            mouse.smoothNormY * pParallax * 16;
+          const pr = p.r * pPersp * (isMobile ? 0.82 : 1.0);
+          const pDepthAlpha = Math.max(0.45, Math.min(1.0, 0.72 + p.z * 0.55));
 
           // Subtle atmospheric outer glow
-          const haloGrad = ctx.createRadialGradient(px, py, pr * 0.6, px, py, pr * 2.3);
-          haloGrad.addColorStop(0, 'rgba(255, 255, 255, 0.14)');
+          const haloGrad = ctx.createRadialGradient(px, py, pr * 0.6, px, py, pr * 2.35);
+          haloGrad.addColorStop(0, `rgba(255, 255, 255, ${(0.14 * pDepthAlpha).toFixed(3)})`);
           haloGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
           ctx.fillStyle = haloGrad;
           ctx.beginPath();
-          ctx.arc(px, py, pr * 2.3, 0, Math.PI * 2);
+          ctx.arc(px, py, pr * 2.35, 0, Math.PI * 2);
           ctx.fill();
 
           // Opaque 3D monochrome spherical body (sunlit top-left crescent to dark core shadow)
@@ -1145,28 +1289,28 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             py,
             pr
           );
-          sphereGrad.addColorStop(0, 'rgba(235, 235, 235, 0.82)');
-          sphereGrad.addColorStop(0.48, 'rgba(120, 120, 120, 0.72)');
-          sphereGrad.addColorStop(1, 'rgba(10, 10, 10, 0.94)');
+          sphereGrad.addColorStop(0, `rgba(235, 235, 235, ${(0.84 * pDepthAlpha).toFixed(2)})`);
+          sphereGrad.addColorStop(0.48, `rgba(120, 120, 120, ${(0.72 * pDepthAlpha).toFixed(2)})`);
+          sphereGrad.addColorStop(1, 'rgba(8, 8, 8, 0.95)');
 
           ctx.fillStyle = sphereGrad;
           ctx.beginPath();
           ctx.arc(px, py, pr, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+          ctx.strokeStyle = `rgba(255, 255, 255, ${(0.28 * pDepthAlpha).toFixed(2)})`;
           ctx.lineWidth = 0.75;
           ctx.stroke();
 
           // Optional tilted planetary rings
           if (p.hasRing) {
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.32)';
+            ctx.strokeStyle = `rgba(255, 255, 255, ${(0.32 * pDepthAlpha).toFixed(2)})`;
             ctx.lineWidth = 0.9;
             ctx.beginPath();
             ctx.ellipse(px, py, pr * 2.15, pr * 0.52, p.ringTilt, 0, Math.PI * 2);
             ctx.stroke();
 
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.strokeStyle = `rgba(255, 255, 255, ${(0.15 * pDepthAlpha).toFixed(2)})`;
             ctx.lineWidth = 0.6;
             ctx.beginPath();
             ctx.ellipse(px, py, pr * 1.65, pr * 0.38, p.ringTilt, 0, Math.PI * 2);
@@ -1179,16 +1323,53 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             const mAngle = time * p.moonSpeed + p.phase;
             const mx = px + Math.cos(mAngle) * orbitR;
             const my = py + Math.sin(mAngle) * (orbitR * 0.42);
-            const mr = Math.max(1.2, pr * 0.22);
+            const mr = Math.max(1.1, pr * 0.22);
 
-            ctx.fillStyle = 'rgba(225, 225, 225, 0.75)';
+            ctx.fillStyle = `rgba(225, 225, 225, ${(0.75 * pDepthAlpha).toFixed(2)})`;
             ctx.beginPath();
             ctx.arc(mx, my, mr, 0, Math.PI * 2);
             ctx.fill();
           }
         }
 
-        // 4D. Batched Path Draw for Foreground Story & Sculpture Particles (Crisp Nodes)
+        // 4D. PLANE 3: Near-Field High-Parallax Foreground Star-Tracks & 4-Point Starlight Cross-Flares
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.21)';
+        ctx.beginPath();
+        for (let i = midEnd; i < TOTAL_PARTICLES; i++) {
+          const sz = drawSizes[i];
+          const trail = signedStreakBase * (sz * 0.78);
+          if (trail >= 0) {
+            ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.35, sz + trail, sz * 0.65);
+          } else {
+            ctx.rect(screenX[i] - sz * 0.5 + trail, screenY[i] - sz * 0.35, sz - trail, sz * 0.65);
+          }
+        }
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.62)';
+        ctx.beginPath();
+        for (let i = midEnd; i < TOTAL_PARTICLES; i++) {
+          const sz = drawSizes[i];
+          ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz, sz);
+        }
+        ctx.fill();
+
+        // Crisp 4-point diffraction star-crosses on closest foreground stars
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.26)';
+        ctx.lineWidth = 0.65;
+        ctx.beginPath();
+        for (let i = midEnd; i < TOTAL_PARTICLES; i += 5) {
+          const sx = screenX[i];
+          const sy = screenY[i];
+          const flareR = drawSizes[i] * 2.6;
+          ctx.moveTo(sx - flareR, sy);
+          ctx.lineTo(sx + flareR, sy);
+          ctx.moveTo(sx, sy - flareR);
+          ctx.lineTo(sx, sy + flareR);
+        }
+        ctx.stroke();
+
+        // 4E. Batched Path Draw for Foreground Story & Sculpture Particles (Crisp Nodes)
         for (let b = 0; b < 4; b++) {
           ctx.fillStyle = BUCKET_STYLES[b];
           ctx.beginPath();

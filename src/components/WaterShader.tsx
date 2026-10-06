@@ -47,6 +47,22 @@ const FRAGMENT_SHADER = `
     return (swell1 + swell2) * 0.5;
   }
 
+  // Deep-field volumetric cosmic nebula mist at two slow parallax depth planes
+  float cosmicNebula(vec2 p, float t) {
+    // Far depth plane (0.35x scroll parallax)
+    vec2 n1 = p * 0.95 + vec2(uScroll * 0.75 + t * 0.018, t * 0.012);
+    for (int i = 0; i < 3; i++) {
+      n1 += 0.42 * vec2(sin(n1.y * 1.8 + float(i) * 1.3), cos(n1.x * 1.6 - float(i) * 1.9));
+    }
+    float farMist = smoothstep(-0.2, 0.85, sin(n1.x * 1.4 + n1.y * 1.1));
+
+    // Mid-far galactic dust lane (0.85x scroll parallax)
+    vec2 n2 = p * 1.85 + vec2(uScroll * 1.65 - t * 0.025, -t * 0.015);
+    float dustLane = smoothstep(0.1, 0.95, cos(n2.x * 1.3 - n2.y * 1.7 + sin(n1.x * 2.0)));
+
+    return farMist * 0.65 + dustLane * 0.35;
+  }
+
   // Sub-pixel triangular dither to eliminate 8-bit banding in deep dark gradients
   float dither(vec2 fragCoord) {
     float n = fract(sin(dot(fragCoord, vec2(12.9898, 78.233))) * 43758.5453);
@@ -88,22 +104,28 @@ const FRAGMENT_SHADER = `
     // Gentle Fresnel sheen
     float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
 
-    // Pure Pitch-Black (#000000) Monochrome Liquid Palette
+    // Pure Pitch-Black (#000000) Monochrome Liquid & Deep Space Palette
     vec3 pitchBlack = vec3(0.0, 0.0, 0.0);
-    vec3 deepLiquid = vec3(0.014, 0.014, 0.014);
-    vec3 darkCrest  = vec3(0.036, 0.036, 0.036);
+    vec3 deepLiquid = vec3(0.016, 0.016, 0.016);
+    vec3 darkCrest  = vec3(0.042, 0.042, 0.042);
 
     float waveBlend = smoothstep(-0.75, 0.75, hC);
     vec3 color = mix(pitchBlack, deepLiquid, waveBlend);
     color = mix(color, darkCrest, pow(diff1, 2.2) * 0.45 + diff2 * 0.15);
+
+    // Layer in deep-space volumetric nebula mist & central stage depth glow
+    float nebula = cosmicNebula(p, t);
+    float centerDepthGlow = exp(- dot(p * vec2(0.65, 0.95), p * vec2(0.65, 0.95)) * 1.65);
+    color += vec3(0.032) * nebula * (0.45 + 0.55 * centerDepthGlow);
+    color += vec3(0.024) * centerDepthGlow;
 
     // Subtle pure-monochrome specular sheen on liquid swells
     color += vec3(0.065) * spec1;
     color += vec3(0.030) * spec2;
     color += vec3(0.022) * fresnel;
 
-    // Vignette fades outer edges into pure #000000 pitch black
-    float vignette = smoothstep(1.20, 0.22, length(p * vec2(0.75, 0.95)));
+    // Deep vignette fades outer edges into pure #000000 abyssal black
+    float vignette = smoothstep(1.32, 0.18, length(p * vec2(0.72, 0.92)));
     color *= vignette;
 
     // Add sub-bit dither for zero banding
