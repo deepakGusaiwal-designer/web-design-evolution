@@ -314,15 +314,23 @@ function generateSculptureCoordinates(
           else { x = cx + cw; y = cy - ch + p * ch * 2; }
           z = cz;
         } else {
-          // Variant 2: GeoCities Starfield Ring + Angled Triptych Frameset
-          if (i < count * 0.65) {
-            const pane = i % 3;
-            const cx = (pane - 1) * 0.21;
-            const lx = (((i * 17) % 100) / 100 - 0.5) * 0.16;
-            const ly = ((Math.floor(i / 12) % 16) / 16 - 0.5) * 0.24;
+          // Variant 2 ("BLINK & MARQUEE"): Continuous 3-Block <MARQUEE> Ticker + GeoCities Orbit Ring
+          const marqueeCount = Math.floor(count * 0.66);
+          if (i < marqueeCount) {
+            const perPane = Math.floor(marqueeCount / 3);
+            const pane = Math.min(2, Math.floor(i / perPane));
+            const localI = i - pane * perPane;
+            const rows = 16;
+            const cols = Math.max(1, Math.floor(perPane / rows));
+            // Column-major ordering so each vertical column wraps together on the same frame
+            const row = localI % rows;
+            const col = Math.floor(localI / rows) % cols;
+            const cx = (pane - 1) * 0.21; // -0.21, 0.0, +0.21 (periodic span = 0.63)
+            const lx = (col / Math.max(1, cols - 1) - 0.5) * 0.15;
+            const ly = (row / (rows - 1) - 0.5) * 0.23;
             x = cx + lx;
             y = ly;
-            z = Math.abs(pane - 1) * 0.08 - 0.04;
+            z = 0;
           } else {
             const angle = t * Math.PI * 28;
             x = Math.cos(angle) * 0.35;
@@ -1062,6 +1070,23 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
               ty = Math.sin(d * 14.0 - time * 3.0) * 0.09 + 0.24;
             } else if (era.shapeType === 'cascade' && i % 3 === 2) {
               ty = Math.sin(tx * 12.0 + time * 3.6) * 0.10 + 0.24;
+            } else if (
+              era.shapeType === 'table' &&
+              baseVariant === 2 &&
+              i - TEXT_PARTICLES < Math.floor(SCULPT_PARTICLES * 0.66)
+            ) {
+              // Continuous <MARQUEE> horizontal scroll for the 3 triptych blocks
+              const marqueeStep = 0.0022 + Math.abs(starTrackVel) * 0.35;
+              targets[i3] -= marqueeStep;
+              if (targets[i3] < -0.315) {
+                const wrapSpan = 0.63;
+                targets[i3] += wrapSpan;
+                current[i3] += wrapSpan * cosY;
+                current[i3 + 1] -= wrapSpan * sinY * sinX;
+                current[i3 + 2] += wrapSpan * sinY * cosX;
+                vel[i3] = 0;
+              }
+              tx = targets[i3];
             }
 
             const localY = ty - 0.24;
