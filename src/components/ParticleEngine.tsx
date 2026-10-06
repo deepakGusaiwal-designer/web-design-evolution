@@ -749,6 +749,18 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       let starTrackDir = 1; // +1 = scrolling right/forward (stars track left), -1 = scrolling left/backward (stars track right)
       let starTrackVel = 0;
 
+      // 8 Small Monochrome Celestial Planets (with rings & tiny orbiting moons) tracking left/right in deep space
+      const planets = [
+        { x: -1.05, y: -0.68, z: 0.18, r: 6.2, hasRing: true, ringTilt: -0.32, hasMoon: true, moonSpeed: 0.9, phase: 0.4 },
+        { x: -0.52, y: 0.66, z: -0.22, r: 4.0, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.3, phase: 1.8 },
+        { x: -0.14, y: -0.76, z: -0.32, r: 3.4, hasRing: false, ringTilt: 0, hasMoon: false, moonSpeed: 0, phase: 2.5 },
+        { x: 0.34, y: -0.62, z: 0.26, r: 7.4, hasRing: true, ringTilt: 0.28, hasMoon: true, moonSpeed: 0.75, phase: 3.7 },
+        { x: 0.78, y: 0.58, z: 0.12, r: 5.0, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.15, phase: 4.9 },
+        { x: 1.16, y: -0.28, z: -0.18, r: 4.4, hasRing: true, ringTilt: -0.42, hasMoon: false, moonSpeed: 0, phase: 5.4 },
+        { x: -0.82, y: 0.22, z: -0.28, r: 3.6, hasRing: false, ringTilt: 0, hasMoon: false, moonSpeed: 0, phase: 1.1 },
+        { x: 0.92, y: -0.72, z: -0.12, r: 4.6, hasRing: false, ringTilt: 0, hasMoon: true, moonSpeed: 1.05, phase: 2.9 },
+      ];
+
       const mouse = {
         x: -9999,
         y: -9999,
@@ -1034,7 +1046,117 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           }
         }
 
-        // 4B. Batched Path Draw for Story & Sculpture Particles (Crisp Nodes)
+        // 4B. Semi-Opaque Directional Star-Track Warp Trails & Starfield Nodes (Tracking Left or Right on Scroll)
+        const signedStreakBase = starTrackDir * 2.0 + starTrackVel * 460;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+        ctx.beginPath();
+        for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
+          const sz = drawSizes[i];
+          const trail = signedStreakBase * (sz * 0.52);
+          if (trail >= 0) {
+            // Moving left (scrolling right): tail trails to the right of the star head
+            ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.35, sz + trail, sz * 0.65);
+          } else {
+            // Moving right (scrolling left): tail trails to the left of the star head
+            ctx.rect(screenX[i] - sz * 0.5 + trail, screenY[i] - sz * 0.35, sz - trail, sz * 0.65);
+          }
+        }
+        ctx.fill();
+
+        // Semi-Opaque Star-Track Heads (2 depth opacity tiers so they blend softly in space)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.34)';
+        ctx.beginPath();
+        for (let i = streamStart; i < TOTAL_PARTICLES; i += 2) {
+          const sz = drawSizes[i];
+          ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz, sz);
+        }
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.54)';
+        ctx.beginPath();
+        for (let i = streamStart + 1; i < TOTAL_PARTICLES; i += 2) {
+          const sz = drawSizes[i];
+          ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz, sz);
+        }
+        ctx.fill();
+
+        // 4C. Small Opaque Monochrome Planets (with Rings & Tiny Moons) Tracking Left or Right on Scroll
+        for (let pIdx = 0; pIdx < planets.length; pIdx++) {
+          const p = planets[pIdx];
+          const depthSpeed = 0.48 + (p.z + 0.5) * 1.05;
+          p.x -= (0.00095 * starTrackDir + starTrackVel * 0.82) * depthSpeed;
+          if (p.x < -1.38) p.x += 2.76;
+          else if (p.x > 1.38) p.x -= 2.76;
+
+          const pPersp = 1.85 / (1.85 - p.z);
+          const px = centerX + p.x * scaleX * pPersp;
+          const py =
+            centerY +
+            (p.y + Math.sin(time * 0.65 + p.phase) * 0.015) * scaleY * pPersp;
+          const pr = p.r * pPersp;
+
+          // Subtle atmospheric outer glow
+          const haloGrad = ctx.createRadialGradient(px, py, pr * 0.6, px, py, pr * 2.3);
+          haloGrad.addColorStop(0, 'rgba(255, 255, 255, 0.14)');
+          haloGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = haloGrad;
+          ctx.beginPath();
+          ctx.arc(px, py, pr * 2.3, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Opaque 3D monochrome spherical body (sunlit top-left crescent to dark core shadow)
+          const sphereGrad = ctx.createRadialGradient(
+            px - pr * 0.35,
+            py - pr * 0.35,
+            pr * 0.12,
+            px,
+            py,
+            pr
+          );
+          sphereGrad.addColorStop(0, 'rgba(235, 235, 235, 0.82)');
+          sphereGrad.addColorStop(0.48, 'rgba(120, 120, 120, 0.72)');
+          sphereGrad.addColorStop(1, 'rgba(10, 10, 10, 0.94)');
+
+          ctx.fillStyle = sphereGrad;
+          ctx.beginPath();
+          ctx.arc(px, py, pr, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+          ctx.lineWidth = 0.75;
+          ctx.stroke();
+
+          // Optional tilted planetary rings
+          if (p.hasRing) {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.32)';
+            ctx.lineWidth = 0.9;
+            ctx.beginPath();
+            ctx.ellipse(px, py, pr * 2.15, pr * 0.52, p.ringTilt, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = 0.6;
+            ctx.beginPath();
+            ctx.ellipse(px, py, pr * 1.65, pr * 0.38, p.ringTilt, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          // Optional tiny orbiting monochrome moon
+          if (p.hasMoon) {
+            const orbitR = pr * 2.35;
+            const mAngle = time * p.moonSpeed + p.phase;
+            const mx = px + Math.cos(mAngle) * orbitR;
+            const my = py + Math.sin(mAngle) * (orbitR * 0.42);
+            const mr = Math.max(1.2, pr * 0.22);
+
+            ctx.fillStyle = 'rgba(225, 225, 225, 0.75)';
+            ctx.beginPath();
+            ctx.arc(mx, my, mr, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // 4D. Batched Path Draw for Foreground Story & Sculpture Particles (Crisp Nodes)
         for (let b = 0; b < 4; b++) {
           ctx.fillStyle = BUCKET_STYLES[b];
           ctx.beginPath();
@@ -1047,32 +1169,6 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           }
           ctx.fill();
         }
-
-        // 4C. Directional Star-Track Warp Trails & Starfield Nodes (Tracking Left or Right on Scroll)
-        const signedStreakBase = starTrackDir * 2.2 + starTrackVel * 480;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.24)';
-        ctx.beginPath();
-        for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
-          const sz = drawSizes[i];
-          const trail = signedStreakBase * (sz * 0.55);
-          if (trail >= 0) {
-            // Moving left (scrolling right): tail trails to the right of the star head
-            ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.35, sz + trail, sz * 0.7);
-          } else {
-            // Moving right (scrolling left): tail trails to the left of the star head
-            ctx.rect(screenX[i] - sz * 0.5 + trail, screenY[i] - sz * 0.35, sz - trail, sz * 0.7);
-          }
-        }
-        ctx.fill();
-
-        // Crisp Star-Track Heads
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
-        ctx.beginPath();
-        for (let i = streamStart; i < TOTAL_PARTICLES; i++) {
-          const sz = drawSizes[i];
-          ctx.rect(screenX[i] - sz * 0.5, screenY[i] - sz * 0.5, sz, sz);
-        }
-        ctx.fill();
 
         // 5. Subtle Structural Filaments inside the 3D Sculpture
         ctx.lineWidth = 0.6;
