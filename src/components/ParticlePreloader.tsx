@@ -53,7 +53,7 @@ export const ParticlePreloader: React.FC<ParticlePreloaderProps> = React.memo(
           opacity: 0,
           y: 18,
           scale: 0.94,
-          duration: 0.75,
+          duration: 1.0,
           ease: 'power3.inOut',
         });
       }
@@ -62,7 +62,7 @@ export const ParticlePreloader: React.FC<ParticlePreloaderProps> = React.memo(
         gsap.to(topBarRef.current, {
           opacity: 0,
           y: -12,
-          duration: 0.6,
+          duration: 0.8,
           ease: 'power3.inOut',
         });
       }
@@ -70,7 +70,7 @@ export const ParticlePreloader: React.FC<ParticlePreloaderProps> = React.memo(
       if (containerRef.current) {
         gsap.to(containerRef.current, {
           opacity: 0,
-          duration: 0.82,
+          duration: 1.05,
           ease: 'power2.inOut',
           onComplete: () => {
             onComplete();
@@ -86,8 +86,8 @@ export const ParticlePreloader: React.FC<ParticlePreloaderProps> = React.memo(
 
       const progTween = gsap.to(preloaderProgressRef, {
         current: 1,
-        duration: 2.9,
-        ease: 'power2.inOut',
+        duration: 4.8,
+        ease: 'power1.inOut',
         onComplete: () => {
           triggerMelt();
         },
