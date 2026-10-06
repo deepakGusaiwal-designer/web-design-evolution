@@ -39,27 +39,48 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
     const phaseBoxRef = useRef<HTMLDivElement>(null);
     const phaseScrollRef = useRef<HTMLDivElement>(null);
 
-    // Smooth GSAP entrance transition when switching eras
+    // Smooth GSAP entrance transition when switching eras (clear inline transform/opacity on complete so backdrop-filter stays active)
     useEffect(() => {
       if (leftPanelRef.current) {
         gsap.fromTo(
           leftPanelRef.current,
-          { opacity: 0.35, x: -16 },
-          { opacity: 1, x: 0, duration: 0.48, ease: 'power3.out', overwrite: true }
+          { opacity: 0.45, x: -12 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.42,
+            ease: 'power3.out',
+            overwrite: true,
+            clearProps: 'transform,opacity',
+          }
         );
       }
       if (rightPanelRef.current) {
         gsap.fromTo(
           rightPanelRef.current,
-          { opacity: 0.35, x: 16 },
-          { opacity: 1, x: 0, duration: 0.48, ease: 'power3.out', overwrite: true }
+          { opacity: 0.45, x: 12 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.42,
+            ease: 'power3.out',
+            overwrite: true,
+            clearProps: 'transform,opacity',
+          }
         );
       }
       if (mobilePanelRef.current) {
         gsap.fromTo(
           mobilePanelRef.current,
-          { opacity: 0.45, y: 10 },
-          { opacity: 1, y: 0, duration: 0.42, ease: 'power3.out', overwrite: true }
+          { opacity: 0.5, y: 8 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.38,
+            ease: 'power3.out',
+            overwrite: true,
+            clearProps: 'transform,opacity',
+          }
         );
       }
     }, [activeEraIndex]);
@@ -69,8 +90,15 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
       if (phaseBoxRef.current) {
         gsap.fromTo(
           phaseBoxRef.current,
-          { opacity: 0.5, y: 4 },
-          { opacity: 1, y: 0, duration: 0.32, ease: 'power2.out', overwrite: true }
+          { opacity: 0.55, y: 3 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.28,
+            ease: 'power2.out',
+            overwrite: true,
+            clearProps: 'transform,opacity',
+          }
         );
       }
     }, [activePhaseIndex, overrideWord]);
@@ -121,16 +149,39 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
     return (
       <div
         className={`fixed inset-0 pointer-events-none z-10 transition-opacity duration-500 ${
-          pureParticleMode ? 'opacity-0' : 'opacity-100'
+          pureParticleMode ? 'opacity-0 invisible' : 'opacity-100 visible'
         }`}
       >
+        {/* SVG Liquid Glass Optical Refraction Filter for Real Backdrop Lens Distortion */}
+        <svg className="fixed w-0 h-0 pointer-events-none" aria-hidden="true">
+          <defs>
+            <filter id="liquid-glass-refract" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence
+                type="fractalNoise"
+                baseFrequency="0.014 0.022"
+                numOctaves="2"
+                seed="7"
+                result="liquidNoise"
+              />
+              <feGaussianBlur in="liquidNoise" stdDeviation="2.5" result="smoothLiquid" />
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="smoothLiquid"
+                scale="14"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+          </defs>
+        </svg>
+
         {/* Main Viewport-Locked Split Stage */}
         <div className="relative w-full h-full flex flex-col justify-between pt-20 sm:pt-24 pb-3 sm:pb-6 px-3 sm:px-6 lg:px-7 gap-2.5">
           <div className="flex-1 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
             {/* DESKTOP LEFT PANEL: Liquid Glass Era & Active Particle Phase Block */}
             <aside
               ref={leftPanelRef}
-              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3.5 glass-panel p-4.5 will-change-transform"
+              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3.5 glass-panel p-4.5"
             >
               {/* Chapter & Year Header */}
               <div className="flex items-center justify-between border-b border-white/15 pb-2.5">
@@ -221,7 +272,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
             {/* DESKTOP RIGHT PANEL: Liquid Glass Milestones Block */}
             <aside
               ref={rightPanelRef}
-              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3 glass-panel p-4.5 will-change-transform"
+              className="pointer-events-auto hidden lg:flex w-[276px] xl:w-[296px] flex-col gap-3 glass-panel p-4.5"
             >
               <div className="flex items-center justify-between font-mono text-[10px] tracking-[0.16em] text-white uppercase border-b border-white/15 pb-2.5">
                 <span className="font-bold">KEY MILESTONES</span>
@@ -281,7 +332,7 @@ export const HorizontalStage: React.FC<HorizontalStageProps> = React.memo(
           {/* MOBILE & TABLET COMPACT LIQUID GLASS BOTTOM DOCK (< 1024px) */}
           <div
             ref={mobilePanelRef}
-            className="pointer-events-auto lg:hidden w-full max-w-xl mx-auto glass-panel p-3 flex flex-col gap-2 will-change-transform"
+            className="pointer-events-auto lg:hidden w-full max-w-xl mx-auto glass-panel p-3 flex flex-col gap-2"
           >
             {/* Compact Era Title & 3-Tab Switcher Header */}
             <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-2">
