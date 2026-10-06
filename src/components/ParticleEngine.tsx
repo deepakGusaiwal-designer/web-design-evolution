@@ -10,6 +10,8 @@ interface ParticleEngineProps {
   overrideWord: string | null;
   customWord: string;
   onCanvasClick?: () => void;
+  preloaderActive?: boolean;
+  preloaderProgressRef?: React.MutableRefObject<number>;
 }
 
 const TOTAL_PARTICLES = 9950;
@@ -1817,6 +1819,8 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
     overrideWord,
     customWord,
     onCanvasClick,
+    preloaderActive = false,
+    preloaderProgressRef,
   }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -1826,6 +1830,8 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       overrideWord,
       customWord,
       onCanvasClick,
+      preloaderActive,
+      preloaderProgressRef,
     });
 
     const activeStoryRef = useRef<ParticleNodeStory>({
@@ -1845,8 +1851,18 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         overrideWord,
         customWord,
         onCanvasClick,
+        preloaderActive,
+        preloaderProgressRef,
       };
-    }, [activeEraIndex, activePhaseIndex, overrideWord, customWord, onCanvasClick]);
+    }, [
+      activeEraIndex,
+      activePhaseIndex,
+      overrideWord,
+      customWord,
+      onCanvasClick,
+      preloaderActive,
+      preloaderProgressRef,
+    ]);
 
     const targetsRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
     const currentRef = useRef<Float32Array>(new Float32Array(TOTAL_PARTICLES * 3));
@@ -1859,7 +1875,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       const era = ERAS[activeEraIndex] || ERAS[0];
       const phase = era.phases[activePhaseIndex] || era.phases[0];
 
-      // Resolve full 4-line story for the current phase, spec override, milestone override, or custom word
+      // Resolve full 4-line story for preloader synthesis, current phase, spec override, milestone override, or custom word
       let activeStory: ParticleNodeStory = {
         kicker: phase.tag,
         word: phase.word,
@@ -1868,7 +1884,15 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         sculptVariant: phase.sculptVariant,
       };
 
-      if (overrideWord) {
+      if (preloaderActive) {
+        activeStory = {
+          kicker: '1989 CERN  —  INFINITE LIGHT',
+          word: 'HYPERTEXT ODYSSEY',
+          line1: 'NINE THOUSAND NINE HUNDRED FIFTY LIVING NODES',
+          line2: 'THE ARCHITECTURAL ARCHIVE OF THE WORLD WIDE WEB',
+          sculptVariant: 0,
+        };
+      } else if (overrideWord) {
         const matchedSpec = era.specs.find((s) => s.particleWord === overrideWord);
         const matchedMilestone = era.milestones.find((m) => m.particleWord === overrideWord);
         if (matchedSpec) {
@@ -1932,10 +1956,10 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
 
       gsap.fromTo(
         morphBoostRef.current,
-        { value: 0.085 },
-        { value: 0, duration: 0.75, ease: 'power3.out', overwrite: true }
+        { value: preloaderActive ? 0.025 : 0.045 },
+        { value: 0, duration: 1.15, ease: 'power3.out', overwrite: true }
       );
-    }, [activeEraIndex, activePhaseIndex, overrideWord, customWord]);
+    }, [activeEraIndex, activePhaseIndex, overrideWord, customWord, preloaderActive]);
 
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -2012,6 +2036,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
       let lastScrollProgress = motionRef.current.progress;
       let starTrackDir = 1; // +1 = scrolling right/forward (stars track left), -1 = scrolling left/backward (stars track right)
       let starTrackVel = 0;
+      let calloutAlpha = stateRef.current.preloaderActive ? 0 : 1;
 
       // 4 Distant Deep-Field Spiral Galaxies & Nebulae (z: -0.95 to -0.70, ultra-slow parallax)
       const galaxies = [
@@ -2255,6 +2280,12 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
 
         const horizontalWind = Math.max(-0.07, Math.min(0.07, -starTrackVel * 0.45));
         const morphBoost = morphBoostRef.current.value;
+        const isBooting = Boolean(stateRef.current.preloaderActive);
+        const bootProg = stateRef.current.preloaderProgressRef?.current ?? 1;
+        const vortexBlend = isBooting
+          ? Math.pow(Math.max(0, 1 - bootProg / 0.54), 1.5)
+          : 0;
+        calloutAlpha += ((isBooting ? 0 : 1) - calloutAlpha) * 0.08;
 
         // 4. Update & Project All 9,600 Particles
         for (let i = 0; i < TOTAL_PARTICLES; i++) {
@@ -2263,7 +2294,17 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           let ty = targets[i3 + 1];
           let tz = targets[i3 + 2];
 
-          if (i >= TEXT_PARTICLES && i < streamStart) {
+          if (vortexBlend > 0.001 && i < TEXT_PARTICLES) {
+            // Preloader Phase 1 (0% -> 54%): 3D Cosmic Spiral Vortex converging smoothly into HYPERTEXT ODYSSEY
+            const spiralAngle = i * 0.1375 + time * 1.45;
+            const spiralR = 0.04 + (((i * 19) % 260) / 260) * 0.36;
+            const vx = Math.cos(spiralAngle) * spiralR;
+            const vy = Math.sin(spiralAngle) * spiralR * 0.62 - 0.12;
+            const vz = Math.sin(spiralAngle * 2.0) * 0.16;
+            tx = tx * (1 - vortexBlend) + vx * vortexBlend;
+            ty = ty * (1 - vortexBlend) + vy * vortexBlend;
+            tz = tz * (1 - vortexBlend) + vz * vortexBlend;
+          } else if (i >= TEXT_PARTICLES && i < streamStart) {
             if (isMilestoneTier) {
               // Subtle 3D harmonic breathing & depth shimmer for all 27 Key Milestone sculptures
               ty += Math.sin(time * 2.2 + tx * 6.0) * 0.011;
@@ -2725,7 +2766,9 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         ctx.stroke();
 
         // 6. Render 4 Frosted Glassmorphic 3D Sculpture Callout Blocks on Canvas
-        if (width >= 1024) {
+        if (width >= 1024 && calloutAlpha > 0.01) {
+          ctx.save();
+          ctx.globalAlpha = calloutAlpha;
           let leftSlot = 0;
           let rightSlot = 0;
           const isCompactDesktop = width < 1380;
@@ -2920,6 +2963,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.fillText(line2, textX, cardY + cardH * 0.70, maxTextW);
             ctx.restore();
           });
+          ctx.restore();
         }
 
         // 7. Quantum Vortex Constellation Lattice & Architectural Telemetry Lock-On (No Ripple Rings)

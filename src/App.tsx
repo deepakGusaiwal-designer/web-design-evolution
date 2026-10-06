@@ -10,6 +10,7 @@ import ParticlePreloader from './components/ParticlePreloader';
 import { playArchitecturalPulse } from './utils/sound';
 
 export const App: React.FC = () => {
+  const [preloaderActive, setPreloaderActive] = useState(true);
   const [preloaderDone, setPreloaderDone] = useState(false);
   const [activeEraIndex, setActiveEraIndex] = useState(0);
   const [activePhaseIndex, setActivePhaseIndex] = useState(0);
@@ -17,6 +18,8 @@ export const App: React.FC = () => {
   const [customWord, setCustomWord] = useState('');
   const [pureParticleMode, setPureParticleMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
+
+  const preloaderProgressRef = useRef(0);
 
   // Shared mutable motion state updated at 60/120fps without triggering React re-renders
   const motionRef = useRef<ScrollMotionState>({
@@ -220,13 +223,23 @@ export const App: React.FC = () => {
     });
   }, []);
 
+  const handleStartMelt = useCallback(() => {
+    setPreloaderActive(false);
+  }, []);
+
   const handlePreloaderComplete = useCallback(() => {
     setPreloaderDone(true);
   }, []);
 
   return (
     <div className="relative w-full bg-black text-white select-none font-dm">
-      {!preloaderDone && <ParticlePreloader onComplete={handlePreloaderComplete} />}
+      {!preloaderDone && (
+        <ParticlePreloader
+          preloaderProgressRef={preloaderProgressRef}
+          onStartMelt={handleStartMelt}
+          onComplete={handlePreloaderComplete}
+        />
+      )}
 
       {/* Virtual 2400vh Scroll Track Driven by Lenis + GSAP Ticker (~90vh per sub-phase) */}
       <div className="w-full h-[2400vh] pointer-events-none" aria-hidden="true" />
@@ -242,18 +255,26 @@ export const App: React.FC = () => {
         overrideWord={overrideWord}
         customWord={customWord}
         onCanvasClick={handleCanvasClick}
+        preloaderActive={preloaderActive}
+        preloaderProgressRef={preloaderProgressRef}
       />
 
       {/* 2. Frosted Glassmorphic Top Timeline HUD */}
-      <TimelineHUD
-        activeEraIndex={activeEraIndex}
-        motionRef={motionRef}
-        onSelectEra={selectEra}
-        pureParticleMode={pureParticleMode}
-        onTogglePureParticleMode={handleTogglePureMode}
-        soundEnabled={soundEnabled}
-        onToggleSound={handleToggleSound}
-      />
+      <div
+        className={`transition-opacity duration-700 ease-out ${
+          preloaderActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      >
+        <TimelineHUD
+          activeEraIndex={activeEraIndex}
+          motionRef={motionRef}
+          onSelectEra={selectEra}
+          pureParticleMode={pureParticleMode}
+          onTogglePureParticleMode={handleTogglePureMode}
+          soundEnabled={soundEnabled}
+          onToggleSound={handleToggleSound}
+        />
+      </div>
 
       {/* 3. Frosted Glassmorphic Split-Margin Horizontal Stage */}
       <HorizontalStage
@@ -267,7 +288,7 @@ export const App: React.FC = () => {
         customWord={customWord}
         onChangeCustomWord={setCustomWord}
         onSelectEra={selectEra}
-        pureParticleMode={pureParticleMode}
+        pureParticleMode={pureParticleMode || preloaderActive}
       />
     </div>
   );
