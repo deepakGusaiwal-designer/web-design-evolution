@@ -1165,14 +1165,14 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           const grx = g.rx * (isMobile ? 0.68 : 1.0);
           const gry = g.ry * (isMobile ? 0.68 : 1.0);
 
-          // Soft volumetric galactic nebula mist
-          const nebGrad = ctx.createRadialGradient(gx, gy, 1, gx, gy, grx * 1.45);
-          nebGrad.addColorStop(0, 'rgba(255, 255, 255, 0.11)');
-          nebGrad.addColorStop(0.45, 'rgba(200, 200, 200, 0.035)');
+          // Subtle galactic core halo (keeps space pure #000000 black)
+          const nebGrad = ctx.createRadialGradient(gx, gy, 1, gx, gy, grx * 0.65);
+          nebGrad.addColorStop(0, 'rgba(255, 255, 255, 0.045)');
+          nebGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.012)');
           nebGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
           ctx.fillStyle = nebGrad;
           ctx.beginPath();
-          ctx.arc(gx, gy, grx * 1.45, 0, Math.PI * 2);
+          ctx.arc(gx, gy, grx * 0.65, 0, Math.PI * 2);
           ctx.fill();
 
           // Concentric tilted galactic arms
@@ -1496,25 +1496,25 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             ctx.lineTo(cardEdgeX, cardCenterY);
             ctx.stroke();
 
-            // Tinted Smoked-Crystal Liquid Glass Diagonal + Upper Dome Gloss Surface
+            // Pure Pitch-Black Onyx Liquid Glass Diagonal + Upper Dome Gloss Surface
             const boxGrad = ctx.createLinearGradient(cardX, cardY, cardX + cardW, cardY + cardH);
-            boxGrad.addColorStop(0, 'rgba(26, 36, 52, 0.88)');
-            boxGrad.addColorStop(0.32, 'rgba(14, 20, 30, 0.90)');
-            boxGrad.addColorStop(0.68, 'rgba(10, 14, 22, 0.92)');
-            boxGrad.addColorStop(1, 'rgba(22, 32, 46, 0.88)');
+            boxGrad.addColorStop(0, 'rgba(10, 10, 10, 0.90)');
+            boxGrad.addColorStop(0.35, 'rgba(3, 3, 3, 0.93)');
+            boxGrad.addColorStop(0.70, 'rgba(0, 0, 0, 0.95)');
+            boxGrad.addColorStop(1, 'rgba(8, 8, 8, 0.92)');
 
             ctx.beginPath();
             ctx.roundRect(cardX, cardY, cardW, cardH, 11);
             ctx.fillStyle = boxGrad;
             ctx.fill();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
             ctx.lineWidth = 0.75;
             ctx.stroke();
 
-            // Upper curved liquid dome gloss reflection (subtle so text is 100% crisp)
+            // Upper curved liquid dome gloss reflection (subtle on pure black)
             const domeGrad = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardH * 0.46);
-            domeGrad.addColorStop(0, 'rgba(225, 238, 255, 0.10)');
-            domeGrad.addColorStop(0.6, 'rgba(215, 232, 255, 0.03)');
+            domeGrad.addColorStop(0, 'rgba(255, 255, 255, 0.06)');
+            domeGrad.addColorStop(0.6, 'rgba(255, 255, 255, 0.015)');
             domeGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.beginPath();
             ctx.roundRect(cardX + 1.5, cardY + 1.5, cardW - 3, cardH * 0.44, [9, 9, 22, 22]);
@@ -1524,7 +1524,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             // Top curved liquid meniscus hairline specular highlight arc
             const topSpec = ctx.createLinearGradient(cardX + 12, cardY, cardX + cardW - 12, cardY);
             topSpec.addColorStop(0, 'rgba(255, 255, 255, 0)');
-            topSpec.addColorStop(0.5, 'rgba(255, 255, 255, 0.35)');
+            topSpec.addColorStop(0.5, 'rgba(255, 255, 255, 0.28)');
             topSpec.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.beginPath();
             ctx.moveTo(cardX + 12, cardY + 0.5);
@@ -1536,7 +1536,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             // Bottom internal caustic counter-reflection
             const botSpec = ctx.createLinearGradient(cardX + 20, cardY + cardH, cardX + cardW - 20, cardY + cardH);
             botSpec.addColorStop(0, 'rgba(255, 255, 255, 0)');
-            botSpec.addColorStop(0.5, 'rgba(215, 232, 255, 0.18)');
+            botSpec.addColorStop(0.5, 'rgba(255, 255, 255, 0.14)');
             botSpec.addColorStop(1, 'rgba(255, 255, 255, 0)');
             ctx.beginPath();
             ctx.moveTo(cardX + 20, cardY + cardH - 0.5);

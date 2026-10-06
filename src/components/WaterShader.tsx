@@ -106,26 +106,25 @@ const FRAGMENT_SHADER = `
 
     // Pure Pitch-Black (#000000) Monochrome Liquid & Deep Space Palette
     vec3 pitchBlack = vec3(0.0, 0.0, 0.0);
-    vec3 deepLiquid = vec3(0.016, 0.016, 0.016);
-    vec3 darkCrest  = vec3(0.042, 0.042, 0.042);
+    vec3 deepLiquid = vec3(0.004, 0.004, 0.004);
+    vec3 darkCrest  = vec3(0.012, 0.012, 0.012);
 
     float waveBlend = smoothstep(-0.75, 0.75, hC);
     vec3 color = mix(pitchBlack, deepLiquid, waveBlend);
-    color = mix(color, darkCrest, pow(diff1, 2.2) * 0.45 + diff2 * 0.15);
+    color = mix(color, darkCrest, pow(diff1, 2.4) * 0.35 + diff2 * 0.10);
 
-    // Layer in deep-space volumetric nebula mist & central stage depth glow
+    // Subtle deep-space volumetric nebula mist on pure black
     float nebula = cosmicNebula(p, t);
-    float centerDepthGlow = exp(- dot(p * vec2(0.65, 0.95), p * vec2(0.65, 0.95)) * 1.65);
-    color += vec3(0.032) * nebula * (0.45 + 0.55 * centerDepthGlow);
-    color += vec3(0.024) * centerDepthGlow;
+    float centerDepthGlow = exp(- dot(p * vec2(0.65, 0.95), p * vec2(0.65, 0.95)) * 1.85);
+    color += vec3(0.008) * nebula * (0.35 + 0.65 * centerDepthGlow);
 
-    // Subtle pure-monochrome specular sheen on liquid swells
-    color += vec3(0.065) * spec1;
-    color += vec3(0.030) * spec2;
-    color += vec3(0.022) * fresnel;
+    // Whisper-subtle monochrome specular sheen on black liquid swells
+    color += vec3(0.022) * spec1;
+    color += vec3(0.010) * spec2;
+    color += vec3(0.007) * fresnel;
 
-    // Deep vignette fades outer edges into pure #000000 abyssal black
-    float vignette = smoothstep(1.32, 0.18, length(p * vec2(0.72, 0.92)));
+    // Deep vignette locks outer edges into pure #000000 abyssal black
+    float vignette = smoothstep(1.28, 0.20, length(p * vec2(0.75, 0.95)));
     color *= vignette;
 
     // Add sub-bit dither for zero banding
