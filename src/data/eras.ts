@@ -446,7 +446,7 @@ export const ERAS: EraData[] = [
         word: 'THE CASCADE',
         line1: 'STYLESHEETS TORE PRESENTATION AWAY',
         line2: 'FROM SEMANTIC DOCUMENT STRUCTURE',
-        caption: 'SEPARATED DOM & CSS Z-INDEX PLANES',
+        caption: '3D CSS { } SHIELD & CASCADING SHEETS',
         sculptVariant: 0,
       },
       {

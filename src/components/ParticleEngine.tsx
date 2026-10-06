@@ -343,15 +343,111 @@ function generateSculptureCoordinates(
 
       case 'cascade': {
         if (baseMode === 0) {
-          // Variant 0: 3 Parallel Floating Z-Index Style Planes
-          const layer = i % 3;
-          const lx = (layer - 1) * 0.12;
-          const lz = (layer - 1) * 0.11;
-          const gx = ((i * 17) % 24) / 24 - 0.5;
-          const gy = (Math.floor(i / 24) % 18) / 18 - 0.5;
-          x = lx + gx * 0.34;
-          y = gy * 0.22;
-          z = lz + gx * 0.1;
+          // Variant 0 ("THE CASCADE"): 3D CSS Shield Emblem + { } Curly Braces + Cascading Style Sheets
+          const thick = (((i * 13) % 100) / 100 - 0.5) * 0.015;
+          const thickY = (((i * 19) % 100) / 100 - 0.5) * 0.015;
+          const depthZ = (((i * 29) % 100) / 100 - 0.5) * 0.032;
+
+          if (t < 0.30) {
+            // 1. Iconic 5-Sided CSS Shield Crest (Outer Shield + Inner Bevel Crest)
+            const shieldLayer = t < 0.17 ? 0 : 1;
+            const localT = shieldLayer === 0 ? t / 0.17 : (t - 0.17) / 0.13;
+            const scale = shieldLayer === 0 ? 1.0 : 0.84;
+            const verts: [number, number][] = [
+              [-0.175 * scale, -0.155 * scale],
+              [0.175 * scale, -0.155 * scale],
+              [0.142 * scale, 0.075 * scale],
+              [0.0, 0.178 * scale],
+              [-0.142 * scale, 0.075 * scale],
+            ];
+            const segFloat = localT * 5;
+            const segIdx = Math.min(4, Math.floor(segFloat));
+            const s = segFloat - segIdx;
+            const vA = verts[segIdx];
+            const vB = verts[(segIdx + 1) % 5];
+            x = vA[0] + (vB[0] - vA[0]) * s + thick;
+            y = vA[1] + (vB[1] - vA[1]) * s + thickY;
+            z = (shieldLayer === 0 ? 0.035 : -0.015) + depthZ;
+          } else if (t < 0.46) {
+            // 2. Left CSS Curly Brace '{' inside the Shield
+            const s = (t - 0.30) / 0.16;
+            if (s < 0.18) {
+              const u = s / 0.18;
+              x = -0.055 - u * 0.030 + thick * 0.6;
+              y = -0.095 + u * 0.016 + thickY * 0.6;
+            } else if (s < 0.42) {
+              const u = (s - 0.18) / 0.24;
+              x = -0.085 + thick * 0.6;
+              y = -0.079 + u * 0.046;
+            } else if (s < 0.58) {
+              const u = (s - 0.42) / 0.16;
+              const cusp = u < 0.5 ? u * 2 : (1 - u) * 2;
+              x = -0.085 - cusp * 0.026 + thick * 0.5;
+              y = -0.033 + u * 0.026 + thickY * 0.5;
+            } else if (s < 0.82) {
+              const u = (s - 0.58) / 0.24;
+              x = -0.085 + thick * 0.6;
+              y = -0.007 + u * 0.046;
+            } else {
+              const u = (s - 0.82) / 0.18;
+              x = -0.085 + u * 0.030 + thick * 0.6;
+              y = 0.039 + u * 0.016 + thickY * 0.6;
+            }
+            z = 0.045 + depthZ * 0.6;
+          } else if (t < 0.62) {
+            // 3. Right CSS Curly Brace '}' inside the Shield
+            const s = (t - 0.46) / 0.16;
+            if (s < 0.18) {
+              const u = s / 0.18;
+              x = 0.055 + u * 0.030 + thick * 0.6;
+              y = -0.095 + u * 0.016 + thickY * 0.6;
+            } else if (s < 0.42) {
+              const u = (s - 0.18) / 0.24;
+              x = 0.085 + thick * 0.6;
+              y = -0.079 + u * 0.046;
+            } else if (s < 0.58) {
+              const u = (s - 0.42) / 0.16;
+              const cusp = u < 0.5 ? u * 2 : (1 - u) * 2;
+              x = 0.085 + cusp * 0.026 + thick * 0.5;
+              y = -0.033 + u * 0.026 + thickY * 0.5;
+            } else if (s < 0.82) {
+              const u = (s - 0.58) / 0.24;
+              x = 0.085 + thick * 0.6;
+              y = -0.007 + u * 0.046;
+            } else {
+              const u = (s - 0.82) / 0.18;
+              x = 0.085 - u * 0.030 + thick * 0.6;
+              y = 0.039 + u * 0.016 + thickY * 0.6;
+            }
+            z = 0.045 + depthZ * 0.6;
+          } else if (t < 0.76) {
+            // 4. 3 Cascading CSS Property Bars inside '{ }'
+            const localT = (t - 0.62) / 0.14;
+            const barIdx = Math.min(2, Math.floor(localT * 3));
+            const s = (localT * 3) - barIdx;
+            const barW = barIdx === 1 ? 0.046 : 0.036;
+            x = -barW + s * barW * 2;
+            y = -0.056 + barIdx * 0.038 + thickY * 0.5;
+            z = 0.05 + depthZ * 0.5;
+          } else {
+            // 5. 3 Cascading Isometric Style Sheet Layers Flanking the CSS Shield
+            const localT = (t - 0.76) / 0.24;
+            const sheetIdx = Math.min(2, Math.floor(localT * 3));
+            const s = (localT * 3) - sheetIdx;
+            const side = sheetIdx % 2 === 0 ? -1 : 1;
+            const cx = side * (0.24 + sheetIdx * 0.025);
+            const cy = -0.05 + sheetIdx * 0.055;
+            const sw = 0.068;
+            const sh = 0.085;
+            const edgeFloat = s * 4;
+            const edge = Math.min(3, Math.floor(edgeFloat));
+            const u = edgeFloat - edge;
+            if (edge === 0) { x = cx - sw + u * sw * 2; y = cy - sh; }
+            else if (edge === 1) { x = cx + sw; y = cy - sh + u * sh * 2; }
+            else if (edge === 2) { x = cx + sw - u * sw * 2; y = cy + sh; }
+            else { x = cx - sw; y = cy + sh - u * sh * 2; }
+            z = -0.05 - sheetIdx * 0.045 + depthZ * 0.5;
+          }
         } else if (baseMode === 1) {
           // Variant 1: Flash MX 3D Vector Waveform & Audio Equalizer Tunnel
           const ribbon = i % 5;
@@ -1068,8 +1164,36 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             if (era.shapeType === 'wave3d' && baseVariant === 0) {
               const d = Math.sqrt(tx * tx + tz * tz);
               ty = Math.sin(d * 14.0 - time * 3.0) * 0.09 + 0.24;
-            } else if (era.shapeType === 'cascade' && i % 3 === 2) {
-              ty = Math.sin(tx * 12.0 + time * 3.6) * 0.10 + 0.24;
+            } else if (era.shapeType === 'cascade') {
+              if (baseVariant === 0) {
+                const relT = (i - TEXT_PARTICLES) / SCULPT_PARTICLES;
+                if (relT < 0.30) {
+                  // CSS Shield Crest: smooth 3D levitation & bevel wave
+                  ty += Math.sin(time * 2.6 + tx * 5.0) * 0.014;
+                  tz += Math.cos(time * 2.6 + ty * 6.0) * 0.022;
+                } else if (relT < 0.62) {
+                  // '{ }' Curly Braces: rhythmic horizontal breathing pulse
+                  const bracePulse = 1.0 + Math.sin(time * 3.4) * 0.09;
+                  tx *= bracePulse;
+                  ty += Math.sin(time * 2.6) * 0.014;
+                } else if (relT < 0.76) {
+                  // 3 Inner CSS Rule Bars: continuous downward waterfall cascade
+                  const localT = (relT - 0.62) / 0.14;
+                  const barIdx = Math.min(2, Math.floor(localT * 3));
+                  const flow = ((time * 0.65 + barIdx * 0.333) % 1.0) - 0.5;
+                  ty = 0.24 - 0.02 + flow * 0.115;
+                  tz += Math.cos(flow * Math.PI) * 0.035;
+                } else {
+                  // 3 Flanking Cascading Style Sheet Frames: sequential 3D cascade wave
+                  const localT = (relT - 0.76) / 0.24;
+                  const sheetIdx = Math.min(2, Math.floor(localT * 3));
+                  const wave = Math.sin(time * 3.5 - sheetIdx * 1.35);
+                  ty += wave * 0.034;
+                  tz += Math.cos(time * 3.5 - sheetIdx * 1.35) * 0.042;
+                }
+              } else {
+                ty += Math.sin(tx * 12.0 + time * 3.6) * 0.035;
+              }
             } else if (
               era.shapeType === 'table' &&
               baseVariant === 2 &&
