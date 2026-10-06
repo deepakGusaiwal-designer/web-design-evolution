@@ -214,24 +214,65 @@ function generateSculptureCoordinates(
           y = Math.sign(Math.sin(angle)) * Math.pow(Math.abs(Math.sin(angle)), 0.55) * radius * 0.85;
           z = 0.16 - depth * 0.34;
         } else {
-          // Variant 2: 4 Linked Hypertext Server Terminals in 3D Space
-          const node = i % 4;
-          const centers = [
-            [-0.20, -0.09, 0.06],
-            [0.20, -0.09, -0.06],
-            [-0.18, 0.10, -0.06],
-            [0.18, 0.10, 0.06],
-          ];
-          const [cx, cy, cz] = centers[node];
-          const localP = ((i * 19) % 100) / 100;
-          const edge = Math.floor(i / 4) % 4;
-          const w = 0.095;
-          const h = 0.062;
-          if (edge === 0) { x = cx - w + localP * w * 2; y = cy - h; }
-          else if (edge === 1) { x = cx - w + localP * w * 2; y = cy + h; }
-          else if (edge === 2) { x = cx - w; y = cy - h + localP * h * 2; }
-          else { x = cx + w; y = cy - h + localP * h * 2; }
-          z = cz;
+          // Variant 2 ("THE ANCHOR TAG"): Volumetric 3D </a> Tag Sculpture + Hypertext Underline
+          const thick = (((i * 13) % 100) / 100 - 0.5) * 0.022;
+          const thickY = (((i * 19) % 100) / 100 - 0.5) * 0.022;
+          const depthZ = (((i * 29) % 100) / 100 - 0.5) * 0.052;
+
+          if (t < 0.23) {
+            // 1. '<' Left Chevron Bracket (x: -0.34 to -0.19, y: -0.12 to +0.12)
+            const localT = t / 0.23;
+            if (localT < 0.5) {
+              const s = localT * 2; // top-right (-0.19, -0.12) -> tip (-0.34, 0)
+              x = -0.19 - s * 0.15 + thick * 0.5;
+              y = -0.12 + s * 0.12 + thickY;
+            } else {
+              const s = (localT - 0.5) * 2; // tip (-0.34, 0) -> bottom-right (-0.19, +0.12)
+              x = -0.34 + s * 0.15 + thick * 0.5;
+              y = s * 0.12 + thickY;
+            }
+            z = depthZ;
+          } else if (t < 0.43) {
+            // 2. '/' Forward Slash (bottom-left -0.14,+0.14 to top-right -0.02,-0.14)
+            const s = (t - 0.23) / 0.20;
+            x = -0.14 + s * 0.12 + thick * 0.85;
+            y = 0.14 - s * 0.28 + thickY * 0.4;
+            z = depthZ;
+          } else if (t < 0.72) {
+            // 3. 'a' Lowercase Glyph (oval bowl + right vertical stem, x: 0.02 to 0.145)
+            const localT = (t - 0.43) / 0.29;
+            if (localT < 0.72) {
+              const angle = (localT / 0.72) * Math.PI * 2;
+              const rx = 0.058 + thick * 0.45;
+              const ry = 0.082 + thickY * 0.45;
+              x = 0.078 + Math.cos(angle) * rx;
+              y = 0.022 + Math.sin(angle) * ry;
+            } else {
+              const stemT = (localT - 0.72) / 0.28;
+              x = 0.138 + thick * 0.75;
+              y = -0.062 + stemT * 0.175;
+            }
+            z = depthZ;
+          } else if (t < 0.92) {
+            // 4. '>' Right Chevron Bracket (x: 0.20 to 0.35, y: -0.12 to +0.12)
+            const localT = (t - 0.72) / 0.20;
+            if (localT < 0.5) {
+              const s = localT * 2; // top-left (0.20, -0.12) -> tip (0.35, 0)
+              x = 0.20 + s * 0.15 + thick * 0.5;
+              y = -0.12 + s * 0.12 + thickY;
+            } else {
+              const s = (localT - 0.5) * 2; // tip (0.35, 0) -> bottom-left (0.20, +0.12)
+              x = 0.35 - s * 0.15 + thick * 0.5;
+              y = s * 0.12 + thickY;
+            }
+            z = depthZ;
+          } else {
+            // 5. Classic Hypertext Underline Bar beneath </a>
+            const s = (t - 0.92) / 0.08;
+            x = -0.34 + s * 0.69;
+            y = 0.168 + thickY * 0.35;
+            z = depthZ * 0.5;
+          }
         }
         break;
       }

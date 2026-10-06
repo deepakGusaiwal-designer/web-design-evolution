@@ -218,7 +218,7 @@ export const ERAS: EraData[] = [
         word: 'THE ANCHOR TAG',
         line1: 'ONE UNDERLINED HYPERTEXT REFERENCE',
         line2: 'BRIDGED ACADEMIC SERVERS WORLDWIDE',
-        caption: 'LINKED TERMINAL NODE CONSTELLATION',
+        caption: '3D </A> HYPERTEXT ANCHOR SCULPTURE',
         sculptVariant: 2,
       },
     ],
