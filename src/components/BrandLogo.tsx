@@ -80,15 +80,15 @@ export const BrandLogo: React.FC<BrandLogoProps> = React.memo(({ onClick }) => {
       {/* Black & White Brand Wordmark Lockup */}
       <div className="flex flex-col leading-none">
         <div className="flex items-center gap-2">
-          <span className="font-dm font-extrabold text-xs sm:text-[13px] tracking-[0.22em] text-white uppercase whitespace-nowrap group-hover:tracking-[0.24em] transition-all">
-            WEB EVOLUTION
+          <span className="font-dm font-extrabold text-xs sm:text-[13px] tracking-[0.20em] text-white uppercase whitespace-nowrap group-hover:tracking-[0.22em] transition-all">
+            HYPERTEXT ODYSSEY
           </span>
           <span className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-white text-black font-mono font-bold text-[8px] tracking-widest uppercase">
             1989—∞
           </span>
         </div>
-        <span className="font-mono text-[8px] tracking-[0.2em] text-neutral-400 uppercase mt-0.5 whitespace-nowrap group-hover:text-neutral-200 transition-colors">
-          PARTICLE STORY ARCHIVE
+        <span className="font-mono text-[8px] tracking-[0.16em] text-neutral-300 uppercase mt-0.5 whitespace-nowrap group-hover:text-white transition-colors">
+          FROM 1989 CERN TO INFINITE LIGHT
         </span>
       </div>
     </button>

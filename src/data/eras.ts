@@ -70,10 +70,10 @@ export const ERAS: EraData[] = [
     chapter: '00',
     year: '1989 — ∞',
     shapeType: 'sphere',
-    title: 'The Web Evolved',
+    title: 'Hypertext Odyssey',
     quote: '“The web stopped being a document. It became an experience.”',
     summary:
-      'Scroll through 37 years of web history told entirely in living monochrome particles.',
+      'From 1989 CERN phosphor to infinite light — 37 years of web architecture told in living monochrome particles.',
     phases: [
       {
         tag: 'CHAPTER 00.A · THE SPARK',
