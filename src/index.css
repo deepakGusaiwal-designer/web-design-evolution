@@ -115,43 +115,30 @@
 }
 
 /* Luminous Shining Top Timeline Progress Bar */
-@keyframes progressShineSweep {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
 .progress-shine-bar {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.78) 0%,
-    #ffffff 35%,
-    #ffffff 50%,
-    rgba(255, 255, 255, 0.85) 65%,
-    #ffffff 100%
-  );
-  background-size: 200% 100%;
-  animation: progressShineSweep 2.8s linear infinite;
+  position: relative;
+  background-color: #ffffff;
   box-shadow:
-    0 0 8px #ffffff,
-    0 0 18px rgba(255, 255, 255, 0.95),
-    0 2px 24px rgba(255, 255, 255, 0.75),
-    0 4px 36px rgba(255, 255, 255, 0.45);
+    0 0 6px #ffffff,
+    0 0 14px rgba(255, 255, 255, 0.9),
+    0 1px 22px rgba(255, 255, 255, 0.6);
 }
 
-.progress-shine-tip {
-  background: radial-gradient(
-    circle,
-    #ffffff 0%,
-    rgba(255, 255, 255, 0.95) 40%,
-    rgba(255, 255, 255, 0) 75%
-  );
+.progress-shine-bar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 2px;
+  border-radius: 9999px;
+  background-color: #ffffff;
   box-shadow:
-    0 0 12px 3px #ffffff,
-    0 0 24px 6px rgba(255, 255, 255, 0.95),
-    0 0 42px 10px rgba(255, 255, 255, 0.65);
+    0 0 8px 2px #ffffff,
+    0 0 18px 4px rgba(255, 255, 255, 0.95),
+    0 0 30px 6px rgba(255, 255, 255, 0.6);
 }
+
+
 

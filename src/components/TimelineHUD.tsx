@@ -27,7 +27,6 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
   }) => {
     const percentRef = useRef<HTMLSpanElement>(null);
     const progressBarRef = useRef<HTMLDivElement>(null);
-    const progressTipRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
       let lastPct = -1;
@@ -35,11 +34,8 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
       const onTick = () => {
         const prog = motionRef.current.progress;
         if (progressBarRef.current) {
-          progressBarRef.current.style.transform = `scaleX(${prog})`;
-        }
-        if (progressTipRef.current) {
-          progressTipRef.current.style.left = `${prog * 100}%`;
-          progressTipRef.current.style.opacity = prog > 0.002 ? '1' : '0';
+          progressBarRef.current.style.width = `${prog * 100}%`;
+          progressBarRef.current.style.opacity = prog > 0.001 ? '1' : '0';
         }
         const pct = Math.round(prog * 100);
         if (pct !== lastPct && percentRef.current) {
@@ -57,21 +53,11 @@ export const TimelineHUD: React.FC<TimelineHUDProps> = React.memo(
     return (
       <header className="fixed top-0 left-0 right-0 z-30 glass-timeline">
         {/* TOP-OF-APP LUMINOUS SHINING TIMELINE PROGRESS BAR */}
-        <div className="
-          absolute top-0 left-0 right-0 h-[3px] bg-white/[0.08] z-50 pointer-events-none
-        ">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/10 z-50 pointer-events-none">
           <div
             ref={progressBarRef}
-            className="h-full w-full progress-shine-bar origin-left will-change-transform"
-            style={{ transform: 'scaleX(0)' }}
-          />
-          <div
-            ref={progressTipRef}
-            className="
-              absolute top-1/2 -translate-y-1/2 -translate-x-1/2
-              w-6 h-[4px] rounded-full progress-shine-tip
-            "
-            style={{ left: '0%', opacity: 0 }}
+            className="h-full progress-shine-bar rounded-r-full"
+            style={{ width: '0%', opacity: 0 }}
           />
         </div>
 
