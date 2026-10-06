@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
+import { Analytics } from '@vercel/analytics/react';
 import { ERAS } from './data/eras';
 import WaterShader, { type ScrollMotionState } from './components/WaterShader';
 import ParticleEngine from './components/ParticleEngine';
@@ -261,6 +262,9 @@ export const App: React.FC = () => {
         onSelectEra={selectEra}
         pureParticleMode={pureParticleMode}
       />
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 };
