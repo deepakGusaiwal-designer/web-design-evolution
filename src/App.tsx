@@ -168,6 +168,12 @@ export const App: React.FC = () => {
 
     const updateLenis = (time: number) => {
       lenis.raf(time * 1000);
+      if (performance.now() < programmaticLockUntilRef.current || !lenis.isScrolling) {
+        motionRef.current.velocity *= 0.85;
+        if (Math.abs(motionRef.current.velocity) < 0.005) {
+          motionRef.current.velocity = 0;
+        }
+      }
     };
 
     gsap.ticker.add(updateLenis);
