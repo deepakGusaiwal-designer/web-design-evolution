@@ -113,6 +113,977 @@ function sampleMultiLineParticleStory(
 }
 
 /**
+ * Generates bespoke, content-matched 3D particle sculptures for all 27 Key Milestones (tierMode === 2)
+ */
+function generateMilestoneSculpture(
+  shape: ParticleShapeType,
+  baseMode: number,
+  i: number,
+  t: number
+): [number, number, number] {
+  const ribbon = ((i % 3) - 1) * 0.0042;
+  const zLayer = (i % 2 === 0 ? 1 : -1) * 0.014;
+  let x = 0;
+  let y = 0;
+  let z = 0;
+
+  switch (shape) {
+    case 'sphere': {
+      if (baseMode === 0) {
+        // 1945 Vannevar Bush's Memex ("THE MEMEX"): Dual Microfilm Projection Screens + Associative Memory Trail Arch
+        if (t < 0.56) {
+          const isRight = t >= 0.28;
+          const localT = (t - (isRight ? 0.28 : 0)) / 0.28;
+          const cx = isRight ? 0.135 : -0.135;
+          const sw = 0.095;
+          const sh = 0.11;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = cx - sw + u * sw * 2; y = -sh; }
+          else if (edge === 1) { x = cx - sw + u * sw * 2; y = sh; }
+          else if (edge === 2) { x = cx - sw; y = -sh + u * sh * 2; }
+          else { x = cx + sw; y = -sh + u * sh * 2; }
+          z = (y + sh) * 0.18 + zLayer;
+        } else if (t < 0.80) {
+          // Overhead Associative Trail Arch connecting left and right microfilm screens
+          const u = (t - 0.56) / 0.24;
+          const archIdx = i % 2;
+          x = (u - 0.5) * 0.27;
+          y = -0.11 - Math.sin(u * Math.PI) * (0.095 + archIdx * 0.025);
+          z = Math.sin(u * Math.PI) * 0.06;
+        } else {
+          // Memex Desk Console & Index Levers
+          const u = (t - 0.80) / 0.20;
+          x = (u - 0.5) * 0.52;
+          y = 0.145 + ribbon;
+          z = 0.03 + zLayer;
+        }
+      } else if (baseMode === 1) {
+        // 1965 Ted Nelson ("XANADU LINKS"): Parallel Documents + Bidirectional Crisscrossing Transclusion Bridges
+        if (t < 0.48) {
+          const isRight = t >= 0.24;
+          const localT = (t - (isRight ? 0.24 : 0)) / 0.24;
+          const cx = isRight ? 0.20 : -0.20;
+          const pw = 0.065;
+          const ph = 0.155;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = cx - pw + u * pw * 2; y = -ph; }
+          else if (edge === 1) { x = cx - pw + u * pw * 2; y = ph; }
+          else if (edge === 2) { x = cx - pw; y = -ph + u * ph * 2; }
+          else { x = cx + pw; y = -ph + u * ph * 2; }
+          z = (isRight ? -0.02 : 0.02) + zLayer;
+        } else {
+          // 5 Bidirectional Xanadu Link Bridges crossing between documents
+          const localT = (t - 0.48) / 0.52;
+          const bridgeIdx = Math.min(4, Math.floor(localT * 5));
+          const u = localT * 5 - bridgeIdx;
+          const yStart = -0.11 + bridgeIdx * 0.055;
+          const yEnd = 0.11 - bridgeIdx * 0.055;
+          x = -0.135 + u * 0.27;
+          y = yStart + (yEnd - yStart) * u + ribbon;
+          z = Math.sin(u * Math.PI) * 0.065 * (bridgeIdx % 2 === 0 ? 1 : -1);
+        }
+      } else {
+        // 1969 ARPANET ("LO AND BEHOLD"): UCLA <-> SRI IMP Nodes + Monumental "LO" Packet Letters
+        if (t < 0.32) {
+          // Left (UCLA) & Right (SRI) IMP Network Nodes
+          const isRight = t >= 0.16;
+          const u = (t - (isRight ? 0.16 : 0)) / 0.16;
+          const ang = u * Math.PI * 2;
+          const cx = isRight ? 0.24 : -0.24;
+          x = cx + Math.cos(ang) * 0.052;
+          y = Math.sin(ang) * 0.052;
+          z = zLayer;
+        } else if (t < 0.54) {
+          // Center Letter 'L'
+          const u = (t - 0.32) / 0.22;
+          if (u < 0.62) {
+            x = -0.095 + ribbon * 1.2;
+            y = -0.085 + (u / 0.62) * 0.17;
+          } else {
+            x = -0.095 + ((u - 0.62) / 0.38) * 0.085;
+            y = 0.085 + ribbon * 1.2;
+          }
+          z = 0.025 + zLayer;
+        } else if (t < 0.80) {
+          // Center Letter 'O'
+          const u = (t - 0.54) / 0.26;
+          const ang = u * Math.PI * 2;
+          x = 0.055 + Math.cos(ang) * (0.055 + ribbon);
+          y = Math.sin(ang) * (0.085 + ribbon);
+          z = 0.025 + zLayer;
+        } else {
+          // Top & Bottom ARPANET 50kbps Packet Transmission Lines
+          const u = (t - 0.80) / 0.20;
+          const isTop = u < 0.5;
+          const lu = isTop ? u * 2 : (u - 0.5) * 2;
+          x = -0.24 + lu * 0.48;
+          y = isTop ? -0.135 : 0.135;
+          z = Math.sin(lu * Math.PI * 4) * 0.02;
+        }
+      }
+      break;
+    }
+
+    case 'terminal': {
+      if (baseMode === 0) {
+        // 1990 The NeXTcube Server ("NEXT CUBE"): 1-Foot Isometric 3D Black Magnesium Cube + Optical Drive Slot
+        const s = 0.155;
+        if (t < 0.72) {
+          const localT = t / 0.72;
+          const edgeIdx = Math.min(11, Math.floor(localT * 12));
+          const u = (localT * 12 - edgeIdx) * 2 - 1;
+          const edges: [number, number, number, number, number, number][] = [
+            [-1, -1, -1, 1, -1, -1], [-1, 1, -1, 1, 1, -1], [-1, -1, 1, 1, -1, 1], [-1, 1, 1, 1, 1, 1],
+            [-1, -1, -1, -1, 1, -1], [1, -1, -1, 1, 1, -1], [-1, -1, 1, -1, 1, 1], [1, -1, 1, 1, 1, 1],
+            [-1, -1, -1, -1, -1, 1], [1, -1, -1, 1, -1, 1], [-1, 1, -1, -1, 1, 1], [1, 1, -1, 1, 1, 1],
+          ];
+          const e = edges[edgeIdx];
+          const alpha = (u + 1) * 0.5;
+          x = (e[0] + (e[3] - e[0]) * alpha) * s + ribbon;
+          y = (e[1] + (e[4] - e[1]) * alpha) * s;
+          z = (e[2] + (e[5] - e[2]) * alpha) * s;
+        } else {
+          // Front Magneto-Optical Drive Slot & "DO NOT POWER DOWN" Sticker Badge
+          const localT = (t - 0.72) / 0.28;
+          if (localT < 0.55) {
+            const u = localT / 0.55;
+            x = (u - 0.5) * 0.22;
+            y = -0.055 + ribbon;
+            z = s;
+          } else {
+            const u = (localT - 0.55) / 0.45;
+            const ang = u * Math.PI * 2;
+            x = 0.065 + Math.cos(ang) * 0.032;
+            y = 0.055 + Math.sin(ang) * 0.022;
+            z = s;
+          }
+        }
+      } else if (baseMode === 1) {
+        // 1991 info.cern.ch Goes Live ("INFO.CERN.CH"): Top CERN WWW Globe + 4 Global Server Tree Nodes
+        if (t < 0.38) {
+          const u = t / 0.38;
+          const phi = Math.acos(1 - 2 * u);
+          const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+          const r = 0.075;
+          x = r * Math.sin(phi) * Math.cos(theta);
+          y = -0.105 + r * Math.sin(phi) * Math.sin(theta);
+          z = r * Math.cos(phi);
+        } else if (t < 0.70) {
+          // 4 Root Directory Branches from CERN Globe to 4 Server Nodes
+          const localT = (t - 0.38) / 0.32;
+          const bIdx = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - bIdx;
+          const targetX = -0.24 + bIdx * 0.16;
+          x = targetX * u + ribbon;
+          y = -0.03 + u * 0.155;
+          z = (bIdx - 1.5) * 0.025 * u;
+        } else {
+          // 4 Bottom Terminal Server Boxes
+          const localT = (t - 0.70) / 0.30;
+          const nIdx = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - nIdx;
+          const ang = u * Math.PI * 2;
+          const cx = -0.24 + nIdx * 0.16;
+          x = cx + Math.cos(ang) * 0.038;
+          y = 0.145 + Math.sin(ang) * 0.028;
+          z = (nIdx - 1.5) * 0.025;
+        }
+      } else {
+        // 1993 NCSA Mosaic 1.0 ("INLINE <IMG>"): Classic <IMG> Picture Frame + Sun + Twin Mountain Peaks
+        if (t < 0.42) {
+          // Outer Picture Frame Border
+          const localT = t / 0.42;
+          const fw = 0.23;
+          const fh = 0.155;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = -fw + u * fw * 2; y = -fh + ribbon; }
+          else if (edge === 1) { x = -fw + u * fw * 2; y = fh + ribbon; }
+          else if (edge === 2) { x = -fw + ribbon; y = -fh + u * fh * 2; }
+          else { x = fw + ribbon; y = -fh + u * fh * 2; }
+          z = zLayer;
+        } else if (t < 0.62) {
+          // Upper-Left Sun Circle inside the <IMG> Frame
+          const u = (t - 0.42) / 0.20;
+          const ang = u * Math.PI * 2;
+          const sr = 0.038 + ribbon * 0.8;
+          x = -0.115 + Math.cos(ang) * sr;
+          y = -0.065 + Math.sin(ang) * sr;
+          z = 0.022 + zLayer * 0.5;
+        } else {
+          // Twin Mountain Landscape Peaks inside the <IMG> Frame
+          const u = (t - 0.62) / 0.38;
+          if (u < 0.25) {
+            const s = u / 0.25;
+            x = -0.19 + s * 0.12;
+            y = 0.115 - s * 0.11 + ribbon;
+          } else if (u < 0.45) {
+            const s = (u - 0.25) / 0.20;
+            x = -0.07 + s * 0.055;
+            y = 0.005 + s * 0.055 + ribbon;
+          } else if (u < 0.72) {
+            const s = (u - 0.45) / 0.27;
+            x = -0.015 + s * 0.095;
+            y = 0.060 - s * 0.135 + ribbon;
+          } else {
+            const s = (u - 0.72) / 0.28;
+            x = 0.080 + s * 0.115;
+            y = -0.075 + s * 0.190 + ribbon;
+          }
+          z = 0.022 + zLayer * 0.5;
+        }
+      }
+      break;
+    }
+
+    case 'table': {
+      if (baseMode === 0) {
+        // 1995 Netscape Frames & JS ("FRAMESETS"): 3-Pane Split <FRAMESET> Window + Scrollbars
+        if (t < 0.44) {
+          const localT = t / 0.44;
+          const fw = 0.27;
+          const fh = 0.165;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = -fw + u * fw * 2; y = -fh + ribbon; }
+          else if (edge === 1) { x = -fw + u * fw * 2; y = fh + ribbon; }
+          else if (edge === 2) { x = -fw + ribbon; y = -fh + u * fh * 2; }
+          else { x = fw + ribbon; y = -fh + u * fh * 2; }
+          z = zLayer;
+        } else if (t < 0.64) {
+          // Top Frame Divider Bar
+          const u = (t - 0.44) / 0.20;
+          x = -0.27 + u * 0.54;
+          y = -0.085 + ribbon;
+          z = 0.015 + zLayer;
+        } else if (t < 0.82) {
+          // Left Sidebar Frame Vertical Splitter + Scrollbar Thumb
+          const u = (t - 0.64) / 0.18;
+          x = -0.095 + ribbon;
+          y = -0.085 + u * 0.25;
+          z = 0.015 + zLayer;
+        } else {
+          // Inner Content Frame JS Braces / Lines
+          const u = (t - 0.82) / 0.18;
+          const row = i % 3;
+          x = -0.04 + u * 0.25;
+          y = -0.02 + row * 0.065 + ribbon;
+          z = 0.02 + zLayer;
+        }
+      } else if (baseMode === 1) {
+        // 1996 David Siegel ("SLICED PSD"): 3x3 Exploded Sliced Image Grid + Guillotine Cut Guides
+        if (t < 0.72) {
+          const localT = t / 0.72;
+          const cellIdx = Math.min(8, Math.floor(localT * 9));
+          const u = localT * 9 - cellIdx;
+          const col = cellIdx % 3;
+          const row = Math.floor(cellIdx / 3);
+          const cx = (col - 1) * 0.165;
+          const cy = (row - 1) * 0.108;
+          const cw = 0.058;
+          const ch = 0.036;
+          const edge = Math.min(3, Math.floor(u * 4));
+          const eu = u * 4 - edge;
+          if (edge === 0) { x = cx - cw + eu * cw * 2; y = cy - ch; }
+          else if (edge === 1) { x = cx - cw + eu * cw * 2; y = cy + ch; }
+          else if (edge === 2) { x = cx - cw; y = cy - ch + eu * ch * 2; }
+          else { x = cx + cw; y = cy - ch + eu * ch * 2; }
+          z = (( cellIdx % 2 === 0 ) ? 0.018 : -0.018) + zLayer * 0.5;
+        } else {
+          // 4 Guillotine Slice Guide Lines (2 Horizontal + 2 Vertical)
+          const localT = (t - 0.72) / 0.28;
+          const lineIdx = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - lineIdx;
+          if (lineIdx < 2) {
+            x = -0.28 + u * 0.56;
+            y = lineIdx === 0 ? -0.054 : 0.054;
+          } else {
+            x = lineIdx === 2 ? -0.0825 : 0.0825;
+            y = -0.175 + u * 0.35;
+          }
+          z = 0.03;
+        }
+      } else {
+        // 1997 GeoCities ("GUESTBOOKS"): 3D Open Guestbook Pages + Digital Quill Pen
+        if (t < 0.62) {
+          // Left & Right Angled Open Book Pages
+          const isRight = t >= 0.31;
+          const localT = (t - (isRight ? 0.31 : 0)) / 0.31;
+          const sign = isRight ? 1 : -1;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          const pw = 0.21;
+          const ph = 0.145;
+          let lx = 0;
+          let ly = 0;
+          if (edge === 0) { lx = u * pw; ly = -ph; }
+          else if (edge === 1) { lx = u * pw; ly = ph; }
+          else if (edge === 2) { lx = 0; ly = -ph + u * ph * 2; }
+          else { lx = pw; ly = -ph + u * ph * 2; }
+          x = sign * lx;
+          y = ly - Math.sin((lx / pw) * Math.PI) * 0.018;
+          z = Math.abs(lx) * 0.18 - 0.02;
+        } else if (t < 0.84) {
+          // Signature Ruled Lines on Left & Right Pages
+          const localT = (t - 0.62) / 0.22;
+          const lineIdx = Math.min(5, Math.floor(localT * 6));
+          const u = localT * 6 - lineIdx;
+          const sign = lineIdx < 3 ? -1 : 1;
+          const row = lineIdx % 3;
+          x = sign * (0.035 + u * 0.145);
+          y = -0.075 + row * 0.068;
+          z = Math.abs(x) * 0.18;
+        } else {
+          // Diagonal Signing Stylus / Quill Pen on Right Page
+          const u = (t - 0.84) / 0.16;
+          x = 0.08 + u * 0.13;
+          y = 0.065 - u * 0.19 + ribbon;
+          z = 0.045 + u * 0.04;
+        }
+      }
+      break;
+    }
+
+    case 'cascade': {
+      if (baseMode === 0) {
+        // 2001 2Advanced Studios ("SKIP INTRO"): Sci-Fi Preloader HUD Ring + Fast-Forward ">>|" Icon
+        if (t < 0.46) {
+          // Concentric Segmented Sci-Fi HUD Rings
+          const u = t / 0.46;
+          const isOuter = u < 0.55;
+          const ang = (isOuter ? u / 0.55 : (u - 0.55) / 0.45) * Math.PI * 2;
+          const r = isOuter ? 0.195 : 0.155;
+          x = Math.cos(ang) * (r + ribbon);
+          y = Math.sin(ang) * (r + ribbon);
+          z = (isOuter ? -0.015 : 0.015) + zLayer * 0.5;
+        } else if (t < 0.86) {
+          // Twin Fast-Forward Triangles ">>"
+          const localT = (t - 0.46) / 0.40;
+          const triIdx = localT < 0.5 ? 0 : 1;
+          const u = triIdx === 0 ? localT * 2 : (localT - 0.5) * 2;
+          const ox = triIdx === 0 ? -0.085 : 0.005;
+          if (u < 0.34) {
+            const s = u / 0.34;
+            x = ox;
+            y = -0.065 + s * 0.13;
+          } else if (u < 0.67) {
+            const s = (u - 0.34) / 0.33;
+            x = ox + s * 0.075;
+            y = -0.065 + s * 0.065;
+          } else {
+            const s = (u - 0.67) / 0.33;
+            x = ox + 0.075 - s * 0.075;
+            y = s * 0.065;
+          }
+          z = 0.028 + zLayer * 0.5;
+        } else {
+          // Vertical Stop Bar "|" on the right of ">>|"
+          const u = (t - 0.86) / 0.14;
+          x = 0.102 + ribbon * 1.4;
+          y = -0.068 + u * 0.136;
+          z = 0.028 + zLayer * 0.5;
+        }
+      } else if (baseMode === 1) {
+        // 2003 CSS Zen Garden ("ZEN GARDEN"): 3D 6-Petal Blooming Lotus + Raked Sand Ripple Rings
+        if (t < 0.64) {
+          const u = t / 0.64;
+          const ang = u * Math.PI * 2;
+          const petalR = 0.055 + Math.abs(Math.cos(ang * 3)) * 0.115;
+          x = Math.cos(ang) * petalR;
+          y = -0.02 + Math.sin(ang) * petalR * 0.72;
+          z = Math.abs(Math.cos(ang * 3)) * 0.045 + zLayer * 0.5;
+        } else {
+          // 2 Concentric Raked Zen Sand Rings below the Lotus
+          const localT = (t - 0.64) / 0.36;
+          const ringIdx = localT < 0.5 ? 0 : 1;
+          const u = ringIdx === 0 ? localT * 2 : (localT - 0.5) * 2;
+          const ang = u * Math.PI * 2;
+          const rx = ringIdx === 0 ? 0.21 : 0.28;
+          const rz = ringIdx === 0 ? 0.12 : 0.16;
+          x = Math.cos(ang) * rx;
+          y = 0.125 + ringIdx * 0.025;
+          z = Math.sin(ang) * rz;
+        }
+      } else {
+        // 2005 Gmail & Google Maps ("LIVE CANVAS"): 3D Teardrop Map Pin + Draggable Tile Grid
+        if (t < 0.42) {
+          // Map Pin Outer Teardrop Silhouette
+          const u = t / 0.42;
+          if (u < 0.62) {
+            // Upper circular dome of pin (-210 deg to +30 deg)
+            const s = u / 0.62;
+            const ang = (-Math.PI * 1.15) + s * (Math.PI * 1.30);
+            const pr = 0.082 + ribbon;
+            x = Math.cos(ang) * pr;
+            y = -0.085 + Math.sin(ang) * pr;
+          } else if (u < 0.81) {
+            // Right cone down to pin tip
+            const s = (u - 0.62) / 0.19;
+            x = 0.073 * (1 - s) + ribbon;
+            y = -0.048 + s * 0.125;
+          } else {
+            // Left cone up from pin tip
+            const s = (u - 0.81) / 0.19;
+            x = -0.073 * s + ribbon;
+            y = 0.077 - s * 0.125;
+          }
+          z = 0.025 + zLayer * 0.5;
+        } else if (t < 0.58) {
+          // Map Pin Inner Circle Hole
+          const u = (t - 0.42) / 0.16;
+          const ang = u * Math.PI * 2;
+          x = Math.cos(ang) * (0.034 + ribbon);
+          y = -0.085 + Math.sin(ang) * (0.034 + ribbon);
+          z = 0.03 + zLayer * 0.5;
+        } else {
+          // Perspective Draggable Map Tile Grid below Pin
+          const localT = (t - 0.58) / 0.42;
+          const lineIdx = Math.min(7, Math.floor(localT * 8));
+          const u = localT * 8 - lineIdx;
+          if (lineIdx < 4) {
+            const gz = -0.12 + (lineIdx / 3) * 0.24;
+            x = (u - 0.5) * 0.46;
+            y = 0.125 + gz * 0.22;
+            z = gz;
+          } else {
+            const gx = -0.23 + ((lineIdx - 4) / 3) * 0.46;
+            const gz = (u - 0.5) * 0.24;
+            x = gx;
+            y = 0.125 + gz * 0.22;
+            z = gz;
+          }
+        }
+      }
+      break;
+    }
+
+    case 'responsive': {
+      if (baseMode === 0) {
+        // 2007 iPhone & Mobile Safari ("MOBILE SAFARI"): iPhone Chassis + Home Button + Safari Compass Rose
+        if (t < 0.38) {
+          const u = t / 0.38;
+          const ang = u * Math.PI * 2;
+          const pw = 0.145;
+          const ph = 0.215;
+          x = Math.sign(Math.cos(ang)) * Math.pow(Math.abs(Math.cos(ang)), 0.28) * pw;
+          y = Math.sign(Math.sin(ang)) * Math.pow(Math.abs(Math.sin(ang)), 0.28) * ph;
+          z = zLayer;
+        } else if (t < 0.68) {
+          // Safari Compass Outer Dial Circle
+          const u = (t - 0.38) / 0.30;
+          const ang = u * Math.PI * 2;
+          const cr = 0.082 + ribbon;
+          x = Math.cos(ang) * cr;
+          y = -0.02 + Math.sin(ang) * cr;
+          z = 0.022 + zLayer * 0.5;
+        } else if (t < 0.90) {
+          // Tilted Compass Diamond Needle (4 Edges)
+          const localT = (t - 0.68) / 0.22;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          const pts: [number, number][] = [
+            [0.048, -0.068],
+            [0.015, -0.005],
+            [-0.048, 0.028],
+            [-0.015, -0.035],
+          ];
+          const p1 = pts[edge];
+          const p2 = pts[(edge + 1) % 4];
+          x = p1[0] + (p2[0] - p1[0]) * u + ribbon;
+          y = p1[1] + (p2[1] - p1[1]) * u;
+          z = 0.03;
+        } else {
+          // Iconic Bottom Circular Home Button
+          const u = (t - 0.90) / 0.10;
+          const ang = u * Math.PI * 2;
+          x = Math.cos(ang) * 0.022;
+          y = 0.168 + Math.sin(ang) * 0.022;
+          z = 0.022;
+        }
+      } else if (baseMode === 1) {
+        // 2010 Responsive Web Design ("FLUID MEDIA"): Elastic Viewport + Left/Right "<-->" Resize Arrows
+        if (t < 0.44) {
+          const localT = t / 0.44;
+          const fw = 0.175;
+          const fh = 0.145;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = -fw + u * fw * 2; y = -fh + ribbon; }
+          else if (edge === 1) { x = -fw + u * fw * 2; y = fh + ribbon; }
+          else if (edge === 2) { x = -fw + ribbon; y = -fh + u * fh * 2; }
+          else { x = fw + ribbon; y = -fh + u * fh * 2; }
+          z = zLayer;
+        } else if (t < 0.76) {
+          // Left '<' and Right '>' Outward Resize Arrows
+          const localT = (t - 0.44) / 0.32;
+          const side = localT < 0.5 ? -1 : 1;
+          const u = localT < 0.5 ? localT * 2 : (localT - 0.5) * 2;
+          if (u < 0.5) {
+            const s = u * 2;
+            x = side * (0.28 - s * 0.055);
+            y = -s * 0.055 + ribbon;
+          } else {
+            const s = (u - 0.5) * 2;
+            x = side * (0.28 - s * 0.055);
+            y = s * 0.055 + ribbon;
+          }
+          z = 0.025;
+        } else {
+          // 2 Inner Fluid Wave Media Bars
+          const localT = (t - 0.76) / 0.24;
+          const waveIdx = localT < 0.5 ? 0 : 1;
+          const u = waveIdx === 0 ? localT * 2 : (localT - 0.5) * 2;
+          x = (u - 0.5) * 0.28;
+          y = (waveIdx === 0 ? -0.045 : 0.045) + Math.sin(u * Math.PI * 2) * 0.032;
+          z = 0.02;
+        }
+      } else {
+        // 2011 Twitter Bootstrap 1.0 ("MOBILE FIRST"): Concentric Mobile -> Tablet -> Desktop Breakpoint Frames
+        const tier = i % 3;
+        const dims = [
+          { w: 0.085, h: 0.145, z: 0.055 },  // Mobile Core (Front)
+          { w: 0.175, h: 0.165, z: 0.0 },    // Tablet Mid
+          { w: 0.275, h: 0.185, z: -0.055 }, // Desktop 12-Col (Back)
+        ];
+        const d = dims[tier];
+        const edge = Math.floor(i / 3) % 4;
+        const u = ((i * 29) % 100) / 100;
+        if (edge === 0) { x = -d.w + u * d.w * 2; y = -d.h + ribbon; }
+        else if (edge === 1) { x = -d.w + u * d.w * 2; y = d.h + ribbon; }
+        else if (edge === 2) { x = -d.w + ribbon; y = -d.h + u * d.h * 2; }
+        else { x = d.w + ribbon; y = -d.h + u * d.h * 2; }
+        z = d.z;
+      }
+      break;
+    }
+
+    case 'flat': {
+      if (baseMode === 0) {
+        // 2013 Apple iOS 7 Reset ("FROSTED BLUR"): Translucent Control Center Sheet + 4 Circular Toggles + Sliders
+        if (t < 0.38) {
+          const localT = t / 0.38;
+          const fw = 0.23;
+          const fh = 0.165;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = -fw + u * fw * 2; y = -fh; }
+          else if (edge === 1) { x = -fw + u * fw * 2; y = fh; }
+          else if (edge === 2) { x = -fw; y = -fh + u * fh * 2; }
+          else { x = fw; y = -fh + u * fh * 2; }
+          z = zLayer;
+        } else if (t < 0.72) {
+          // 4 Hairline Circular Quick-Toggle Icons across the top row
+          const localT = (t - 0.38) / 0.34;
+          const cIdx = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - cIdx;
+          const ang = u * Math.PI * 2;
+          const cx = -0.142 + cIdx * 0.095;
+          x = cx + Math.cos(ang) * 0.032;
+          y = -0.075 + Math.sin(ang) * 0.032;
+          z = 0.025;
+        } else {
+          // 2 Horizontal Brightness & Volume Slider Tracks + Knobs
+          const localT = (t - 0.72) / 0.28;
+          const sIdx = localT < 0.5 ? 0 : 1;
+          const u = sIdx === 0 ? localT * 2 : (localT - 0.5) * 2;
+          const sy = sIdx === 0 ? 0.025 : 0.095;
+          if (u < 0.75) {
+            x = -0.165 + (u / 0.75) * 0.33;
+            y = sy + ribbon;
+          } else {
+            const ang = ((u - 0.75) / 0.25) * Math.PI * 2;
+            const knobX = sIdx === 0 ? 0.045 : -0.035;
+            x = knobX + Math.cos(ang) * 0.018;
+            y = sy + Math.sin(ang) * 0.018;
+          }
+          z = 0.03;
+        }
+      } else if (baseMode === 1) {
+        // 2014 Google Material Design ("QUANTUM PAPER"): Elevated Quantum Paper Cards + Floating '+' FAB & Ink Ripple
+        if (t < 0.48) {
+          // 2 Stepped Quantum Paper Cards
+          const cardIdx = t < 0.24 ? 0 : 1;
+          const localT = (t - cardIdx * 0.24) / 0.24;
+          const ox = cardIdx === 0 ? -0.035 : 0.025;
+          const oy = cardIdx === 0 ? -0.025 : 0.020;
+          const cw = 0.21;
+          const ch = 0.135;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = ox - cw + u * cw * 2; y = oy - ch; }
+          else if (edge === 1) { x = ox - cw + u * cw * 2; y = oy + ch; }
+          else if (edge === 2) { x = ox - cw; y = oy - ch + u * ch * 2; }
+          else { x = ox + cw; y = oy - ch + u * ch * 2; }
+          z = cardIdx === 0 ? -0.035 : 0.01;
+        } else if (t < 0.82) {
+          // Floating Action Button (FAB) Circle + Concentric Ink Ripple Ring
+          const localT = (t - 0.48) / 0.34;
+          const isOuterRipple = localT >= 0.55;
+          const u = isOuterRipple ? (localT - 0.55) / 0.45 : localT / 0.55;
+          const ang = u * Math.PI * 2;
+          const r = isOuterRipple ? 0.095 : 0.052;
+          x = 0.105 + Math.cos(ang) * (r + ribbon);
+          y = 0.055 + Math.sin(ang) * (r + ribbon);
+          z = isOuterRipple ? 0.035 : 0.055;
+        } else {
+          // '+' Plus Icon inside the Floating Action Button
+          const localT = (t - 0.82) / 0.18;
+          if (localT < 0.5) {
+            x = 0.105 + (localT * 2 - 0.5) * 0.052;
+            y = 0.055 + ribbon;
+          } else {
+            x = 0.105 + ribbon;
+            y = 0.055 + ((localT - 0.5) * 2 - 0.5) * 0.052;
+          }
+          z = 0.062;
+        }
+      } else {
+        // 2015 Figma & React Era ("COMPONENT UI"): 3 Intersecting React Atomic Orbits + 4-Diamond Component Icon
+        if (t < 0.72) {
+          const localT = t / 0.72;
+          const orbitIdx = Math.min(2, Math.floor(localT * 3));
+          const u = localT * 3 - orbitIdx;
+          const ang = u * Math.PI * 2;
+          const tilt = (orbitIdx * Math.PI) / 3;
+          const ex = Math.cos(ang) * 0.245;
+          const ey = Math.sin(ang) * 0.088;
+          x = ex * Math.cos(tilt) - ey * Math.sin(tilt);
+          y = ex * Math.sin(tilt) + ey * Math.cos(tilt);
+          z = Math.sin(ang * 2 + orbitIdx) * 0.045;
+        } else {
+          // Central 4-Diamond Component Symbol (❖)
+          const localT = (t - 0.72) / 0.28;
+          const dIdx = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - dIdx;
+          const offsets: [number, number][] = [
+            [0, -0.042],
+            [0.042, 0],
+            [0, 0.042],
+            [-0.042, 0],
+          ];
+          const [dcx, dcy] = offsets[dIdx];
+          const edge = Math.min(3, Math.floor(u * 4));
+          const eu = u * 4 - edge;
+          const r = 0.022;
+          const pts: [number, number][] = [[0, -r], [r, 0], [0, r], [-r, 0]];
+          const p1 = pts[edge];
+          const p2 = pts[(edge + 1) % 4];
+          x = dcx + p1[0] + (p2[0] - p1[0]) * eu;
+          y = dcy + p1[1] + (p2[1] - p1[1]) * eu;
+          z = 0.035;
+        }
+      }
+      break;
+    }
+
+    case 'wave3d': {
+      if (baseMode === 0) {
+        // 2016 Three.js Scene Graphs ("SCENE GRAPH"): 3D X/Y/Z Axes Gizmo + Wireframe Octahedron Mesh
+        if (t < 0.36) {
+          // 3 Orthogonal X, Y, Z Coordinate Axes
+          const localT = t / 0.36;
+          const axis = Math.min(2, Math.floor(localT * 3));
+          const u = (localT * 3 - axis) * 2 - 1;
+          if (axis === 0) { x = u * 0.26; y = ribbon; z = 0; }
+          else if (axis === 1) { x = ribbon; y = u * 0.21; z = 0; }
+          else { x = 0; y = ribbon; z = u * 0.26; }
+        } else {
+          // Central 3D Wireframe Octahedron (12 Edges)
+          const localT = (t - 0.36) / 0.64;
+          const edgeIdx = Math.min(11, Math.floor(localT * 12));
+          const u = localT * 12 - edgeIdx;
+          const r = 0.165;
+          const verts: [number, number, number][] = [
+            [0, -r, 0], [0, r, 0], [-r, 0, 0], [r, 0, 0], [0, 0, -r], [0, 0, r],
+          ];
+          const pairs: [number, number][] = [
+            [0, 2], [0, 3], [0, 4], [0, 5],
+            [1, 2], [1, 3], [1, 4], [1, 5],
+            [2, 4], [4, 3], [3, 5], [5, 2],
+          ];
+          const [v1, v2] = pairs[edgeIdx];
+          x = verts[v1][0] + (verts[v2][0] - verts[v1][0]) * u;
+          y = verts[v1][1] + (verts[v2][1] - verts[v1][1]) * u;
+          z = verts[v1][2] + (verts[v2][2] - verts[v1][2]) * u;
+        }
+      } else if (baseMode === 1) {
+        // 2019 Editorial Scrollytelling ("CAMERA RIGS"): 3D Camera Frustum Pyramid + Curved Dolly Track
+        if (t < 0.68) {
+          const localT = t / 0.68;
+          const edgeIdx = Math.min(7, Math.floor(localT * 8));
+          const u = localT * 8 - edgeIdx;
+          const apex: [number, number, number] = [-0.21, -0.02, 0];
+          const far: [number, number, number][] = [
+            [0.19, -0.13, -0.11],
+            [0.19, 0.09, -0.11],
+            [0.19, 0.09, 0.11],
+            [0.19, -0.13, 0.11],
+          ];
+          if (edgeIdx < 4) {
+            const fp = far[edgeIdx];
+            x = apex[0] + (fp[0] - apex[0]) * u;
+            y = apex[1] + (fp[1] - apex[1]) * u;
+            z = apex[2] + (fp[2] - apex[2]) * u;
+          } else {
+            const p1 = far[edgeIdx - 4];
+            const p2 = far[(edgeIdx - 3) % 4];
+            x = p1[0] + (p2[0] - p1[0]) * u;
+            y = p1[1] + (p2[1] - p1[1]) * u;
+            z = p1[2] + (p2[2] - p1[2]) * u;
+          }
+        } else {
+          // Curved Spline Dolly Rails Underneath
+          const localT = (t - 0.68) / 0.32;
+          const rail = localT < 0.5 ? -1 : 1;
+          const u = localT < 0.5 ? localT * 2 : (localT - 0.5) * 2;
+          x = (u - 0.5) * 0.54;
+          y = 0.145 + Math.cos(u * Math.PI) * 0.025;
+          z = rail * 0.045 + Math.sin(u * Math.PI) * 0.06;
+        }
+      } else {
+        // 2022 WebGPU Compute Shaders ("GPU COMPUTE"): Silicon GPU Die Frame + 6x6 Parallel Compute Cores + Pins
+        if (t < 0.28) {
+          const localT = t / 0.28;
+          const s = 0.155;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = -s + u * s * 2; y = -s; }
+          else if (edge === 1) { x = -s + u * s * 2; y = s; }
+          else if (edge === 2) { x = -s; y = -s + u * s * 2; }
+          else { x = s; y = -s + u * s * 2; }
+          z = zLayer;
+        } else if (t < 0.72) {
+          // 6x6 Parallel GPU Compute Core Matrix
+          const localT = (t - 0.28) / 0.44;
+          const coreIdx = Math.min(35, Math.floor(localT * 36));
+          const col = coreIdx % 6;
+          const row = Math.floor(coreIdx / 6);
+          x = -0.105 + (col / 5) * 0.21 + ribbon;
+          y = -0.105 + (row / 5) * 0.21 + ribbon;
+          z = ((col + row) % 2 === 0 ? 0.022 : -0.022);
+        } else {
+          // Perimeter Silicon Contact Pins on all 4 sides
+          const localT = (t - 0.72) / 0.28;
+          const pinIdx = Math.min(31, Math.floor(localT * 32));
+          const u = localT * 32 - pinIdx;
+          const side = Math.floor(pinIdx / 8);
+          const pos = -0.12 + ((pinIdx % 8) / 7) * 0.24;
+          const len = 0.155 + u * 0.055;
+          if (side === 0) { x = pos; y = -len; }
+          else if (side === 1) { x = pos; y = len; }
+          else if (side === 2) { x = -len; y = pos; }
+          else { x = len; y = pos; }
+          z = 0;
+        }
+      }
+      break;
+    }
+
+    case 'neural': {
+      if (baseMode === 0) {
+        // 2023 Generative Code Synthesis ("TEXT TO APP"): Prompt Input "[ >_ ]" -> Neural Beams -> Live App Window
+        if (t < 0.34) {
+          // Left Prompt Input Box + '>' Chevron
+          const localT = t / 0.34;
+          if (localT < 0.7) {
+            const u = localT / 0.7;
+            const edge = Math.min(3, Math.floor(u * 4));
+            const eu = u * 4 - edge;
+            const cx = -0.185;
+            const bw = 0.085;
+            const bh = 0.055;
+            if (edge === 0) { x = cx - bw + eu * bw * 2; y = -bh; }
+            else if (edge === 1) { x = cx - bw + eu * bw * 2; y = bh; }
+            else if (edge === 2) { x = cx - bw; y = -bh + eu * bh * 2; }
+            else { x = cx + bw; y = -bh + eu * bh * 2; }
+          } else {
+            const u = (localT - 0.7) / 0.3;
+            x = -0.22 + (u < 0.5 ? u * 2 : (1 - u) * 2) * 0.04;
+            y = -0.025 + u * 0.05;
+          }
+          z = zLayer;
+        } else if (t < 0.54) {
+          // 3 Neural Compilation Streams Bridging Prompt -> App
+          const localT = (t - 0.34) / 0.20;
+          const stream = Math.min(2, Math.floor(localT * 3));
+          const u = localT * 3 - stream;
+          x = -0.095 + u * 0.15;
+          y = (stream - 1) * 0.045 + Math.sin(u * Math.PI) * 0.025;
+          z = Math.sin(u * Math.PI) * 0.04;
+        } else {
+          // Right Synthesized Multi-Card Application View
+          const localT = (t - 0.54) / 0.46;
+          const cx = 0.165;
+          const aw = 0.105;
+          const ah = 0.145;
+          if (localT < 0.6) {
+            const u = localT / 0.6;
+            const edge = Math.min(3, Math.floor(u * 4));
+            const eu = u * 4 - edge;
+            if (edge === 0) { x = cx - aw + eu * aw * 2; y = -ah; }
+            else if (edge === 1) { x = cx - aw + eu * aw * 2; y = ah; }
+            else if (edge === 2) { x = cx - aw; y = -ah + eu * ah * 2; }
+            else { x = cx + aw; y = -ah + eu * ah * 2; }
+          } else {
+            const u = (localT - 0.6) / 0.4;
+            const row = i % 3;
+            x = cx - 0.075 + u * 0.15;
+            y = -0.075 + row * 0.075 + ribbon;
+          }
+          z = 0.02 + zLayer;
+        }
+      } else if (baseMode === 1) {
+        // 2024 Live Artifact Canvases ("LIVE ARTIFACT"): Split Sandbox Frame + 3D Bar Chart + Live Wave Widget
+        if (t < 0.42) {
+          const localT = t / 0.42;
+          const fw = 0.265;
+          const fh = 0.155;
+          const edge = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - edge;
+          if (edge === 0) { x = -fw + u * fw * 2; y = -fh; }
+          else if (edge === 1) { x = -fw + u * fw * 2; y = fh; }
+          else if (edge === 2) { x = -fw; y = -fh + u * fh * 2; }
+          else { x = fw; y = -fh + u * fh * 2; }
+          z = zLayer;
+        } else if (t < 0.72) {
+          // 4 Ascending Interactive Data Bars on Left Half
+          const localT = (t - 0.42) / 0.30;
+          const barIdx = Math.min(3, Math.floor(localT * 4));
+          const u = localT * 4 - barIdx;
+          const heights = [0.07, 0.13, 0.18, 0.23];
+          const bh = heights[barIdx];
+          x = -0.20 + barIdx * 0.048 + ribbon * 1.5;
+          y = 0.115 - u * bh;
+          z = 0.025;
+        } else {
+          // Live Sine-Wave & Dial Widget on Right Half
+          const u = (t - 0.72) / 0.28;
+          x = 0.02 + u * 0.20;
+          y = -0.01 + Math.sin(u * Math.PI * 3) * 0.075 + ribbon;
+          z = 0.03;
+        }
+      } else {
+        // 2025 Multi-Agent Swarms ("AGENT SWARM"): 6-Node Hexagonal Autonomous Mesh + Central Orchestrator
+        if (t < 0.56) {
+          // 6 Autonomous Agent Rings at Hexagon Vertices + Central Hub
+          const localT = t / 0.56;
+          const nodeIdx = Math.min(6, Math.floor(localT * 7));
+          const u = localT * 7 - nodeIdx;
+          const ang = u * Math.PI * 2;
+          if (nodeIdx === 0) {
+            x = Math.cos(ang) * 0.042;
+            y = Math.sin(ang) * 0.042;
+            z = 0.03;
+          } else {
+            const hexAngle = ((nodeIdx - 1) * Math.PI) / 3;
+            const hcx = Math.cos(hexAngle) * 0.215;
+            const hcy = Math.sin(hexAngle) * 0.155;
+            x = hcx + Math.cos(ang) * 0.032;
+            y = hcy + Math.sin(ang) * 0.032;
+            z = (nodeIdx % 2 === 0 ? 0.035 : -0.035);
+          }
+        } else {
+          // 6 Radial Orchestrator Spokes + 6 Hexagonal Perimeter Links
+          const localT = (t - 0.56) / 0.44;
+          const linkIdx = Math.min(11, Math.floor(localT * 12));
+          const u = localT * 12 - linkIdx;
+          if (linkIdx < 6) {
+            const a = (linkIdx * Math.PI) / 3;
+            x = Math.cos(a) * 0.215 * u;
+            y = Math.sin(a) * 0.155 * u;
+            z = 0;
+          } else {
+            const a1 = ((linkIdx - 6) * Math.PI) / 3;
+            const a2 = ((linkIdx - 5) * Math.PI) / 3;
+            x = Math.cos(a1) * 0.215 + (Math.cos(a2) * 0.215 - Math.cos(a1) * 0.215) * u;
+            y = Math.sin(a1) * 0.155 + (Math.sin(a2) * 0.155 - Math.sin(a1) * 0.155) * u;
+            z = 0;
+          }
+        }
+      }
+      break;
+    }
+
+    case 'singularity': {
+      if (baseMode === 0) {
+        // 2026 Spatial WebXR Native ("SPATIAL DOM"): 3 Curved Panoramic Room-Scale Glass Windows
+        const winIdx = i % 3;
+        const localT = t;
+        const edge = Math.min(3, Math.floor((localT * 12) % 4));
+        const u = (localT * 12) % 1;
+        const baseAngle = (winIdx - 1) * 0.68;
+        const spanAngle = 0.26;
+        const wh = 0.115;
+        let ang = baseAngle;
+        let wy = 0;
+        if (edge === 0) { ang = baseAngle - spanAngle + u * spanAngle * 2; wy = -wh; }
+        else if (edge === 1) { ang = baseAngle - spanAngle + u * spanAngle * 2; wy = wh; }
+        else if (edge === 2) { ang = baseAngle - spanAngle; wy = -wh + u * wh * 2; }
+        else { ang = baseAngle + spanAngle; wy = -wh + u * wh * 2; }
+        const arcR = 0.30;
+        x = Math.sin(ang) * arcR;
+        y = wy + ribbon;
+        z = Math.cos(ang) * arcR - 0.24;
+      } else if (baseMode === 1) {
+        // 2028 Synaptic Intent Link ("SYNAPTIC LINK"): Biometric Retinal Focus Reticle + Neural Wave Filaments
+        if (t < 0.56) {
+          const localT = t / 0.56;
+          const isOuter = localT < 0.55;
+          const u = isOuter ? localT / 0.55 : (localT - 0.55) / 0.45;
+          const ang = u * Math.PI * 2;
+          const r = isOuter ? 0.145 : 0.068;
+          x = Math.cos(ang) * (r + ribbon);
+          y = Math.sin(ang) * (r + ribbon);
+          z = isOuter ? -0.015 : 0.025;
+        } else {
+          // Left/Right Synaptic Intent Waves + Reticle Crosshairs
+          const localT = (t - 0.56) / 0.44;
+          if (localT < 0.5) {
+            const u = localT * 2;
+            x = (u - 0.5) * 0.56;
+            y = Math.sin(u * Math.PI * 6) * 0.045 * (1 - Math.abs(u - 0.5) * 1.4);
+            z = Math.cos(u * Math.PI * 6) * 0.045;
+          } else {
+            const u = (localT - 0.5) * 2;
+            const isVert = u < 0.5;
+            const s = (isVert ? u * 2 : (u - 0.5) * 2) * 2 - 1;
+            x = isVert ? 0 : s * 0.19;
+            y = isVert ? s * 0.19 : 0;
+            z = 0.02;
+          }
+        }
+      } else {
+        // ∞ Pure Living Light ("PURE LIGHT"): 3D Lemniscate Infinity Symbol (∞) + Radial Photon Beams
+        if (t < 0.72) {
+          const u = t / 0.72;
+          const a = u * Math.PI * 2;
+          const denom = 1 + Math.sin(a) * Math.sin(a);
+          const scale = 0.275;
+          x = (scale * Math.cos(a)) / denom + ribbon;
+          y = (scale * Math.sin(a) * Math.cos(a)) / denom * 1.15 + ribbon;
+          z = Math.sin(a * 2) * 0.055;
+        } else {
+          // 12 Radial Photon Starburst Rays
+          const localT = (t - 0.72) / 0.28;
+          const rayIdx = Math.min(11, Math.floor(localT * 12));
+          const u = localT * 12 - rayIdx;
+          const ang = (rayIdx / 12) * Math.PI * 2;
+          const r = 0.14 + u * 0.14;
+          x = Math.cos(ang) * r * 1.25;
+          y = Math.sin(ang) * r * 0.85;
+          z = (rayIdx % 2 === 0 ? 1 : -1) * u * 0.06;
+        }
+      }
+      break;
+    }
+  }
+
+  return [x, y, z];
+}
+
+/**
  * Generates clean 3D coordinates for the Era's Architectural Sculpture
  * Positioned in the lower stage (centered around y = +0.24) below the 4-line particle story.
  */
@@ -130,6 +1101,14 @@ function generateSculptureCoordinates(
     let x = 0;
     let y = 0;
     let z = 0;
+
+    if (tierMode === 2) {
+      [x, y, z] = generateMilestoneSculpture(shape, baseMode, i, t);
+      coords[i * 3] = x;
+      coords[i * 3 + 1] = y + 0.24;
+      coords[i * 3 + 2] = z;
+      continue;
+    }
 
     switch (shape) {
       case 'sphere': {
@@ -821,21 +1800,6 @@ function generateSculptureCoordinates(
       }
     }
 
-    // Apply subtle architectural harmonic twist when viewing a Spec (tierMode=1) or Milestone (tierMode=2)
-    if (tierMode === 1) {
-      const angle = y * 1.6;
-      const rx = x * Math.cos(angle) - z * Math.sin(angle);
-      const rz = x * Math.sin(angle) + z * Math.cos(angle);
-      x = rx * 1.06;
-      z = rz * 1.06;
-    } else if (tierMode === 2) {
-      const angle = x * 1.8;
-      const ry = y * Math.cos(angle) - z * Math.sin(angle);
-      const rz = y * Math.sin(angle) + z * Math.cos(angle);
-      y = ry * 1.05;
-      z = rz * 1.08;
-    }
-
     // Center the 3D sculpture at y = +0.24 so it sits cleanly below the 4-line particle story
     coords[i * 3] = x;
     coords[i * 3 + 1] = y + 0.24;
@@ -1227,13 +2191,17 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
         ctx.stroke();
 
         const activeStory = activeStoryRef.current;
-        const baseVariant = activeStory.sculptVariant % 3;
+        const sculptVar = activeStory.sculptVariant;
+        const isPhaseTier = sculptVar < 3;
+        const isMilestoneTier = sculptVar >= 6;
+        const baseVariant = sculptVar % 3;
 
         // 3. Smooth Interactive 3D Rotation for Central Sculpture (with Click Spin Impulse & Scroll Yaw)
         const isFlatPlane =
           era.shapeType === 'flat' && (baseVariant === 0 || baseVariant === 2);
         const rotY =
-          (era.shapeType === 'terminal' ||
+          (isMilestoneTier ||
+          era.shapeType === 'terminal' ||
           era.shapeType === 'table' ||
           era.shapeType === 'responsive' ||
           isFlatPlane
@@ -1243,7 +2211,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           starTrackVel * 1.4;
 
         const rotX =
-          era.shapeType === 'wave3d'
+          !isMilestoneTier && era.shapeType === 'wave3d'
             ? 0.38 + mouse.smoothNormY * 0.15
             : Math.cos(time * 0.38) * 0.07 + mouse.smoothNormY * 0.14;
 
@@ -1296,7 +2264,11 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
           let tz = targets[i3 + 2];
 
           if (i >= TEXT_PARTICLES && i < streamStart) {
-            if (era.shapeType === 'wave3d' && baseVariant === 0) {
+            if (isMilestoneTier) {
+              // Subtle 3D harmonic breathing & depth shimmer for all 27 Key Milestone sculptures
+              ty += Math.sin(time * 2.2 + tx * 6.0) * 0.011;
+              tz += Math.cos(time * 2.2 + (ty - 0.24) * 6.0) * 0.016;
+            } else if (era.shapeType === 'wave3d' && baseVariant === 0) {
               const d = Math.sqrt(tx * tx + tz * tz);
               ty = Math.sin(d * 14.0 - time * 3.0) * 0.09 + 0.24;
             } else if (era.shapeType === 'cascade') {
@@ -1347,6 +2319,7 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
                 tz += 0.018 + Math.cos(time * 2.8) * 0.018;
               }
             } else if (
+              isPhaseTier &&
               era.shapeType === 'table' &&
               baseVariant === 2 &&
               i - TEXT_PARTICLES < Math.floor(SCULPT_PARTICLES * 0.66)
@@ -1765,12 +2738,38 @@ export const ParticleEngine: React.FC<ParticleEngineProps> = React.memo(
             : '600 11px "DM Sans", sans-serif';
           const safeMaxOuterOffset = Math.max(180, centerX - sideReservedPx - 12);
 
+          const curOverride = stateRef.current.overrideWord;
+          const activeMilestone = curOverride
+            ? era.milestones.find((m) => m.particleWord === curOverride)
+            : undefined;
+          const activeSpec = curOverride
+            ? era.specs.find((s) => s.particleWord === curOverride)
+            : undefined;
+
           era.sculptureCallouts.forEach((callout, cIdx) => {
-            const line1 =
+            let line1 =
               cIdx === 0
                 ? `${callout.code}.V${activeStory.sculptVariant + 1} // ${callout.title}`
                 : `${callout.code} // ${callout.title}`;
-            const line2 = callout.value;
+            let line2 = callout.value;
+
+            if (activeMilestone) {
+              const mLabels: [string, string][] = [
+                [`MS.${activeMilestone.year} // KEY MILESTONE`, activeMilestone.title],
+                [`NODE.02 // PARTICLE GLYPH`, `Active: [${activeMilestone.particleWord}]`],
+                [`HIST.03 // ${activeMilestone.year} ARCHIVE`, activeMilestone.story.line1],
+                [`IMPACT.04 // EVOLUTION`, activeMilestone.story.line2],
+              ];
+              [line1, line2] = mLabels[cIdx] || [line1, line2];
+            } else if (activeSpec) {
+              const sLabels: [string, string][] = [
+                [`SPEC.01 // ${activeSpec.label}`, activeSpec.value],
+                [`NODE.02 // PARTICLE GLYPH`, `Active: [${activeSpec.particleWord}]`],
+                [`ARCH.03 // SPECIFICATION`, activeSpec.story.line1],
+                [`SYST.04 // IMPLEMENTATION`, activeSpec.story.line2],
+              ];
+              [line1, line2] = sLabels[cIdx] || [line1, line2];
+            }
 
             // Measure exact text widths using the exact fonts used for rendering
             ctx.font = font1;
