@@ -6,9 +6,11 @@ import WaterShader, { type ScrollMotionState } from './components/WaterShader';
 import ParticleEngine from './components/ParticleEngine';
 import HorizontalStage from './components/HorizontalStage';
 import TimelineHUD from './components/TimelineHUD';
+import ParticlePreloader from './components/ParticlePreloader';
 import { playArchitecturalPulse } from './utils/sound';
 
 export const App: React.FC = () => {
+  const [preloaderDone, setPreloaderDone] = useState(false);
   const [activeEraIndex, setActiveEraIndex] = useState(0);
   const [activePhaseIndex, setActivePhaseIndex] = useState(0);
   const [overrideWord, setOverrideWord] = useState<string | null>(null);
@@ -218,8 +220,14 @@ export const App: React.FC = () => {
     });
   }, []);
 
+  const handlePreloaderComplete = useCallback(() => {
+    setPreloaderDone(true);
+  }, []);
+
   return (
     <div className="relative w-full bg-black text-white select-none font-dm">
+      {!preloaderDone && <ParticlePreloader onComplete={handlePreloaderComplete} />}
+
       {/* Virtual 2400vh Scroll Track Driven by Lenis + GSAP Ticker (~90vh per sub-phase) */}
       <div className="w-full h-[2400vh] pointer-events-none" aria-hidden="true" />
 
